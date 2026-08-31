@@ -17,16 +17,14 @@ function generateCode() {
 }
 
 async function resolveRobloxUser(username) {
-  const res = await fetch('https://users.roproxy.com/v1/usernames/users', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
-  });
+  const res = await fetch(`https://users.roproxy.com/v1/users/search?keyword=${encodeURIComponent(username)}`);
   if (!res.ok) throw new Error('Could not reach Roblox right now. Please try again.');
   const data = await res.json();
-  const found = data?.data?.[0];
-  if (!found) throw new Error('Roblox user not found. Check the spelling and try again.');
-  return found;
+  const match = (data?.data || []).find(
+    (u) => (u.name || '').toLowerCase() === username.toLowerCase()
+  );
+  if (!match) throw new Error('Roblox user not found. Check the spelling and try again.');
+  return match;
 }
 
 async function fetchBio(userId) {
