@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { logStaffAction } from '@/lib/staffLog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Gavel, Copy } from 'lucide-react';
+import { Loader2, Plus, Trash2, Gavel, Copy, Search } from 'lucide-react';
+import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -22,11 +25,13 @@ const empty = {
 };
 
 export default function ModerationsTab() {
+  const { user } = useAuth();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [query, setQuery] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -50,6 +55,7 @@ export default function ModerationsTab() {
         type: 'moderation_issued',
         read: false,
       });
+      await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
       setForm(empty);
       setShowForm(false);
       await load();
@@ -58,8 +64,9 @@ export default function ModerationsTab() {
     }
   };
 
-  const remove = async (id) => {
-    await base44.entities.Moderation.delete(id);
+  const remove = async (m) => {
+    await base44.entities.Moderation.delete(m.id);
+    await logStaffAction(user, 'moderation_deleted', m.roblox_username, `Deleted ${m.moderation_type} — ${m.reason}`);
     await load();
   };
 
@@ -74,6 +81,32 @@ export default function ModerationsTab() {
     navigator.clipboard?.writeText(text);
   };
 
+  const usernames = Array.from(new Set(list.map((m) => m.roblox_username).filter(Boolean)));
+  const q = query.trim().toLowerCase();
+  const matchedUser = q ? usernames.find((u) => u.toLowerCase() === q) : null;
+  const filtered = q
+    ? matchedUser
+      ? list.filter((m) => m.roblox_username === matchedUser)
+      : list.filter((m) => (m.roblox_username || '').toLowerCase().includes(q))
+    : list;
+
+  const profile = matchedUser
+    ? (() => {
+        const um = list.filter((m) => m.roblox_username === matchedUser);
+        const dates = um.map((m) => m.moderation_date).filter(Boolean).sort();
+        return {
+          username: matchedUser,
+          total: um.length,
+          bans: um.filter((m) => m.moderation_type.includes('Ban')).length,
+          mutes: um.filter((m) => m.moderation_type === 'Mute').length,
+          warnings: um.filter((m) => m.moderation_type === 'Warning').length,
+          kicks: um.filter((m) => m.moderation_type === 'Kick').length,
+          active: um.filter((m) => m.status === 'Active').length,
+          since: dates[0] ? new Date(dates[0]).toLocaleDateString() : '—',
+        };
+      })()
+    : null;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -86,6 +119,47 @@ export default function ModerationsTab() {
           <Plus className="h-4 w-4 mr-1.5" /> {showForm ? 'Cancel' : 'New moderation'}
         </Button>
       </div>
+
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search a Roblox username to see their history…"
+          list="mod-usernames"
+          className="bg-slate-950/60 border-white/15 text-white pl-9"
+        />
+        <datalist id="mod-usernames">
+          {usernames.map((u) => <option key={u} value={u} />)}
+        </datalist>
+      </div>
+
+      {profile && (
+        <div className="mb-4 rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+          <div className="flex items-center gap-3">
+            <RobloxAvatar username={profile.username} size={48} />
+            <div>
+              <div className="text-white font-semibold">{profile.username}</div>
+              <div className="text-xs text-slate-500">First moderation: {profile.since}</div>
+            </div>
+            <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">{profile.active} active</span>
+          </div>
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {[
+              { label: 'Total', value: profile.total, cls: 'text-white' },
+              { label: 'Bans', value: profile.bans, cls: 'text-rose-300' },
+              { label: 'Mutes', value: profile.mutes, cls: 'text-slate-300' },
+              { label: 'Kicks', value: profile.kicks, cls: 'text-orange-300' },
+              { label: 'Warnings', value: profile.warnings, cls: 'text-amber-300' },
+            ].map((s) => (
+              <div key={s.label} className="rounded-lg bg-slate-950/40 border border-white/5 p-2.5 text-center">
+                <div className={`text-lg font-bold ${s.cls}`}>{s.value}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wide">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 mb-5 space-y-3">
@@ -160,11 +234,13 @@ export default function ModerationsTab() {
 
       {loading ? (
         <div className="flex justify-center py-16 text-slate-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
-      ) : list.length === 0 ? (
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400">No moderations issued yet.</div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400">
+          {q ? `No moderations found for "${query}".` : 'No moderations issued yet.'}
+        </div>
       ) : (
         <div className="space-y-2">
-          {list.map((m) => (
+          {filtered.map((m) => (
             <div key={m.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
               <div className="min-w-0">
                 <div className="text-sm">
@@ -173,7 +249,7 @@ export default function ModerationsTab() {
                 </div>
                 <div className="text-xs text-slate-500 truncate">{m.reason}{m.duration ? ` · ${m.duration}` : ''} · {m.status}</div>
               </div>
-              <Button size="icon" variant="ghost" onClick={() => remove(m.id)} className="text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 shrink-0">
+              <Button size="icon" variant="ghost" onClick={() => remove(m)} className="text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 shrink-0">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>

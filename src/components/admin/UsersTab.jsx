@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { logStaffAction } from '@/lib/staffLog';
 import { Loader2, ShieldCheck, User as UserIcon } from 'lucide-react';
 
 export default function UsersTab() {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
@@ -21,6 +24,7 @@ export default function UsersTab() {
     setSavingId(u.id);
     try {
       await base44.entities.User.update(u.id, { role });
+      await logStaffAction(user, 'user_role_changed', u.email, `Set ${u.email} to ${role}`);
       await load();
     } finally {
       setSavingId(null);

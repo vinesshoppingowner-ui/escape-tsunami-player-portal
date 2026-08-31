@@ -5,6 +5,7 @@ import { ShieldAlert } from 'lucide-react';
 import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
 import UsersTab from '@/components/admin/UsersTab';
+import StaffLogsTab from '@/components/admin/StaffLogsTab';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -39,10 +40,12 @@ export default function Admin() {
             <TabsTrigger value="appeals" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
+            <TabsTrigger value="logs" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           <TabsContent value="users"><UsersTab /></TabsContent>
+          <TabsContent value="logs"><StaffLogsTab /></TabsContent>
         </Tabs>
       </main>
     </div>

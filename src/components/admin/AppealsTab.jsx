@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { logStaffAction } from '@/lib/staffLog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, FileText } from 'lucide-react';
@@ -20,6 +22,7 @@ const priorityFor = (mod) => {
 };
 
 export default function AppealsTab() {
+  const { user } = useAuth();
   const [appeals, setAppeals] = useState([]);
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +77,7 @@ export default function AppealsTab() {
         type: 'appeal_decision',
         read: false,
       });
+      await logStaffAction(user, 'appeal_decision', appeal.roblox_username, `Set appeal to ${draft.status}${mod ? ` (${mod.moderation_type})` : ''}`);
       await load();
     } finally {
       setSavingId(null);

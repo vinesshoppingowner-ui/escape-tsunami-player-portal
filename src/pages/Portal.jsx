@@ -13,6 +13,7 @@ import NotificationsBell from '@/components/moderations/NotificationsBell';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import DevSandbox from '@/components/moderations/DevSandbox';
+import { sendAppealWebhook } from '@/lib/discordWebhook';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -78,11 +79,17 @@ export default function Portal() {
   };
 
   const submitAppeal = async (reason) => {
-    await base44.entities.Appeal.create({
+    const created = await base44.entities.Appeal.create({
       moderation_id: activeModeration.id,
       roblox_username: savedUsername,
       appeal_reason: reason,
       status: 'Pending',
+    });
+    sendAppealWebhook({
+      username: savedUsername,
+      moderationType: activeModeration?.moderation_type,
+      reason,
+      appealId: created?.id,
     });
     await loadData(savedUsername);
   };
