@@ -13,8 +13,8 @@ import NotificationsBell from '@/components/moderations/NotificationsBell';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import DevSandbox from '@/components/moderations/DevSandbox';
-import BugBounty from '@/components/portal/BugBounty';
-import WallOfShame from '@/components/portal/WallOfShame';
+import PatchNotes from '@/components/portal/PatchNotes';
+import SupportCard from '@/components/portal/SupportCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 
 export default function Portal() {
@@ -109,7 +109,7 @@ export default function Portal() {
             <ShieldCheck className="h-3.5 w-3.5" /> Member Portal
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''} 👋
+            Welcome back 👋
           </h1>
           <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
         </motion.div>
@@ -195,8 +195,8 @@ export default function Portal() {
             </div>
 
             {moderations.filter((m) => m.status === 'Active').length === 0 && <DevSandbox />}
-            <BugBounty robloxUsername={savedUsername} />
-            <WallOfShame />
+            <PatchNotes />
+            <SupportCard />
             <AppealHistory appeals={appeals} moderations={moderations} />
           </>
         )}

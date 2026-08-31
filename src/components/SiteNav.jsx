@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X, ShieldAlert } from 'lucide-react';
+import { Waves, LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
@@ -11,10 +11,14 @@ export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
 
-  const links = [
+  const desktopLinks = [
+    { label: 'Home', to: '/' },
+    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin' }] : []),
+  ];
+  const mobileLinks = [
     { label: 'Home', to: '/' },
     { label: 'Member Portal', to: '/portal' },
-    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin', icon: ShieldAlert }] : []),
+    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
 
   return (
@@ -31,7 +35,7 @@ export default function SiteNav() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {links.map((l) => {
+          {desktopLinks.map((l) => {
             const active = location.pathname === l.to;
             return (
               <Link
@@ -71,7 +75,7 @@ export default function SiteNav() {
 
       {open && (
         <div className="md:hidden border-t border-white/10 bg-slate-950/95 px-5 py-4 space-y-1">
-          {links.map((l) => (
+          {mobileLinks.map((l) => (
             <Link
               key={l.to}
               to={l.to}

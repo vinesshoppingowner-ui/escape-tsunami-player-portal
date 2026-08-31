@@ -16,7 +16,7 @@ const GAME = {
   creator: 'Waitrose Shopping',
   visits: 269,
   favorites: 3,
-  maxPlayers: 5,
+  maxPlayers: 50,
   created: 'August 17, 2026',
 };
 
@@ -68,7 +68,7 @@ export default function Home() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
               </span>
-              Live on Roblox · by {GAME.creator}
+              Live on Roblox
             </motion.div>
 
             <motion.h1
