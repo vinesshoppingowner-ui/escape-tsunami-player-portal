@@ -10,6 +10,9 @@ import ModerationCard from '@/components/moderations/ModerationCard';
 import AppealDialog from '@/components/moderations/AppealDialog';
 import AppealHistory from '@/components/moderations/AppealHistory';
 import NotificationsBell from '@/components/moderations/NotificationsBell';
+import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import AccountStanding from '@/components/moderations/AccountStanding';
+import DevSandbox from '@/components/moderations/DevSandbox';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -107,8 +110,13 @@ export default function Portal() {
           <VerifyAccount onVerified={handleVerified} />
         ) : (
           <>
+            {/* Account standing */}
+            <div className="mt-8">
+              <AccountStanding moderations={moderations} />
+            </div>
+
             {/* Stats */}
-            <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-3">
               {[
                 { label: 'Active moderations', value: moderations.filter((m) => m.status === 'Active').length },
                 { label: 'Appeals submitted', value: appeals.length },
@@ -124,8 +132,8 @@ export default function Portal() {
             {/* Status bar */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-sm">
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-                  <User className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="inline-flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white/5 border border-white/10">
+                  <RobloxAvatar username={savedUsername} size={28} />
                   <span className="text-slate-300">Verified as</span>
                   <span className="font-semibold text-white">{savedUsername}</span>
                 </span>
@@ -177,6 +185,7 @@ export default function Portal() {
               )}
             </div>
 
+            {moderations.filter((m) => m.status === 'Active').length === 0 && <DevSandbox />}
             <AppealHistory appeals={appeals} moderations={moderations} />
           </>
         )}

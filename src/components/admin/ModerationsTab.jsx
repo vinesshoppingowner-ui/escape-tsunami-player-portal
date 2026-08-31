@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Gavel } from 'lucide-react';
+import { Loader2, Plus, Trash2, Gavel, Copy } from 'lucide-react';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -16,6 +16,9 @@ const empty = {
   duration: '',
   staff_member: '',
   status: 'Active',
+  evidence_type: 'none',
+  evidence_text: '',
+  evidence_image_url: '',
 };
 
 export default function ModerationsTab() {
@@ -58,6 +61,17 @@ export default function ModerationsTab() {
   const remove = async (id) => {
     await base44.entities.Moderation.delete(id);
     await load();
+  };
+
+  const copyForDiscord = () => {
+    const text = [
+      `**${form.moderation_type}** — ${form.roblox_username || 'Unknown'}`,
+      `Reason: ${form.reason || '—'}`,
+      form.duration && `Duration: ${form.duration}`,
+      form.staff_member && `Staff: ${form.staff_member}`,
+      form.details && `Details: ${form.details}`,
+    ].filter(Boolean).join('\n');
+    navigator.clipboard?.writeText(text);
   };
 
   return (
@@ -109,7 +123,34 @@ export default function ModerationsTab() {
             <Label className="text-xs text-slate-400">Details</Label>
             <Textarea rows={2} value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} className="bg-slate-950/60 border-white/15 text-white mt-1" />
           </div>
-          <div className="flex justify-end">
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-slate-400">Evidence type</Label>
+              <select value={form.evidence_type} onChange={(e) => setForm({ ...form, evidence_type: e.target.value, evidence_text: '', evidence_image_url: '' })} className="mt-1 w-full h-9 rounded-md border border-white/15 bg-slate-950/60 px-3 text-sm text-white">
+                <option value="none">None</option>
+                <option value="chat_log">Chat log</option>
+                <option value="screenshot">Screenshot</option>
+              </select>
+            </div>
+            {form.evidence_type === 'chat_log' && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs text-slate-400">Chat log</Label>
+                <Textarea rows={4} value={form.evidence_text} onChange={(e) => setForm({ ...form, evidence_text: e.target.value })} className="bg-slate-950/60 border-white/15 text-white mt-1 font-mono text-xs" placeholder="Paste the in-game chat log…" />
+              </div>
+            )}
+            {form.evidence_type === 'screenshot' && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs text-slate-400">Screenshot URL</Label>
+                <Input value={form.evidence_image_url} onChange={(e) => setForm({ ...form, evidence_image_url: e.target.value })} placeholder="https://… image URL" className="bg-slate-950/60 border-white/15 text-white mt-1" />
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={copyForDiscord} className="bg-white/5 border-white/15 text-white hover:bg-white/10">
+              <Copy className="h-4 w-4 mr-1.5" /> Copy for Discord
+            </Button>
             <Button onClick={create} disabled={saving || !form.roblox_username || !form.reason} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Issuing</> : <><Gavel className="h-4 w-4 mr-1.5" /> Issue moderation</>}
             </Button>

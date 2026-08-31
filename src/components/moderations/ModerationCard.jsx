@@ -1,6 +1,8 @@
-import { ShieldAlert, Clock, UserCog, CheckCircle2, XCircle, Hourglass, Eye } from 'lucide-react';
+import { useState } from 'react';
+import { ShieldAlert, Clock, UserCog, CheckCircle2, XCircle, Hourglass, Eye, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import EvidenceDialog from '@/components/moderations/EvidenceDialog';
 
 const typeStyles = {
   Warning: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -24,6 +26,10 @@ const appealBadge = {
 };
 
 export default function ModerationCard({ moderation, appeal, onAppeal }) {
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const hasEvidence =
+    (moderation.evidence_type === 'chat_log' && moderation.evidence_text) ||
+    (moderation.evidence_type === 'screenshot' && moderation.evidence_image_url);
   const date = moderation.moderation_date
     ? new Date(moderation.moderation_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : '—';
@@ -65,6 +71,14 @@ export default function ModerationCard({ moderation, appeal, onAppeal }) {
         <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {date}</span>
         {moderation.duration && <span className="flex items-center gap-1.5"><Hourglass className="h-3.5 w-3.5" /> {moderation.duration}</span>}
         {moderation.staff_member && <span className="flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> by {moderation.staff_member}</span>}
+        {hasEvidence && (
+          <button
+            onClick={() => setEvidenceOpen(true)}
+            className="ml-auto inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
+          >
+            <FileText className="h-3.5 w-3.5" /> View evidence
+          </button>
+        )}
       </div>
 
       <div className="mt-5 pt-4 border-t border-white/5 space-y-3">
@@ -101,6 +115,8 @@ export default function ModerationCard({ moderation, appeal, onAppeal }) {
           <p className="text-xs text-slate-400 italic line-clamp-2">“{appeal.staff_response}”</p>
         )}
       </div>
+
+      <EvidenceDialog open={evidenceOpen} onClose={() => setEvidenceOpen(false)} moderation={moderation} />
     </div>
   );
 }
