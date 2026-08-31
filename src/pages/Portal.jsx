@@ -15,6 +15,7 @@ import AccountStanding from '@/components/moderations/AccountStanding';
 import DevSandbox from '@/components/moderations/DevSandbox';
 import BugBounty from '@/components/portal/BugBounty';
 import WallOfShame from '@/components/portal/WallOfShame';
+import { sendAppealWebhook } from '@/lib/discordWebhook';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -86,12 +87,12 @@ export default function Portal() {
       appeal_reason: reason,
       status: 'Pending',
     });
-    base44.functions.invoke('sendAppealWebhook', {
+    sendAppealWebhook({
       username: savedUsername,
       moderationType: activeModeration?.moderation_type,
       reason,
       appealId: created?.id,
-    }).catch(() => {});
+    });
     await loadData(savedUsername);
   };
 
@@ -194,6 +195,8 @@ export default function Portal() {
             </div>
 
             {moderations.filter((m) => m.status === 'Active').length === 0 && <DevSandbox />}
+            <BugBounty robloxUsername={savedUsername} />
+            <WallOfShame />
             <AppealHistory appeals={appeals} moderations={moderations} />
           </>
         )}
