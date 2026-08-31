@@ -40,6 +40,13 @@ export default function ModerationsTab() {
     setSaving(true);
     try {
       await base44.entities.Moderation.create({ ...form, moderation_date: new Date().toISOString() });
+      await base44.entities.Notification.create({
+        roblox_username: form.roblox_username,
+        title: `New ${form.moderation_type} issued`,
+        body: form.reason || 'A moderation action has been added to your account.',
+        type: 'moderation_issued',
+        read: false,
+      });
       setForm(empty);
       setShowForm(false);
       await load();

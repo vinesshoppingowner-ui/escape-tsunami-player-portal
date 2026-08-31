@@ -36,18 +36,23 @@ export default function AppealsTab() {
 
   const save = async (appeal) => {
     const draft = draftFor(appeal);
+    const mod = modFor(appeal.moderation_id);
     setSavingId(appeal.id);
     try {
       await base44.entities.Appeal.update(appeal.id, {
         status: draft.status,
         staff_response: draft.staff_response,
       });
-      if (draft.status === 'Approved') {
-        const mod = modFor(appeal.moderation_id);
-        if (mod && mod.status !== 'Repealed') {
-          await base44.entities.Moderation.update(mod.id, { status: 'Repealed' });
-        }
+      if (draft.status === 'Approved' && mod && mod.status !== 'Repealed') {
+        await base44.entities.Moderation.update(mod.id, { status: 'Repealed' });
       }
+      await base44.entities.Notification.create({
+        roblox_username: appeal.roblox_username,
+        title: `Appeal ${draft.status.toLowerCase()}`,
+        body: draft.staff_response || `Your appeal for ${mod?.moderation_type || 'your moderation'} has been ${draft.status.toLowerCase()}.`,
+        type: 'appeal_decision',
+        read: false,
+      });
       await load();
     } finally {
       setSavingId(null);

@@ -9,6 +9,7 @@ import VerifyAccount from '@/components/moderations/VerifyAccount';
 import ModerationCard from '@/components/moderations/ModerationCard';
 import AppealDialog from '@/components/moderations/AppealDialog';
 import AppealHistory from '@/components/moderations/AppealHistory';
+import NotificationsBell from '@/components/moderations/NotificationsBell';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -16,6 +17,7 @@ export default function Portal() {
 
   const [moderations, setModerations] = useState([]);
   const [appeals, setAppeals] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -31,15 +33,28 @@ export default function Portal() {
   const loadData = async (username) => {
     setLoading(true);
     try {
-      const [mods, apps] = await Promise.all([
+      const [mods, apps, notes] = await Promise.all([
         base44.entities.Moderation.filter({ roblox_username: username }, '-moderation_date', 50),
         base44.entities.Appeal.filter({ roblox_username: username }, '-created_date', 50),
+        base44.entities.Notification.filter({ roblox_username: username }, '-created_date', 20),
       ]);
       setModerations(mods || []);
       setAppeals(apps || []);
+      setNotifications(notes || []);
     } finally {
       setLoading(false);
     }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await base44.entities.Notification.updateMany(
+        { roblox_username: savedUsername, read: false },
+        { $set: { read: true } }
+      );
+      const notes = await base44.entities.Notification.filter({ roblox_username: savedUsername }, '-created_date', 20);
+      setNotifications(notes || []);
+    } catch {}
   };
 
   useEffect(() => {
@@ -92,19 +107,31 @@ export default function Portal() {
           <VerifyAccount onVerified={handleVerified} />
         ) : (
           <>
+            {/* Stats */}
+            <div className="mt-8 grid grid-cols-3 gap-3">
+              {[
+                { label: 'Active moderations', value: moderations.filter((m) => m.status === 'Active').length },
+                { label: 'Appeals submitted', value: appeals.length },
+                { label: 'Awaiting decision', value: appeals.filter((a) => a.status === 'Pending' || a.status === 'Under Review').length },
+              ].map((s) => (
+                <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+                  <div className="text-2xl font-bold text-white">{s.value}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
             {/* Status bar */}
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-sm">
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                   <User className="h-3.5 w-3.5 text-cyan-400" />
                   <span className="text-slate-300">Verified as</span>
                   <span className="font-semibold text-white">{savedUsername}</span>
                 </span>
-                <span className="text-slate-500 text-xs">
-                  {moderations.length} moderation{moderations.length !== 1 ? 's' : ''} · {appeals.length} appeal{appeals.length !== 1 ? 's' : ''}
-                </span>
               </div>
               <div className="flex items-center gap-2">
+                <NotificationsBell notifications={notifications} onMarkAllRead={markAllRead} />
                 <Button size="sm" variant="ghost" onClick={refresh} className="text-slate-300 hover:text-white hover:bg-white/10">
                   <RefreshCw className="h-4 w-4 mr-1.5" /> Refresh
                 </Button>
