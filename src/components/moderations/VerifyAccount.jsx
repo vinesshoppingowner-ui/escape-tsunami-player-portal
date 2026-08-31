@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Loader2, User, ShieldCheck, KeyRound, ExternalLink, ArrowRight,
-  RefreshCw, AlertCircle, Copy, Check, Hourglass, Search,
+  RefreshCw, AlertCircle, Copy, Check,
 } from 'lucide-react';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -17,35 +16,33 @@ function generateCode() {
   return code;
 }
 
+async function resolveRobloxUser(username) {
+  const res = await fetch('https://users.roproxy.com/v1/usernames/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
+  });
+  if (!res.ok) throw new Error('Could not reach Roblox right now. Please try again.');
+  const data = await res.json();
+  const found = data?.data?.[0];
+  if (!found) throw new Error('Roblox user not found. Check the spelling and try again.');
+  return found;
+}
+
+async function fetchBio(userId) {
+  const res = await fetch(`https://users.roproxy.com/v1/users/${userId}`);
+  if (!res.ok) throw new Error('Could not read that Roblox profile.');
+  const data = await res.json();
+  return (data?.description || '').toString();
+}
+
 export default function VerifyAccount({ onVerified }) {
-  const { user } = useAuth();
-  const [step, setStep] = useState('enter'); // 'enter' | 'verify' | 'pending'
+  const [step, setStep] = useState('enter'); // 'enter' | 'verify'
   const [username, setUsername] = useState('');
   const [code, setCode] = useState('');
-  const [request, setRequest] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-  const [statusMsg, setStatusMsg] = useState('');
-
-  // resume an existing pending request for this app user
-  useEffect(() => {
-    if (!user?.id) return;
-    (async () => {
-      try {
-        const existing = await base44.entities.VerificationRequest.filter(
-          { status: 'pending', created_by_id: user.id }, '-created_date', 1
-        );
-        if (existing && existing[0]) {
-          setRequest(existing[0]);
-          setUsername(existing[0].roblox_username);
-          setCode(existing[0].code);
-          setStep('pending');
-        }
-      } catch {}
-    })();
-  }, [user?.id]);
 
   const startVerification = () => {
     if (!username.trim()) return;
@@ -54,38 +51,21 @@ export default function VerifyAccount({ onVerified }) {
     setStep('verify');
   };
 
-  const submitForReview = async () => {
-    setSubmitting(true);
+  const verify = async () => {
+    setVerifying(true);
     setError('');
     try {
-      const created = await base44.entities.VerificationRequest.create({
-        roblox_username: username.trim(),
-        code,
-        status: 'pending',
-      });
-      setRequest(created);
-      setStep('pending');
-    } catch {
-      setError('Could not submit your request. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const checkStatus = async () => {
-    setChecking(true);
-    setStatusMsg('');
-    try {
-      const me = await base44.auth.me();
-      if (me?.roblox_username) {
-        onVerified(me.roblox_username);
+      const found = await resolveRobloxUser(username.trim());
+      const bio = await fetchBio(found.id);
+      if (bio.includes(code)) {
+        onVerified(username.trim());
       } else {
-        setStatusMsg('Still waiting for staff to review your bio — please check back shortly.');
+        setError('We could not find the code in your Roblox bio. Make sure you saved it, then try again.');
       }
-    } catch {
-      setStatusMsg('Could not check your status right now.');
+    } catch (e) {
+      setError(e.message || 'Verification failed. Please try again.');
     } finally {
-      setChecking(false);
+      setVerifying(false);
     }
   };
 
@@ -93,9 +73,7 @@ export default function VerifyAccount({ onVerified }) {
     setStep('enter');
     setUsername('');
     setCode('');
-    setRequest(null);
     setError('');
-    setStatusMsg('');
   };
 
   const copyCode = async () => {
@@ -119,7 +97,7 @@ export default function VerifyAccount({ onVerified }) {
           <div className="flex-1">
             <h2 className="font-semibold text-lg">Verify your Roblox account</h2>
             <p className="mt-1 text-sm text-slate-400">
-              Enter your exact Roblox username. We will give you a one-time code to add to your Roblox bio so our staff can confirm the account is really yours — this stops anyone from viewing or appealing another player's records.
+              Enter your exact Roblox username. We will give you a one-time code to add to your Roblox bio, then check it automatically — this stops anyone from viewing or appealing another player's records.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
@@ -154,7 +132,7 @@ export default function VerifyAccount({ onVerified }) {
             <div className="flex-1">
               <h2 className="font-semibold text-lg">Add this code to your Roblox bio</h2>
               <p className="mt-1 text-sm text-slate-400">
-                Verifying as <span className="text-cyan-300 font-medium">{username}</span>. Copy the code, paste it into your Roblox profile bio, save it, then submit for review.
+                Verifying as <span className="text-cyan-300 font-medium">{username}</span>. Copy the code, paste it into your Roblox profile bio, save it, then click Verify — we read your bio and confirm instantly.
               </p>
             </div>
           </div>
@@ -169,7 +147,7 @@ export default function VerifyAccount({ onVerified }) {
           <ol className="mt-5 space-y-2 text-sm text-slate-300">
             <li className="flex gap-2.5"><span className="text-cyan-400 font-semibold">1.</span> Open your Roblox profile and edit your bio.</li>
             <li className="flex gap-2.5"><span className="text-cyan-400 font-semibold">2.</span> Paste the code anywhere in the bio and save it.</li>
-            <li className="flex gap-2.5"><span className="text-cyan-400 font-semibold">3.</span> Submit for review — our staff will check your bio and approve you.</li>
+            <li className="flex gap-2.5"><span className="text-cyan-400 font-semibold">3.</span> Click Verify — we read your bio and confirm it is you instantly.</li>
           </ol>
 
           {error && (
@@ -180,11 +158,11 @@ export default function VerifyAccount({ onVerified }) {
 
           <div className="mt-5 flex flex-col sm:flex-row gap-3">
             <Button
-              onClick={submitForReview}
-              disabled={submitting}
+              onClick={verify}
+              disabled={verifying}
               className="h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
             >
-              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting…</> : <><ShieldCheck className="h-4 w-4 mr-2" /> Submit for review</>}
+              {verifying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Verifying…</> : <><ShieldCheck className="h-4 w-4 mr-2" /> Verify my bio</>}
             </Button>
             <a href="https://www.roblox.com/users/#!/settings" target="_blank" rel="noreferrer">
               <Button variant="outline" className="w-full h-11 bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white">
@@ -195,54 +173,7 @@ export default function VerifyAccount({ onVerified }) {
               <RefreshCw className="h-4 w-4 mr-1.5" /> Start over
             </Button>
           </div>
-          <p className="mt-4 text-xs text-slate-500">You can remove the code from your bio once staff have approved you.</p>
-        </div>
-      )}
-
-      {step === 'pending' && (
-        <div>
-          <div className="flex items-start gap-4">
-            <div className="h-11 w-11 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center shrink-0">
-              <Hourglass className="h-5 w-5 text-amber-300" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-semibold text-lg">Awaiting staff review</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Your verification for <span className="text-cyan-300 font-medium">{username}</span> is in the queue. Our staff will check your Roblox bio for the code below and approve you shortly.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-xl bg-slate-950/60 border border-white/10 p-4 flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs text-slate-500 uppercase tracking-wide">Your code</div>
-              <code className="font-mono text-lg tracking-widest text-cyan-300 font-semibold select-all">{code}</code>
-            </div>
-            <a href={`https://www.roblox.com/search/users?keyword=${encodeURIComponent(username)}`} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10">
-                <Search className="h-4 w-4 mr-1.5" /> Find my profile
-              </Button>
-            </a>
-          </div>
-
-          {statusMsg && (
-            <div className="mt-4 flex items-start gap-2 text-sm text-slate-300 bg-white/[0.04] border border-white/10 rounded-lg p-3">
-              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-cyan-300" /> <span>{statusMsg}</span>
-            </div>
-          )}
-
-          <div className="mt-5 flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={checkStatus}
-              disabled={checking}
-              className="h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-            >
-              {checking ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Checking…</> : <><RefreshCw className="h-4 w-4 mr-2" /> Check status</>}
-            </Button>
-            <Button variant="ghost" onClick={reset} className="text-slate-300 hover:text-white hover:bg-white/10">
-              Start over
-            </Button>
-          </div>
+          <p className="mt-4 text-xs text-slate-500">You can remove the code from your bio once verification is complete.</p>
         </div>
       )}
     </motion.div>
