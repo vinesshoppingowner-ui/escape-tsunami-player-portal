@@ -2,16 +2,19 @@ import { Link, useLocation } from 'react-router-dom';
 import { Waves, LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/AuthContext';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
 export default function SiteNav() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   const links = [
     { label: 'Home', to: '/' },
     { label: 'Member Portal', to: '/portal' },
+    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
 
   return (

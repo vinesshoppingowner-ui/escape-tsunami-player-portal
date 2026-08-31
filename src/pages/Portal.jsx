@@ -3,18 +3,15 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, ShieldCheck, User, LogOut, Inbox, RefreshCw, Waves } from 'lucide-react';
+import { Loader2, ShieldCheck, User, LogOut, RefreshCw } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
+import VerifyAccount from '@/components/moderations/VerifyAccount';
 import ModerationCard from '@/components/moderations/ModerationCard';
 import AppealDialog from '@/components/moderations/AppealDialog';
 
 export default function Portal() {
-  const { user, isAuthenticated, logout } = useAuth();
-  const [robloxUsername, setRobloxUsername] = useState('');
+  const { user, logout } = useAuth();
   const [savedUsername, setSavedUsername] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const [moderations, setModerations] = useState([]);
   const [appeals, setAppeals] = useState([]);
@@ -23,11 +20,10 @@ export default function Portal() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeModeration, setActiveModeration] = useState(null);
 
-  // pull username from profile once user loads
+  // pull verified username from profile once user loads
   useEffect(() => {
     if (user?.roblox_username) {
       setSavedUsername(user.roblox_username);
-      setRobloxUsername(user.roblox_username);
     }
   }, [user]);
 
@@ -50,15 +46,9 @@ export default function Portal() {
     else setLoading(false);
   }, [savedUsername]);
 
-  const saveUsername = async () => {
-    if (!robloxUsername.trim()) return;
-    setSaving(true);
-    try {
-      await base44.auth.updateMe({ roblox_username: robloxUsername.trim() });
-      setSavedUsername(robloxUsername.trim());
-    } finally {
-      setSaving(false);
-    }
+  const handleVerified = async (username) => {
+    setSavedUsername(username);
+    try { await base44.auth.updateMe({ roblox_username: username }); } catch {}
   };
 
   const appealFor = (moderationId) => appeals.find((a) => a.moderation_id === moderationId);
@@ -96,43 +86,9 @@ export default function Portal() {
           <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
         </motion.div>
 
-        {/* Username setup */}
+        {/* Verification / records */}
         {!savedUsername ? (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-8 rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-8"
-          >
-            <div className="flex items-start gap-4">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                <User className="h-5 w-5 text-cyan-300" />
-              </div>
-              <div className="flex-1">
-                <h2 className="font-semibold text-lg">Link your Roblox account</h2>
-                <p className="mt-1 text-sm text-slate-400">Enter your exact Roblox username so we can pull up your moderations.</p>
-                <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1">
-                    <Label htmlFor="rbx-user" className="sr-only">Roblox username</Label>
-                    <Input
-                      id="rbx-user"
-                      value={robloxUsername}
-                      onChange={(e) => setRobloxUsername(e.target.value)}
-                      placeholder="Your Roblox username"
-                      className="bg-slate-950/50 border-white/15 text-white placeholder:text-slate-500 h-11"
-                      onKeyDown={(e) => e.key === 'Enter' && saveUsername()}
-                    />
-                  </div>
-                  <Button
-                    onClick={saveUsername}
-                    disabled={!robloxUsername.trim() || saving}
-                    className="h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-                  >
-                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Link account
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <VerifyAccount onVerified={handleVerified} />
         ) : (
           <>
             {/* Status bar */}
@@ -140,7 +96,7 @@ export default function Portal() {
               <div className="flex items-center gap-2.5 text-sm">
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                   <User className="h-3.5 w-3.5 text-cyan-400" />
-                  <span className="text-slate-300">Playing as</span>
+                  <span className="text-slate-300">Verified as</span>
                   <span className="font-semibold text-white">{savedUsername}</span>
                 </span>
                 <span className="text-slate-500 text-xs">
