@@ -13,7 +13,8 @@ import NotificationsBell from '@/components/moderations/NotificationsBell';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import DevSandbox from '@/components/moderations/DevSandbox';
-import { sendAppealWebhook } from '@/lib/discordWebhook';
+import BugBounty from '@/components/portal/BugBounty';
+import WallOfShame from '@/components/portal/WallOfShame';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -85,12 +86,12 @@ export default function Portal() {
       appeal_reason: reason,
       status: 'Pending',
     });
-    sendAppealWebhook({
+    base44.functions.invoke('sendAppealWebhook', {
       username: savedUsername,
       moderationType: activeModeration?.moderation_type,
       reason,
       appealId: created?.id,
-    });
+    }).catch(() => {});
     await loadData(savedUsername);
   };
 
