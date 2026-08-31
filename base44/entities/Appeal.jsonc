@@ -27,7 +27,16 @@
     },
     "staff_response": {
       "type": "string",
-      "description": "Optional response from the staff team reviewing the appeal"
+      "description": "Optional response from the staff team reviewing the appeal, shown to the player"
+    },
+    "internal_notes": {
+      "type": "string",
+      "description": "Private notes shared between staff only, never shown to the player"
+    },
+    "can_reappeal": {
+      "type": "boolean",
+      "description": "Whether the player may submit a new appeal after this one is denied",
+      "default": true
     }
   },
   "required": [

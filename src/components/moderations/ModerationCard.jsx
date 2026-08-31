@@ -11,7 +11,7 @@ const typeStyles = {
 };
 
 const statusStyles = {
-  Active: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+  Active: 'bg-rose-500/15 text-rose-300 border-rose-500/30 animate-pulse-slow',
   Expired: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
   Repealed: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
 };
@@ -29,6 +29,9 @@ export default function ModerationCard({ moderation, appeal, onAppeal }) {
     : '—';
 
   const a = appeal ? appealBadge[appeal.status] : null;
+  const isDenied = appeal?.status === 'Denied';
+  const canReappeal = appeal ? appeal.can_reappeal !== false : true;
+  const awaiting = appeal?.status === 'Pending' || appeal?.status === 'Under Review';
 
   return (
     <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 hover:border-white/20 transition-colors">
@@ -64,24 +67,38 @@ export default function ModerationCard({ moderation, appeal, onAppeal }) {
         {moderation.staff_member && <span className="flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> by {moderation.staff_member}</span>}
       </div>
 
-      <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between gap-3">
-        {a ? (
-          <Badge variant="outline" className={`text-xs border ${a.cls}`}>
-            <a.icon className="h-3 w-3 mr-1" /> {a.label}
-          </Badge>
-        ) : (
-          <span className="text-xs text-slate-500">No appeal submitted yet</span>
-        )}
-        {appeal ? (
-          appeal.staff_response ? (
-            <span className="text-xs text-slate-400 italic line-clamp-1">“{appeal.staff_response}”</span>
+      <div className="mt-5 pt-4 border-t border-white/5 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {a ? (
+            <div>
+              <Badge variant="outline" className={`text-xs border ${a.cls}`}>
+                <a.icon className="h-3 w-3 mr-1" /> {a.label}
+              </Badge>
+              {awaiting && (
+                <p className="mt-1.5 text-[11px] text-slate-500">Estimated response: 12-24 hours.</p>
+              )}
+            </div>
           ) : (
-            <span className="text-xs text-slate-500">Awaiting staff response</span>
-          )
-        ) : (
-          <Button size="sm" onClick={onAppeal} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
-            Appeal this
-          </Button>
+            <span className="text-xs text-slate-500">No appeal submitted yet</span>
+          )}
+
+          {!appeal && (
+            <Button size="sm" onClick={onAppeal} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
+              Appeal this
+            </Button>
+          )}
+          {isDenied && canReappeal && (
+            <Button size="sm" onClick={onAppeal} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
+              Appeal again
+            </Button>
+          )}
+          {isDenied && !canReappeal && (
+            <span className="text-xs text-rose-400/80">Not eligible for re-appeal</span>
+          )}
+        </div>
+
+        {appeal?.staff_response && !awaiting && (
+          <p className="text-xs text-slate-400 italic line-clamp-2">“{appeal.staff_response}”</p>
         )}
       </div>
     </div>

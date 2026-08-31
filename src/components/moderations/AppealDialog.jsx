@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ShieldAlert, Calendar, Clock, UserCog } from 'lucide-react';
 
 const MIN_CHARS = 20;
+const MAX_CHARS = 500;
 
 export default function AppealDialog({ open, onClose, moderation, robloxUsername, onSubmit }) {
   const [reason, setReason] = useState('');
@@ -34,7 +35,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
 
   const count = reason.trim().length;
   const tooShort = count > 0 && count < MIN_CHARS;
-  const canSubmit = count >= MIN_CHARS && !submitting;
+  const canSubmit = count >= MIN_CHARS && count <= MAX_CHARS && !submitting;
 
   const meta = [
     moderation?.moderation_date && { icon: Calendar, label: new Date(moderation.moderation_date).toLocaleDateString() },
@@ -82,7 +83,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
             <div className="flex items-center justify-between">
               <label htmlFor="appeal-reason" className="text-sm font-medium text-white">Your appeal</label>
               <span className={`text-xs ${tooShort ? 'text-amber-400' : count >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {count}{count >= MIN_CHARS ? '' : `/${MIN_CHARS}`}
+                {count}/{MAX_CHARS}
               </span>
             </div>
             <Textarea
@@ -94,6 +95,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
                 if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit();
               }}
               placeholder="Tell us what happened, why the decision should be reconsidered, or any context the staff may have missed…"
+              maxLength={MAX_CHARS}
               rows={6}
               className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
             />
