@@ -1,0 +1,58 @@
+{
+  "name": "Moderation",
+  "type": "object",
+  "properties": {
+    "roblox_username": {
+      "type": "string",
+      "description": "The Roblox username of the player who was moderated"
+    },
+    "moderation_type": {
+      "type": "string",
+      "description": "The kind of moderation action taken",
+      "enum": [
+        "Warning",
+        "Mute",
+        "Kick",
+        "Temporary Ban",
+        "Permanent Ban"
+      ],
+      "default": "Warning"
+    },
+    "reason": {
+      "type": "string",
+      "description": "The short reason for the moderation"
+    },
+    "details": {
+      "type": "string",
+      "description": "Additional context about what happened"
+    },
+    "moderation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the moderation was issued in-game"
+    },
+    "duration": {
+      "type": "string",
+      "description": "How long the moderation lasts, e.g. 24h, 7d, Permanent"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current state of the moderation",
+      "enum": [
+        "Active",
+        "Expired",
+        "Repealed"
+      ],
+      "default": "Active"
+    },
+    "staff_member": {
+      "type": "string",
+      "description": "The in-game staff member who issued the moderation"
+    }
+  },
+  "required": [
+    "roblox_username",
+    "moderation_type",
+    "reason"
+  ]
+}
