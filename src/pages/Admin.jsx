@@ -37,12 +37,12 @@ export default function Admin() {
         <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
 
         <Tabs defaultValue="appeals" className="mt-8">
-          <TabsList className="bg-white/5 border border-white/10 h-10">
-            <TabsTrigger value="appeals" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
-            <TabsTrigger value="moderations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
-            <TabsTrigger value="logs" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>
-            <TabsTrigger value="bugs" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Bug Reports</TabsTrigger>
+          <TabsList className="flex w-full overflow-x-auto bg-white/5 border border-white/10 h-10">
+            <TabsTrigger value="appeals" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
+            <TabsTrigger value="moderations" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
+            <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
+            <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>
+            <TabsTrigger value="bugs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Bug Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
