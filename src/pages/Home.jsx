@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Waves, Users, Heart, Gamepad2, ArrowRight, LogIn, Trophy,
-  Zap, Footprints, RefreshCw, Building2, ShieldCheck, Clock,
+  Zap, Footprints, RefreshCw, Building2, ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -21,19 +21,19 @@ const GAME = {
 };
 
 const features = [
-  { icon: Footprints, title: 'Sprint Through Chaos', text: 'Dash across the map and collect your favorite Developers before the wave hits.' },
-  { icon: Waves, title: 'Dodge the Tsunamis', text: 'Tower-high waves sweep the arena — read the warning and run to high ground.' },
-  { icon: Zap, title: 'Upgrade & Earn', text: 'Power up your Developers and your Speed to stack cash faster every round.' },
-  { icon: RefreshCw, title: 'Rebirth for More', text: 'Rebirth to reset progress and multiply your earnings for the long run.' },
-  { icon: Building2, title: 'Expand Your Base', text: 'Unlock extra slots and build out your base with more Developers at once.' },
-  { icon: Trophy, title: 'Climb the Leaderboards', text: 'Compete with other players and prove you are the top survivor.' },
+  { icon: Footprints, title: 'Outrun the Wave', text: 'Grab your favorite Developers and bolt for high ground before the tsunami rolls in.' },
+  { icon: Waves, title: 'Read the Water', text: 'Tower-high waves sweep the arena with seconds of warning. Watch the signs, pick a lane, and don\'t look back.' },
+  { icon: Zap, title: 'Build Your Empire', text: 'Stack speed and power up your Developers so the cash piles up faster every single round.' },
+  { icon: RefreshCw, title: 'Break the Limit', text: 'Hit a wall? Rebirth to wipe the slate and come back stronger with a permanent earnings boost.' },
+  { icon: Building2, title: 'Grow Your Roster', text: 'Unlock extra slots and run more Developers at once — your base keeps earning even while you\'re offline.' },
+  { icon: Trophy, title: 'Claim the Crown', text: 'Out-survive the whole server and etch your name at the top of the leaderboard.' },
 ];
 
 const stats = [
   { icon: Users, label: 'Total Visits', value: GAME.visits.toLocaleString() },
   { icon: Heart, label: 'Favorites', value: GAME.favorites.toLocaleString() },
   { icon: Gamepad2, label: 'Max Players', value: GAME.maxPlayers },
-  { icon: Clock, label: 'Released', value: 'Aug 2026' },
+  { icon: ShieldCheck, label: 'Status', value: 'Live' },
 ];
 
 const fade = {
@@ -154,7 +154,7 @@ export default function Home() {
               <motion.div
                 key={f.title}
                 variants={fade} custom={i} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-60px' }}
-                className="group rounded-2xl bg-white/[0.03] border border-white/10 p-6 hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all"
+                className="group rounded-2xl bg-white/[0.05] border border-white/15 p-6 shadow-lg shadow-cyan-950/40 hover:border-cyan-500/40 hover:bg-white/[0.07] hover:shadow-cyan-500/10 transition-all"
               >
                 <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <f.icon className="h-5 w-5 text-cyan-300" />

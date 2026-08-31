@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Gavel, Lock, FileText } from 'lucide-react';
+import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
 
@@ -88,7 +88,12 @@ export default function AppealsTab() {
     return <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading appeals…</div>;
   }
   if (!appeals.length) {
-    return <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400">No appeals submitted yet.</div>;
+    return (
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center">
+        <CheckCircle2 className="h-7 w-7 mx-auto mb-2 text-emerald-400/70" />
+        <div className="text-sm text-slate-300">All caught up! No pending appeals right now.</div>
+      </div>
+    );
   }
 
   return (

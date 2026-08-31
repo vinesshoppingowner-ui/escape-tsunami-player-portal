@@ -49,7 +49,7 @@ export default function BugReportsTab() {
   };
 
   if (loading) return <div className="flex justify-center py-16 text-slate-400"><Loader2 className="h-6 w-6 animate-spin" /></div>;
-  if (!reports.length) return <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400"><Bug className="h-7 w-7 mx-auto mb-2 text-slate-600" />No bug reports submitted yet.</div>;
+  if (!reports.length) return <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400"><Bug className="h-7 w-7 mx-auto mb-2 text-slate-600" />No bug reports yet — player submissions will show up here.</div>;
 
   return (
     <div className="space-y-2">

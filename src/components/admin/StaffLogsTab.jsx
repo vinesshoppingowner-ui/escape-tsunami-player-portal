@@ -30,7 +30,7 @@ export default function StaffLogsTab() {
     return (
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400">
         <ScrollText className="h-7 w-7 mx-auto mb-2 text-slate-600" />
-        No staff activity logged yet.
+        Nothing here yet — staff actions will show up here as they happen.
       </div>
     );
   }

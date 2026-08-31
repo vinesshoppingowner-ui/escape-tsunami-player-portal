@@ -44,7 +44,7 @@ export default function AccountStanding({ moderations = [] }) {
   }[color];
 
   return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <Icon className={`h-5 w-5 ${iconCls}`} />
@@ -58,13 +58,13 @@ export default function AccountStanding({ moderations = [] }) {
         <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${badgeCls}`}>{level}</span>
       </div>
 
-      <div className="mt-4 relative h-2.5 rounded-full bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500">
+      <div className="mt-3 relative h-2 rounded-full bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500">
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-white border-2 border-slate-950 shadow-lg transition-all duration-500"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-white border-2 border-slate-950 shadow-lg transition-all duration-500"
           style={{ left: `${markerLeft}%` }}
         />
       </div>
-      <div className="mt-2 flex justify-between text-[10px] uppercase tracking-wide text-slate-500">
+      <div className="mt-1.5 flex justify-between text-[10px] uppercase tracking-wide text-slate-500">
         <span>Good</span>
         <span>Warning</span>
         <span>At Risk</span>

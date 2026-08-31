@@ -24,7 +24,8 @@ export default function UsersTab() {
     setSavingId(u.id);
     try {
       await base44.entities.User.update(u.id, { role });
-      await logStaffAction(user, 'user_role_changed', u.email, `Set ${u.email} to ${role}`);
+      const handle = u.full_name || u.email.split('@')[0];
+    await logStaffAction(user, 'user_role_changed', handle, `Set ${handle} to ${role}`);
       await load();
     } finally {
       setSavingId(null);
@@ -42,8 +43,8 @@ export default function UsersTab() {
         {users.map((u) => (
           <div key={u.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
             <div className="min-w-0">
-              <div className="text-sm text-white truncate">{u.email}</div>
-              <div className="text-xs text-slate-500">{u.full_name || '—'}</div>
+              <div className="text-sm text-white truncate">{u.full_name || u.email.split('@')[0]}</div>
+              <div className="text-xs text-slate-500 truncate">@{u.email.split('@')[0]}</div>
             </div>
             <div className="flex items-center gap-2">
               {u.role === 'admin' ? (
