@@ -8,6 +8,7 @@ import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
 import ModerationCard from '@/components/moderations/ModerationCard';
 import AppealDialog from '@/components/moderations/AppealDialog';
+import AppealHistory from '@/components/moderations/AppealHistory';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -148,6 +149,8 @@ export default function Portal() {
                 </div>
               )}
             </div>
+
+            <AppealHistory appeals={appeals} moderations={moderations} />
           </>
         )}
       </main>

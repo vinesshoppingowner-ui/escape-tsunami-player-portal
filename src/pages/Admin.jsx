@@ -1,0 +1,50 @@
+import { useAuth } from '@/lib/AuthContext';
+import SiteNav from '@/components/SiteNav';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ShieldAlert } from 'lucide-react';
+import AppealsTab from '@/components/admin/AppealsTab';
+import ModerationsTab from '@/components/admin/ModerationsTab';
+import UsersTab from '@/components/admin/UsersTab';
+
+export default function Admin() {
+  const { user } = useAuth();
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <SiteNav />
+        <main className="max-w-3xl mx-auto px-5 pt-28 pb-20 text-center">
+          <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="h-7 w-7 text-rose-400" />
+          </div>
+          <h1 className="font-display text-2xl font-bold">Staff only</h1>
+          <p className="mt-2 text-slate-400">You need an admin account to access the staff dashboard.</p>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white">
+      <SiteNav />
+      <main className="max-w-5xl mx-auto px-5 pt-28 pb-20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-medium text-rose-300 mb-4">
+          <ShieldAlert className="h-3.5 w-3.5" /> Staff Dashboard
+        </div>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation console</h1>
+        <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
+
+        <Tabs defaultValue="appeals" className="mt-8">
+          <TabsList className="bg-white/5 border border-white/10 h-10">
+            <TabsTrigger value="appeals" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
+            <TabsTrigger value="moderations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
+          </TabsList>
+          <TabsContent value="appeals"><AppealsTab /></TabsContent>
+          <TabsContent value="moderations"><ModerationsTab /></TabsContent>
+          <TabsContent value="users"><UsersTab /></TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
