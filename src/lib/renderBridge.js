@@ -1,5 +1,5 @@
 // Replace with your Render server URL after deploying
-const RENDER_SERVER_URL = "https://YOUR-RENDER-APP.onrender.com";
+const RENDER_SERVER_URL = "https://escape-tsunami-bans.onrender.com";
 
 export async function pushBan(moderation) {
   try {
