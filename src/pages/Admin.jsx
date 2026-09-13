@@ -6,7 +6,6 @@ import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
 import UsersTab from '@/components/admin/UsersTab';
 import StaffLogsTab from '@/components/admin/StaffLogsTab';
-import DownloadsTab from '@/components/admin/DownloadsTab';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -42,13 +41,11 @@ export default function Admin() {
             <TabsTrigger value="moderations" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
             <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
             <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>
-            <TabsTrigger value="downloads" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Downloads</TabsTrigger>
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           <TabsContent value="users"><UsersTab /></TabsContent>
           <TabsContent value="logs"><StaffLogsTab /></TabsContent>
-          <TabsContent value="downloads"><DownloadsTab /></TabsContent>
         </Tabs>
       </main>
     </div>
