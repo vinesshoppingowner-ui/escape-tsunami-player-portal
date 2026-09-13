@@ -1,0 +1,26 @@
+{
+  "name": "StaffResource",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the downloadable file"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this file is, shown to staff on the download card"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Public URL where the file can be downloaded from"
+    },
+    "version": {
+      "type": "string",
+      "description": "Optional version label for the resource"
+    }
+  },
+  "required": [
+    "name",
+    "file_url"
+  ]
+}
