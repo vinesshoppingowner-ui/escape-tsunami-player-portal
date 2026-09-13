@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
-import { pushBan, syncAllBans } from '@/lib/renderBridge';
+import { pushBan, pushUnban, syncAllBans } from '@/lib/renderBridge';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -73,6 +73,9 @@ export default function ModerationsTab() {
 
   const remove = async (m) => {
     await base44.entities.Moderation.delete(m.id);
+    if (m.moderation_type === 'Permanent Ban' || m.moderation_type === 'Temporary Ban') {
+      await pushUnban(m.roblox_username);
+    }
     await logStaffAction(user, 'moderation_deleted', m.roblox_username, `Deleted ${m.moderation_type} — ${m.reason}`);
     await load();
   };
