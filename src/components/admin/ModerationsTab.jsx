@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Plus, Trash2, Gavel, Copy, Search } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import { sendModerationToGame, sendUnbanToGame } from '@/lib/gameBridge';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -32,6 +33,7 @@ export default function ModerationsTab() {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [query, setQuery] = useState('');
+  const [gameStatus, setGameStatus] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -56,6 +58,19 @@ export default function ModerationsTab() {
         read: false,
       });
       await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
+
+      // Send the command to the Roblox game via the Render server bridge
+      const gameRes = await sendModerationToGame({
+        username: form.roblox_username,
+        type: form.moderation_type,
+        reason: form.reason,
+        duration: form.duration,
+        admin: form.staff_member || user?.full_name || 'Staff Admin',
+      });
+      setGameStatus(gameRes?.ok
+        ? { ok: true, msg: `✅ Sent to game (UserID ${gameRes.userId})` }
+        : { ok: false, msg: `⚠️ Game sync failed: ${gameRes?.error || 'unknown error'}` });
+
       setForm(empty);
       setShowForm(false);
       await load();
@@ -67,6 +82,13 @@ export default function ModerationsTab() {
   const remove = async (m) => {
     await base44.entities.Moderation.delete(m.id);
     await logStaffAction(user, 'moderation_deleted', m.roblox_username, `Deleted ${m.moderation_type} — ${m.reason}`);
+    // If it was an active ban, unban the player in-game too
+    if (m.moderation_type?.includes('Ban') && m.status === 'Active') {
+      const unbanRes = await sendUnbanToGame(m.roblox_username);
+      setGameStatus(unbanRes?.ok
+        ? { ok: true, msg: `✅ Unbanned in game (UserID ${unbanRes.userId})` }
+        : { ok: false, msg: `⚠️ Unban sync failed: ${unbanRes?.error || 'unknown error'}` });
+    }
     await load();
   };
 
@@ -110,7 +132,12 @@ export default function ModerationsTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-slate-400">{list.length} moderation{list.length !== 1 ? 's' : ''} on record.</p>
+        <div>
+          <p className="text-sm text-slate-400">{list.length} moderation{list.length !== 1 ? 's' : ''} on record.</p>
+          {gameStatus && (
+            <p className={`text-xs mt-1 ${gameStatus.ok ? 'text-emerald-400' : 'text-amber-400'}`}>{gameStatus.msg}</p>
+          )}
+        </div>
         <Button
           size="sm"
           onClick={() => setShowForm((s) => !s)}
