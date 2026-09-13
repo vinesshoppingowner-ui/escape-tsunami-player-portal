@@ -47,7 +47,9 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <>
-      {isDesktopApp && <DesktopSplashScreen />}
+      {(isDesktopApp || new URLSearchParams(window.location.search).has('splash')) && (
+        <DesktopSplashScreen forceShow={!isDesktopApp} />
+      )}
       <DesktopNotifications isDesktopApp={isDesktopApp} />
       <Routes>
         {/* Add your page Route elements here */}

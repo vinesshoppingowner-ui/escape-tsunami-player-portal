@@ -6,7 +6,7 @@ import { Waves } from 'lucide-react';
  * Branded splash screen shown only when the app launches as an installed
  * desktop application. Fades out after the app is ready.
  */
-export default function DesktopSplashScreen() {
+export default function DesktopSplashScreen({ forceShow = false }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
