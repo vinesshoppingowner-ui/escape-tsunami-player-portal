@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Gavel, Copy, Search } from 'lucide-react';
+import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import { pushBan, syncAllBans } from '@/lib/renderBridge';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -32,6 +33,7 @@ export default function ModerationsTab() {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [query, setQuery] = useState('');
+  const [syncing, setSyncing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -57,6 +59,10 @@ export default function ModerationsTab() {
       });
       await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
 
+      if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
+        await pushBan(form);
+      }
+
       setForm(empty);
       setShowForm(false);
       await load();
@@ -69,6 +75,15 @@ export default function ModerationsTab() {
     await base44.entities.Moderation.delete(m.id);
     await logStaffAction(user, 'moderation_deleted', m.roblox_username, `Deleted ${m.moderation_type} — ${m.reason}`);
     await load();
+  };
+
+  const syncBans = async () => {
+    setSyncing(true);
+    try {
+      await syncAllBans(list);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const copyForDiscord = () => {
@@ -112,13 +127,24 @@ export default function ModerationsTab() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-400">{list.length} moderation{list.length !== 1 ? 's' : ''} on record.</p>
-        <Button
-          size="sm"
-          onClick={() => setShowForm((s) => !s)}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-        >
-          <Plus className="h-4 w-4 mr-1.5" /> {showForm ? 'Cancel' : 'New moderation'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={syncBans}
+            disabled={syncing}
+            className="bg-white/5 border-white/15 text-white hover:bg-white/10"
+          >
+            <RefreshCw className={`h-4 w-4 mr-1.5 ${syncing ? 'animate-spin' : ''}`} /> Sync bans to game
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowForm((s) => !s)}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
+          >
+            <Plus className="h-4 w-4 mr-1.5" /> {showForm ? 'Cancel' : 'New moderation'}
+          </Button>
+        </div>
       </div>
 
       <div className="relative mb-4">
