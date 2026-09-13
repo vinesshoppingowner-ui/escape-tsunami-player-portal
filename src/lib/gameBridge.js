@@ -92,9 +92,10 @@ export async function sendModerationToGame({ username, type, reason, duration, a
         caseId: '#CASE-' + Math.floor(10000 + Math.random() * 89999),
       }),
     });
-    return { ok: res.ok, userId };
+    if (!res.ok) return { ok: false, userId, error: `Render server returned ${res.status} ${res.statusText}` };
+    return { ok: true, userId };
   } catch (e) {
-    return { ok: false, error: e.message };
+    return { ok: false, error: `Cannot reach Render server (${e.message || 'network error'})` };
   }
 }
 
@@ -118,8 +119,9 @@ export async function sendUnbanToGame(username) {
         username,
       }),
     });
-    return { ok: res.ok, userId };
+    if (!res.ok) return { ok: false, userId, error: `Render server returned ${res.status} ${res.statusText}` };
+    return { ok: true, userId };
   } catch (e) {
-    return { ok: false, error: e.message };
+    return { ok: false, error: `Cannot reach Render server (${e.message || 'network error'})` };
   }
 }
