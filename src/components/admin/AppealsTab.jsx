@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
-import { sendUnbanToGame } from '@/lib/gameBridge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
@@ -70,10 +69,6 @@ export default function AppealsTab() {
       });
       if (draft.status === 'Approved' && mod && mod.status !== 'Repealed') {
         await base44.entities.Moderation.update(mod.id, { status: 'Repealed' });
-        // If it was a ban, unban the player in-game too
-        if (mod.moderation_type?.includes('Ban')) {
-          await sendUnbanToGame(appeal.roblox_username);
-        }
       }
       await base44.entities.Notification.create({
         roblox_username: appeal.roblox_username,
