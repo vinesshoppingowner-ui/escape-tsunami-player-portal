@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { pushBan, pushUnban, syncAllBans } from '@/lib/renderBridge';
+import { useToast } from '@/components/ui/use-toast';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -27,6 +28,7 @@ const empty = {
 
 export default function ModerationsTab() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(empty);
@@ -60,7 +62,12 @@ export default function ModerationsTab() {
       await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
 
       if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
-        await pushBan(form);
+        try {
+          await pushBan(form);
+          toast({ title: 'Ban pushed to game server', description: `${form.roblox_username} is now banned in-game.` });
+        } catch (e) {
+          toast({ variant: 'destructive', title: 'Failed to push ban to game', description: e.message });
+        }
       }
 
       setForm(empty);
@@ -74,7 +81,12 @@ export default function ModerationsTab() {
   const remove = async (m) => {
     await base44.entities.Moderation.delete(m.id);
     if (m.moderation_type === 'Permanent Ban' || m.moderation_type === 'Temporary Ban') {
-      await pushUnban(m.roblox_username);
+      try {
+        await pushUnban(m.roblox_username);
+        toast({ title: 'Unban pushed to game server', description: `${m.roblox_username} is now unbanned in-game.` });
+      } catch (e) {
+        toast({ variant: 'destructive', title: 'Failed to push unban to game', description: e.message });
+      }
     }
     await logStaffAction(user, 'moderation_deleted', m.roblox_username, `Deleted ${m.moderation_type} — ${m.reason}`);
     await load();
@@ -84,6 +96,9 @@ export default function ModerationsTab() {
     setSyncing(true);
     try {
       await syncAllBans(list);
+      toast({ title: 'Bans synced to game server' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Sync failed', description: e.message });
     } finally {
       setSyncing(false);
     }
