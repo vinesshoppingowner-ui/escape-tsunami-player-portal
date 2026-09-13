@@ -1,7 +1,8 @@
 --[[
 	Escape Tsunami — MAIN GAME Teleport Script
 	Put this in ServerScriptService of your MAIN game (NOT Ban Land).
-	Checks the Render server when a player joins and teleports them to Ban Land if banned.
+	Checks the Render server when a player joins AND polls every 15 seconds
+	so players banned mid-session also get teleported.
 ]]
 
 local HttpService = game:GetService("HttpService")
@@ -37,18 +38,11 @@ local function checkBanStatus(username)
 	return data
 end
 
-Players.PlayerAdded:Connect(function(player)
-	task.wait(3) -- give the player a moment to load
-
+local function teleportIfBanned(player)
 	if teleporting[player.UserId] then return end
+	if not player:IsDescendantOf(Players) then return end
 
 	local data = checkBanStatus(player.Name)
-
-	-- Retry once (Render cold start)
-	if not data then
-		task.wait(4)
-		data = checkBanStatus(player.Name)
-	end
 
 	if data and data.banned == true then
 		print("[BanCheck] " .. player.Name .. " is banned — teleporting to Ban Land")
@@ -62,11 +56,24 @@ Players.PlayerAdded:Connect(function(player)
 			warn("[BanCheck] Teleport failed for " .. player.Name .. ": " .. tostring(err))
 			teleporting[player.UserId] = nil
 		end
-	else
-		print("[BanCheck] " .. player.Name .. " is not banned")
 	end
+end
+
+-- Check on join
+Players.PlayerAdded:Connect(function(player)
+	task.wait(3)
+	teleportIfBanned(player)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
 	teleporting[player.UserId] = nil
+end)
+
+-- Poll all connected players every 15 seconds for mid-session bans
+task.spawn(function()
+	while task.wait(15) do
+		for _, player in ipairs(Players:GetPlayers()) do
+			teleportIfBanned(player)
+		end
+	end
 end)
