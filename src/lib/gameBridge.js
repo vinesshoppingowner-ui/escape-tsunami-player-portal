@@ -2,24 +2,26 @@
 // The Render server receives moderation commands here and relays them to all
 // Roblox game servers via Roblox Open Cloud MessagingService API.
 
-const ROXY_USERS = 'https://users.roproxy.com/v1/usernames/users';
+const ROXY_SEARCH = 'https://users.roproxy.com/v1/users/search';
 const RENDER_MODERATE_URL = 'https://etfd.onrender.com/api/roblox/moderate';
 const SERVER_SECRET = 'ETFD23';
 
 /**
  * Resolve a Roblox username to a numeric user ID via RoProxy.
+ * Uses the GET search endpoint (same one RobloxAvatar uses) to avoid CORS
+ * preflight issues that the POST usernames endpoint triggers in browsers.
  */
 export async function resolveUserId(username) {
   if (!username) return null;
   try {
-    const res = await fetch(ROXY_USERS, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
-    });
+    const res = await fetch(`${ROXY_SEARCH}?keyword=${encodeURIComponent(username)}`);
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.data?.[0]?.id || null;
+    const match = (data?.data || []).find(
+      (u) => (u.name || '').toLowerCase() === username.toLowerCase()
+        || (u.displayName || '').toLowerCase() === username.toLowerCase()
+    );
+    return match?.id || null;
   } catch {
     return null;
   }
