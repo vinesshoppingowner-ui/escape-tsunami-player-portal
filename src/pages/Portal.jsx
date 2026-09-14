@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, User, LogOut, RefreshCw } from 'lucide-react';
+import { Loader2, ShieldCheck, User, LogOut, RefreshCw, LogIn, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
 import ModerationCard from '@/components/moderations/ModerationCard';
@@ -70,7 +71,9 @@ export default function Portal() {
 
   const handleVerified = async (username) => {
     setSavedUsername(username);
-    try { await base44.auth.updateMe({ roblox_username: username }); } catch {}
+    if (user) {
+      try { await base44.auth.updateMe({ roblox_username: username }); } catch {}
+    }
   };
 
   const appealFor = (moderationId) => appeals.find((a) => a.moderation_id === moderationId);
@@ -114,6 +117,31 @@ export default function Portal() {
           <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
         </motion.div>
 
+        {/* Guest sign-in banner */}
+        {!user && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="mt-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-cyan-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+          >
+            <div className="h-10 w-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-cyan-300" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-white text-sm">Browsing as guest</h3>
+              <p className="mt-0.5 text-sm text-slate-400">
+                You can verify your Roblox account and view your moderations without signing in. Sign in to save your profile, get notifications when your appeals are answered, and unlock more.
+              </p>
+            </div>
+            <Link to="/login">
+              <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0 shrink-0">
+                <LogIn className="h-4 w-4 mr-1.5" /> Sign in
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+
         {/* Verification / records */}
         {!savedUsername ? (
           <VerifyAccount onVerified={handleVerified} />
@@ -152,9 +180,11 @@ export default function Portal() {
                 <Button size="sm" variant="ghost" onClick={refresh} className="text-slate-300 hover:text-white hover:bg-white/10">
                   <RefreshCw className="h-4 w-4 mr-1.5" /> Refresh
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => logout()} className="text-slate-300 hover:text-white hover:bg-white/10">
-                  <LogOut className="h-4 w-4 mr-1.5" /> Sign out
-                </Button>
+                {user && (
+                  <Button size="sm" variant="ghost" onClick={() => logout()} className="text-slate-300 hover:text-white hover:bg-white/10">
+                    <LogOut className="h-4 w-4 mr-1.5" /> Sign out
+                  </Button>
+                )}
               </div>
             </div>
 
