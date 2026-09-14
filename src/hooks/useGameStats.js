@@ -34,7 +34,7 @@ export function useGameStats() {
         if (active && data) {
           setStats({
             visits: data.visits || 0,
-            favorites: data.likes || 0,
+            favorites: data.favoritedCount ?? data.likes ?? 0,
             playing: data.playing || 0,
             maxPlayers: data.maxPlayers || 0,
             name: data.name,
