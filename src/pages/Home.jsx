@@ -2,11 +2,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Waves, Users, Heart, Gamepad2, ArrowRight, LogIn, Trophy,
-  Zap, Footprints, RefreshCw, Building2, ShieldCheck,
+  Zap, Footprints, RefreshCw, Building2, ShieldCheck, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import SiteNav from '@/components/SiteNav';
+import { useGameStats } from '@/hooks/useGameStats';
 
 const GAME = {
   name: 'Escape Tsunami For Developers',
@@ -14,10 +15,6 @@ const GAME = {
   url: 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers',
   group: 'https://www.roblox.com/communities/33513762',
   creator: 'Waitrose Shopping',
-  visits: 269,
-  favorites: 3,
-  maxPlayers: 50,
-  created: 'August 17, 2026',
 };
 
 const features = [
@@ -29,19 +26,30 @@ const features = [
   { icon: Trophy, title: 'Claim the Crown', text: 'Out-survive the whole server and etch your name at the top of the leaderboard.' },
 ];
 
-const stats = [
-  { icon: Users, label: 'Total Visits', value: GAME.visits.toLocaleString() },
-  { icon: Heart, label: 'Favorites', value: GAME.favorites.toLocaleString() },
-  { icon: Gamepad2, label: 'Max Players', value: GAME.maxPlayers },
-  { icon: ShieldCheck, label: 'Status', value: 'Live' },
-];
-
 const fade = {
   hidden: { opacity: 0, y: 24 },
   show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.08, ease: 'easeOut' } }),
 };
 
 export default function Home() {
+  const { stats: live, loading: statsLoading } = useGameStats();
+
+  const fmt = (n) => {
+    if (n == null) return '—';
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return n.toLocaleString();
+  };
+
+  const stats = [
+    { icon: Users, label: 'Total Visits', value: statsLoading ? '—' : fmt(live?.visits) },
+    { icon: Heart, label: 'Favorites', value: statsLoading ? '—' : fmt(live?.favorites) },
+    { icon: Gamepad2, label: 'Playing Now', value: statsLoading ? '—' : (live?.playing ?? 0) },
+    { icon: ShieldCheck, label: 'Status', value: 'Live' },
+  ];
+
+  const favorites = live?.favorites ?? 0;
+
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden">
       <SiteNav />
@@ -96,14 +104,23 @@ export default function Home() {
               </Link>
             </motion.div>
 
-            <motion.div variants={fade} custom={4} initial="hidden" animate="show" className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {stats.map((s) => (
-                <div key={s.label} className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3.5 backdrop-blur-sm">
-                  <s.icon className="h-4 w-4 text-cyan-400 mb-2" />
-                  <div className="text-xl font-semibold text-white">{s.value}</div>
-                  <div className="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">{s.label}</div>
-                </div>
-              ))}
+            <motion.div variants={fade} custom={4} initial="hidden" animate="show" className="mt-10">
+              <div className="flex items-center gap-2 mb-2.5 text-[11px] text-cyan-400/80">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+                </span>
+                Synced live from Roblox
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {stats.map((s) => (
+                  <div key={s.label} className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3.5 backdrop-blur-sm">
+                    <s.icon className="h-4 w-4 text-cyan-400 mb-2" />
+                    <div className="text-xl font-semibold text-white">{s.value}</div>
+                    <div className="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">{s.label}</div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
 
@@ -131,8 +148,12 @@ export default function Home() {
             </div>
             <div className="absolute -bottom-3 -right-3 rounded-2xl bg-slate-900 border border-white/10 px-4 py-2.5 shadow-xl">
               <div className="flex items-center gap-2 text-sm">
-                <Heart className="h-4 w-4 text-rose-400 fill-rose-400" />
-                <span className="font-semibold text-white">{GAME.favorites}</span>
+                {statsLoading ? (
+                  <Loader2 className="h-4 w-4 text-rose-400 animate-spin" />
+                ) : (
+                  <Heart className="h-4 w-4 text-rose-400 fill-rose-400" />
+                )}
+                <span className="font-semibold text-white">{statsLoading ? '…' : favorites}</span>
                 <span className="text-slate-400">favorites</span>
               </div>
             </div>
