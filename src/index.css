@@ -93,11 +93,11 @@
 
 /* ===== Seasonal Themes ===== */
 
-/* ---- Winter ---- */
+/* ---- Winter — Frozen Tsunami ---- */
 [data-season="winter"] {
-  --background: 215 30% 5%;
-  --card: 215 25% 7%;
-  --popover: 215 25% 7%;
+  --background: 215 35% 4%;
+  --card: 215 28% 6%;
+  --popover: 215 28% 6%;
 }
 
 /* Winter: text colors → icy blue */
@@ -106,60 +106,153 @@
 [data-season="winter"] .text-cyan-300\/80 { color: rgba(165, 216, 255, 0.8); }
 [data-season="winter"] .text-cyan-400 { color: #74c0fc; }
 [data-season="winter"] .text-cyan-400\/70 { color: rgba(116, 192, 252, 0.7); }
+[data-season="winter"] .text-cyan-400\/80 { color: rgba(116, 192, 252, 0.8); }
 [data-season="winter"] .text-cyan-500 { color: #4dabf7; }
+[data-season="winter"] .text-sky-400 { color: #4dabf7; }
+[data-season="winter"] .hover\:text-cyan-300:hover { color: #a5d8ff; }
 
 /* Winter: backgrounds → ice blue */
+[data-season="winter"] .bg-cyan-400 { background-color: #4dabf7; }
 [data-season="winter"] .bg-cyan-500 { background-color: #4dabf7; }
 [data-season="winter"] .bg-cyan-500\/10 { background-color: rgba(77, 171, 247, 0.1); }
 [data-season="winter"] .bg-cyan-500\/15 { background-color: rgba(77, 171, 247, 0.15); }
 [data-season="winter"] .bg-cyan-500\/20 { background-color: rgba(77, 171, 247, 0.2); }
 [data-season="winter"] .bg-blue-600\/15 { background-color: rgba(28, 126, 214, 0.15); }
+[data-season="winter"] .bg-blue-600\/20 { background-color: rgba(28, 126, 214, 0.2); }
 
 /* Winter: borders → frosty blue */
 [data-season="winter"] .border-cyan-500\/20 { border-color: rgba(77, 171, 247, 0.2); }
 [data-season="winter"] .border-cyan-500\/30 { border-color: rgba(77, 171, 247, 0.3); }
 [data-season="winter"] .border-cyan-400\/50 { border-color: rgba(116, 192, 252, 0.5); }
 [data-season="winter"] .border-cyan-400\/60 { border-color: rgba(116, 192, 252, 0.6); }
+[data-season="winter"] .hover\:border-cyan-500\/40:hover { border-color: rgba(77, 171, 247, 0.4); }
 
 /* Winter: shadows → icy glow */
+[data-season="winter"] .shadow-cyan-500\/10 { --tw-shadow-color: rgba(77, 171, 247, 0.1); }
 [data-season="winter"] .shadow-cyan-500\/25 { --tw-shadow-color: rgba(77, 171, 247, 0.25); }
 [data-season="winter"] .shadow-cyan-500\/30 { --tw-shadow-color: rgba(77, 171, 247, 0.3); }
 [data-season="winter"] .shadow-cyan-500\/40 { --tw-shadow-color: rgba(77, 171, 247, 0.4); }
+[data-season="winter"] .shadow-cyan-900\/40 { --tw-shadow-color: rgba(10, 20, 45, 0.4); }
 [data-season="winter"] .shadow-cyan-950\/40 { --tw-shadow-color: rgba(10, 20, 45, 0.4); }
+[data-season="winter"] .hover\:shadow-cyan-500\/10:hover { --tw-shadow-color: rgba(77, 171, 247, 0.1); }
 
 /* Winter: ring → ice blue focus */
 [data-season="winter"] .ring-cyan-400\/50 { --tw-ring-color: rgba(116, 192, 252, 0.5); }
 
 /* Winter: gradients → ice blue → deep winter blue */
-[data-season="winter"] .from-cyan-500 {
-  --tw-gradient-from: #4dabf7 var(--tw-gradient-from-position, 0%);
+[data-season="winter"] .from-cyan-300 {
+  --tw-gradient-from: #a5d8ff var(--tw-gradient-from-position, 0%);
 }
 [data-season="winter"] .from-cyan-400 {
   --tw-gradient-from: #4dabf7 var(--tw-gradient-from-position, 0%);
 }
-[data-season="winter"] .to-blue-600 {
-  --tw-gradient-to: #1c7ed6 var(--tw-gradient-to-position, 100%);
+[data-season="winter"] .from-cyan-500 {
+  --tw-gradient-from: #4dabf7 var(--tw-gradient-from-position, 0%);
+}
+[data-season="winter"] .from-cyan-500\/20 {
+  --tw-gradient-from: rgba(77, 171, 247, 0.2) var(--tw-gradient-from-position, 0%);
+}
+[data-season="winter"] .from-cyan-500\/30 {
+  --tw-gradient-from: rgba(77, 171, 247, 0.3) var(--tw-gradient-from-position, 0%);
+}
+[data-season="winter"] .via-sky-400 {
+  --tw-gradient-via: #4dabf7 var(--tw-gradient-via-position, 50%);
 }
 [data-season="winter"] .to-blue-500 {
   --tw-gradient-to: #1c7ed6 var(--tw-gradient-to-position, 100%);
+}
+[data-season="winter"] .to-blue-600 {
+  --tw-gradient-to: #1c7ed6 var(--tw-gradient-to-position, 100%);
+}
+[data-season="winter"] .to-blue-600\/20 {
+  --tw-gradient-to: rgba(28, 126, 214, 0.2) var(--tw-gradient-to-position, 100%);
+}
+[data-season="winter"] .to-blue-600\/30 {
+  --tw-gradient-to: rgba(28, 126, 214, 0.3) var(--tw-gradient-to-position, 100%);
+}
+[data-season="winter"] .to-blue-950 {
+  --tw-gradient-to: #0a1228 var(--tw-gradient-to-position, 100%);
 }
 
 /* Winter: accent */
 [data-season="winter"] .accent-cyan-500 { accent-color: #4dabf7; }
 
-/* Snowfall animation */
-@keyframes snowfall {
-  0% {
-    transform: translateY(-12px) translateX(0);
-    opacity: 0;
-  }
+/* Winter: frosty card glass effect */
+[data-season="winter"] .backdrop-blur-sm,
+[data-season="winter"] .backdrop-blur-xl {
+  backdrop-filter: blur(8px) saturate(0.85);
+}
+
+/* ---- Icicles ---- */
+.icicle {
+  background: linear-gradient(
+    to bottom,
+    rgba(208, 235, 255, 0.55) 0%,
+    rgba(165, 216, 255, 0.35) 35%,
+    rgba(116, 192, 252, 0.12) 75%,
+    transparent 100%
+  );
+  clip-path: polygon(18% 0, 82% 0, 50% 100%);
+  filter: drop-shadow(0 0 3px rgba(165, 216, 255, 0.35));
+}
+.icicle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 38%;
+  width: 1.5px;
+  height: 55%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), transparent);
+  border-radius: 50%;
+}
+
+@keyframes icicle-shimmer {
+  0% { opacity: 0.65; filter: drop-shadow(0 0 2px rgba(165, 216, 255, 0.2)) brightness(0.95); }
+  100% { opacity: 1; filter: drop-shadow(0 0 5px rgba(165, 216, 255, 0.45)) brightness(1.2); }
+}
+
+/* ---- Ice crystal sparkles ---- */
+.sparkle {
+  background: white;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  box-shadow: 0 0 6px rgba(208, 235, 255, 0.7), 0 0 12px rgba(116, 192, 252, 0.4);
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  40% { opacity: 0.9; transform: scale(1.1) rotate(90deg); }
+  60% { opacity: 0.7; transform: scale(0.9) rotate(135deg); }
+}
+
+/* ---- Snow — 3 depth layers ---- */
+@keyframes snowfall-bg {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
   5% { opacity: 1; }
-  25% { transform: translateY(25vh) translateX(12px); }
-  50% { transform: translateY(50vh) translateX(-6px); }
-  75% { transform: translateY(75vh) translateX(10px); }
+  25% { transform: translateY(25vh) translateX(6px); }
+  50% { transform: translateY(50vh) translateX(-3px); }
+  75% { transform: translateY(75vh) translateX(5px); }
   95% { opacity: 1; }
-  100% {
-    transform: translateY(105vh) translateX(0);
-    opacity: 0;
-  }
+  100% { transform: translateY(105vh) translateX(0); opacity: 0; }
+}
+
+@keyframes snowfall-mid {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+  5% { opacity: 1; }
+  20% { transform: translateY(20vh) translateX(14px); }
+  40% { transform: translateY(40vh) translateX(-8px); }
+  60% { transform: translateY(60vh) translateX(10px); }
+  80% { transform: translateY(80vh) translateX(-6px); }
+  95% { opacity: 1; }
+  100% { transform: translateY(105vh) translateX(0); opacity: 0; }
+}
+
+@keyframes snowfall-fg {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+  5% { opacity: 1; }
+  15% { transform: translateY(15vh) translateX(22px); }
+  35% { transform: translateY(35vh) translateX(-16px); }
+  55% { transform: translateY(55vh) translateX(20px); }
+  75% { transform: translateY(75vh) translateX(-14px); }
+  95% { opacity: 1; }
+  100% { transform: translateY(105vh) translateX(0); opacity: 0; }
 }
