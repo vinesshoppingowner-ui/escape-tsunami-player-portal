@@ -19,10 +19,13 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
 import DesktopSplashScreen from '@/components/desktop/DesktopSplashScreen';
 import DesktopNotifications from '@/components/desktop/DesktopNotifications';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import SeasonalEffects from '@/components/SeasonalEffects';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const isDesktopApp = useDesktopApp();
+  const season = useSeasonalTheme('winter');
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -47,6 +50,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <>
+      <SeasonalEffects season={season} />
       {(isDesktopApp || new URLSearchParams(window.location.search).has('splash')) && (
         <DesktopSplashScreen forceShow={!isDesktopApp} />
       )}

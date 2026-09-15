@@ -90,3 +90,76 @@
     @apply bg-background text-foreground font-body;
   }
 }
+
+/* ===== Seasonal Themes ===== */
+
+/* ---- Winter ---- */
+[data-season="winter"] {
+  --background: 215 30% 5%;
+  --card: 215 25% 7%;
+  --popover: 215 25% 7%;
+}
+
+/* Winter: text colors → icy blue */
+[data-season="winter"] .text-cyan-200 { color: #d0ebff; }
+[data-season="winter"] .text-cyan-300 { color: #a5d8ff; }
+[data-season="winter"] .text-cyan-300\/80 { color: rgba(165, 216, 255, 0.8); }
+[data-season="winter"] .text-cyan-400 { color: #74c0fc; }
+[data-season="winter"] .text-cyan-400\/70 { color: rgba(116, 192, 252, 0.7); }
+[data-season="winter"] .text-cyan-500 { color: #4dabf7; }
+
+/* Winter: backgrounds → ice blue */
+[data-season="winter"] .bg-cyan-500 { background-color: #4dabf7; }
+[data-season="winter"] .bg-cyan-500\/10 { background-color: rgba(77, 171, 247, 0.1); }
+[data-season="winter"] .bg-cyan-500\/15 { background-color: rgba(77, 171, 247, 0.15); }
+[data-season="winter"] .bg-cyan-500\/20 { background-color: rgba(77, 171, 247, 0.2); }
+[data-season="winter"] .bg-blue-600\/15 { background-color: rgba(28, 126, 214, 0.15); }
+
+/* Winter: borders → frosty blue */
+[data-season="winter"] .border-cyan-500\/20 { border-color: rgba(77, 171, 247, 0.2); }
+[data-season="winter"] .border-cyan-500\/30 { border-color: rgba(77, 171, 247, 0.3); }
+[data-season="winter"] .border-cyan-400\/50 { border-color: rgba(116, 192, 252, 0.5); }
+[data-season="winter"] .border-cyan-400\/60 { border-color: rgba(116, 192, 252, 0.6); }
+
+/* Winter: shadows → icy glow */
+[data-season="winter"] .shadow-cyan-500\/25 { --tw-shadow-color: rgba(77, 171, 247, 0.25); }
+[data-season="winter"] .shadow-cyan-500\/30 { --tw-shadow-color: rgba(77, 171, 247, 0.3); }
+[data-season="winter"] .shadow-cyan-500\/40 { --tw-shadow-color: rgba(77, 171, 247, 0.4); }
+[data-season="winter"] .shadow-cyan-950\/40 { --tw-shadow-color: rgba(10, 20, 45, 0.4); }
+
+/* Winter: ring → ice blue focus */
+[data-season="winter"] .ring-cyan-400\/50 { --tw-ring-color: rgba(116, 192, 252, 0.5); }
+
+/* Winter: gradients → ice blue → deep winter blue */
+[data-season="winter"] .from-cyan-500 {
+  --tw-gradient-from: #4dabf7 var(--tw-gradient-from-position, 0%);
+}
+[data-season="winter"] .from-cyan-400 {
+  --tw-gradient-from: #4dabf7 var(--tw-gradient-from-position, 0%);
+}
+[data-season="winter"] .to-blue-600 {
+  --tw-gradient-to: #1c7ed6 var(--tw-gradient-to-position, 100%);
+}
+[data-season="winter"] .to-blue-500 {
+  --tw-gradient-to: #1c7ed6 var(--tw-gradient-to-position, 100%);
+}
+
+/* Winter: accent */
+[data-season="winter"] .accent-cyan-500 { accent-color: #4dabf7; }
+
+/* Snowfall animation */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-12px) translateX(0);
+    opacity: 0;
+  }
+  5% { opacity: 1; }
+  25% { transform: translateY(25vh) translateX(12px); }
+  50% { transform: translateY(50vh) translateX(-6px); }
+  75% { transform: translateY(75vh) translateX(10px); }
+  95% { opacity: 1; }
+  100% {
+    transform: translateY(105vh) translateX(0);
+    opacity: 0;
+  }
+}
