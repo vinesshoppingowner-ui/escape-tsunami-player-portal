@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Waves, Users, Heart, Gamepad2, ArrowRight, LogIn, Trophy,
   Zap, Footprints, RefreshCw, Building2, ShieldCheck, Loader2,
+  Snowflake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -56,17 +57,21 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative pt-32 pb-24 px-5">
+        <div className="winter-only winter-badge absolute top-24 right-8 z-20 items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-cyan-500/20 text-cyan-300 text-sm font-medium backdrop-blur-sm">
+          <Snowflake className="h-4 w-4 snowflake-spin" />
+          Winter Edition
+        </div>
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-cyan-500/20 blur-[140px]" />
-          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-blue-600/20 blur-[120px]" />
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0 winter-hero-image bg-cover bg-center"
             style={{
               backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
-              backgroundSize: '48px 48px',
+                'url(https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?ixlib=rb-4.0.3&w=1600&q=80)',
             }}
           />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950" />
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-cyan-500/20 blur-[140px]" />
+          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-blue-600/20 blur-[120px]" />
         </div>
 
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">

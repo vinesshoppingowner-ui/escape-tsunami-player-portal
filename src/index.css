@@ -256,3 +256,72 @@
   95% { opacity: 1; }
   100% { transform: translateY(105vh) translateX(0); opacity: 0; }
 }
+
+/* ---- Winter UI: Frosty buttons, patterns, hero, badges ---- */
+
+/* Pill-shaped frosty CTA buttons */
+[data-season="winter"] .from-cyan-500.to-blue-600,
+[data-season="winter"] .from-cyan-400.to-blue-500 {
+  border-radius: 9999px !important;
+  box-shadow:
+    0 0 20px rgba(77, 171, 247, 0.3),
+    0 4px 15px rgba(28, 126, 214, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(28, 126, 214, 0.25) !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+[data-season="winter"] .from-cyan-500.to-blue-600:hover,
+[data-season="winter"] .from-cyan-400.to-blue-500:hover {
+  box-shadow:
+    0 0 35px rgba(77, 171, 247, 0.5),
+    0 6px 25px rgba(28, 126, 214, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(28, 126, 214, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Frosty outline / secondary buttons */
+[data-season="winter"] .bg-white\/5.border-white\/15,
+[data-season="winter"] .bg-white\/\[0.05\].border-white\/15 {
+  border-radius: 9999px !important;
+  border-color: rgba(165, 216, 255, 0.2) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(77, 171, 247, 0.08) !important;
+}
+
+/* Frosted glass cards */
+[data-season="winter"] .rounded-2xl.bg-white\/\[0.04\],
+[data-season="winter"] .rounded-2xl.bg-white\/\[0.05\] {
+  border-color: rgba(165, 216, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 20px rgba(77, 171, 247, 0.04) !important;
+}
+
+/* Snowflake background pattern */
+[data-season="winter"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg stroke='rgba(165,216,255,0.05)' stroke-width='0.8' fill='none' stroke-linecap='round'%3E%3Cline x1='15' y1='3' x2='15' y2='27'/%3E%3Cline x1='3' y1='15' x2='27' y2='15'/%3E%3Cline x1='6.4' y1='6.4' x2='23.6' y2='23.6'/%3E%3Cline x1='23.6' y1='6.4' x2='6.4' y2='23.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  background-repeat: repeat;
+}
+
+/* Winter hero background image */
+[data-season="winter"] .winter-hero-image {
+  opacity: 0.4;
+}
+
+/* Winter-only elements (hidden outside winter) */
+.winter-only { display: none; }
+[data-season="winter"] .winter-only { display: flex; }
+
+/* Winter badge frost glow */
+[data-season="winter"] .winter-badge {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 15px rgba(77, 171, 247, 0.15);
+}
+
+/* Snowflake spin for badge icon */
+@keyframes snowflake-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+[data-season="winter"] .snowflake-spin {
+  animation: snowflake-spin 8s linear infinite;
+}
