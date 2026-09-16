@@ -18,7 +18,8 @@
         "untimeout",
         "kick",
         "ban",
-        "unban"
+        "unban",
+        "lookup"
       ],
       "default": "timeout"
     },
@@ -52,6 +53,36 @@
       "type": "string",
       "format": "date-time",
       "description": "When the bot executed the action"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Cached Discord avatar URL from the bot"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Cached Discord display name (global name)"
+    },
+    "accent_color": {
+      "type": "string",
+      "description": "Cached Discord accent color as hex string, e.g. #5865F2"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Cached Discord banner URL from the bot"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Cached Discord 'About Me' text"
+    },
+    "account_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the Discord account was created (derived from snowflake ID)"
+    },
+    "profile_fetched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the bot last cached this user's profile data"
     }
   },
   "required": [

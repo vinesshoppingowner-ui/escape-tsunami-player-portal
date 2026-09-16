@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare } from 'lucide-react';
+import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info } from 'lucide-react';
 
 const ROBLOX_USERS_API = 'https://users.roproxy.com/v1';
 const ROBLOX_THUMBS_API = 'https://thumbnails.roproxy.com/v1';
@@ -23,19 +24,8 @@ const DISCORD_ACTION_STYLES = {
   kick: 'text-orange-300 bg-orange-500/10 border-orange-500/20',
   ban: 'text-rose-300 bg-rose-500/10 border-rose-500/20',
   unban: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20',
+  lookup: 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20',
 };
-
-function timeAgo(dateStr) {
-  if (!dateStr) return '—';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days < 1) return 'today';
-  if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`;
-  const years = Math.floor(days / 365);
-  return `${years} year${years !== 1 ? 's' : ''} ago`;
-}
 
 function accountAge(createdDate) {
   if (!createdDate) return '—';
@@ -48,12 +38,17 @@ function accountAge(createdDate) {
 }
 
 export default function UserLookup() {
+  const { user } = useAuth();
   const [platform, setPlatform] = useState('roblox');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [robloxProfile, setRobloxProfile] = useState(null);
   const [discordData, setDiscordData] = useState(null);
+  const [fetchingProfile, setFetchingProfile] = useState(false);
+  const pollRef = useRef(null);
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const search = async () => {
     const q = query.trim();
@@ -62,6 +57,7 @@ export default function UserLookup() {
     setError(null);
     setRobloxProfile(null);
     setDiscordData(null);
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
 
     try {
       if (platform === 'roblox') {
@@ -77,7 +73,6 @@ export default function UserLookup() {
   };
 
   const searchRoblox = async (username) => {
-    // 1. Resolve user ID via exact username match
     const searchRes = await fetch(`${ROBLOX_USERS_API}/users/search?keyword=${encodeURIComponent(username)}&limit=10`);
     if (!searchRes.ok) throw new Error('Roblox user search failed');
     const searchData = await searchRes.json();
@@ -87,7 +82,6 @@ export default function UserLookup() {
     if (!match) throw new Error(`No Roblox user found with username "${username}"`);
     const userId = match.id;
 
-    // 2. Fetch full user details, avatar, and groups in parallel
     const [userRes, headRes, bodyRes, groupsRes] = await Promise.all([
       fetch(`${ROBLOX_USERS_API}/users/${userId}`),
       fetch(`${ROBLOX_THUMBS_API}/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
@@ -95,22 +89,11 @@ export default function UserLookup() {
       fetch(`${ROBLOX_GROUPS_API}/users/${userId}/groups/roles`),
     ]);
 
-    const user = await userRes.json();
+    const userData = await userRes.json();
     const headData = await headRes.json();
     const bodyData = await bodyRes.json();
-    const groupsData = await groupsRes.ok ? await groupsRes.json() : { data: [] };
+    const groupsData = groupsRes.ok ? await groupsRes.json() : { data: [] };
 
-    const headshot = headData?.data?.[0]?.imageUrl;
-    const fullBody = bodyData?.data?.[0]?.imageUrl;
-    const groups = (groupsData?.data || []).map((g) => ({
-      name: g.group?.name,
-      id: g.group?.id,
-      memberCount: g.group?.memberCount,
-      role: g.role?.name,
-      rank: g.role?.rank,
-    }));
-
-    // 3. Fetch moderation history from our portal
     let moderations = [];
     try {
       moderations = await base44.entities.Moderation.filter(
@@ -118,18 +101,24 @@ export default function UserLookup() {
         '-moderation_date',
         50
       );
-    } catch { /* RLS may block if non-admin, but admins can read all */ }
+    } catch { /* RLS */ }
 
     setRobloxProfile({
       userId,
-      username: user.name,
-      displayName: user.displayName,
-      description: user.description,
-      createdDate: user.created,
-      isBanned: user.isBanned,
-      headshot,
-      fullBody,
-      groups,
+      username: userData.name,
+      displayName: userData.displayName,
+      description: userData.description,
+      createdDate: userData.created,
+      isBanned: userData.isBanned,
+      headshot: headData?.data?.[0]?.imageUrl,
+      fullBody: bodyData?.data?.[0]?.imageUrl,
+      groups: (groupsData?.data || []).map((g) => ({
+        name: g.group?.name,
+        id: g.group?.id,
+        memberCount: g.group?.memberCount,
+        role: g.role?.name,
+        rank: g.role?.rank,
+      })),
       moderations,
     });
   };
@@ -138,7 +127,6 @@ export default function UserLookup() {
     const discordId = rawId.replace(/[^0-9]/g, '');
     if (!discordId) throw new Error('Enter a valid Discord user ID (numbers only)');
 
-    // Fetch all DiscordActions for this user from our portal
     let actions = [];
     try {
       actions = await base44.entities.DiscordAction.filter(
@@ -148,21 +136,77 @@ export default function UserLookup() {
       );
     } catch { /* ignore */ }
 
-    // Also check if they have a discord_username stored
-    const knownUsername = actions.find((a) => a.discord_username)?.discord_username;
+    const profileAction = actions.find((a) => a.avatar_url || a.profile_fetched_at);
 
     setDiscordData({
       discordId,
-      username: knownUsername || discordId,
+      username: profileAction?.discord_username || actions.find((a) => a.discord_username)?.discord_username || discordId,
       actions,
-      avatarUrl: `https://cdn.discordapp.com/embed/avatars/${BigInt(discordId) % 6n}.png`,
-      hasHistory: actions.length > 0,
+      avatarUrl: profileAction?.avatar_url || `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(discordId) % 6n)}.png`,
+      displayName: profileAction?.display_name || null,
+      accentColor: profileAction?.accent_color || null,
+      bannerUrl: profileAction?.banner_url || null,
+      bio: profileAction?.bio || null,
+      accountCreated: profileAction?.account_created || null,
+      hasProfile: !!profileAction?.avatar_url,
+      hasHistory: actions.some((a) => a.action_type !== 'lookup'),
     });
+  };
+
+  const fetchDiscordProfile = async () => {
+    if (!discordData) return;
+    setFetchingProfile(true);
+    try {
+      await base44.entities.DiscordAction.create({
+        discord_user_id: discordData.discordId,
+        discord_username: discordData.username !== discordData.discordId ? discordData.username : '',
+        action_type: 'lookup',
+        reason: 'Profile lookup from admin dashboard',
+        status: 'pending',
+        issued_by: user?.full_name || user?.email || 'Unknown staff',
+      });
+      // Poll for the bot to cache the profile
+      let attempts = 0;
+      pollRef.current = setInterval(async () => {
+        attempts++;
+        try {
+          const actions = await base44.entities.DiscordAction.filter(
+            { discord_user_id: discordData.discordId },
+            '-created_date',
+            50
+          );
+          const profileAction = actions.find((a) => a.avatar_url || a.profile_fetched_at);
+          if (profileAction) {
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+            setFetchingProfile(false);
+            setDiscordData((prev) => ({
+              ...prev,
+              actions,
+              avatarUrl: profileAction.avatar_url,
+              displayName: profileAction.display_name,
+              accentColor: profileAction.accent_color,
+              bannerUrl: profileAction.banner_url,
+              bio: profileAction.bio,
+              accountCreated: profileAction.account_created,
+              hasProfile: true,
+              username: profileAction.discord_username || prev.username,
+            }));
+          }
+        } catch { /* keep polling */ }
+        if (attempts >= 12) {
+          if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+          setFetchingProfile(false);
+          setError('Profile fetch timed out — make sure your Discord bot is running and connected.');
+        }
+      }, 3000);
+    } catch (err) {
+      setError('Failed to queue profile fetch: ' + (err.message || 'unknown error'));
+      setFetchingProfile(false);
+    }
   };
 
   return (
     <div>
-      {/* Platform toggle */}
       <div className="flex gap-2 mb-4">
         <button
           type="button"
@@ -188,7 +232,6 @@ export default function UserLookup() {
         </button>
       </div>
 
-      {/* Search bar */}
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
@@ -223,14 +266,13 @@ export default function UserLookup() {
         </div>
       )}
 
-      {/* Roblox results */}
-      {platform === 'roblox' && robloxProfile && (
-        <RobloxResult profile={robloxProfile} />
-      )}
-
-      {/* Discord results */}
+      {platform === 'roblox' && robloxProfile && <RobloxResult profile={robloxProfile} />}
       {platform === 'discord' && discordData && (
-        <DiscordResult data={discordData} />
+        <DiscordResult
+          data={discordData}
+          onFetchProfile={fetchDiscordProfile}
+          fetching={fetchingProfile}
+        />
       )}
 
       {!loading && !robloxProfile && !discordData && !error && (
@@ -239,7 +281,7 @@ export default function UserLookup() {
           <p className="text-sm">
             {platform === 'roblox'
               ? 'Search a Roblox username to view their full profile, account age, groups, and moderation history.'
-              : 'Enter a Discord user ID to view their portal moderation history and cached profile info.'}
+              : 'Enter a Discord user ID to view their profile and moderation history. Click "Fetch Profile" to have the bot pull their real Discord PFP, name, and banner.'}
           </p>
         </div>
       )}
@@ -255,7 +297,6 @@ function RobloxResult({ profile }) {
 
   return (
     <div className="space-y-4">
-      {/* Profile header */}
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
         <div className="flex flex-col sm:flex-row gap-5">
           <div className="flex gap-4">
@@ -278,7 +319,6 @@ function RobloxResult({ profile }) {
               )}
             </div>
           </div>
-
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xl font-bold text-white">{displayName || username}</h3>
@@ -286,13 +326,10 @@ function RobloxResult({ profile }) {
                 <span className="text-sm text-slate-400">@{username}</span>
               )}
               {isBanned && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/30">
-                  BANNED
-                </span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/30">BANNED</span>
               )}
             </div>
             <div className="mt-1 text-xs text-slate-500">User ID: {profile.userId}</div>
-
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Stat icon={Calendar} label="Account Age" value={accountAge(createdDate)} />
               <Stat icon={Gavel} label="Total Mods" value={modCount} />
@@ -301,7 +338,6 @@ function RobloxResult({ profile }) {
             </div>
           </div>
         </div>
-
         {description && (
           <div className="mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1.5">
@@ -310,13 +346,11 @@ function RobloxResult({ profile }) {
             <p className="text-sm text-slate-300 whitespace-pre-wrap line-clamp-4">{description}</p>
           </div>
         )}
-
         <div className="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5" /> Joined Roblox: {createdDate ? new Date(createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
         </div>
       </div>
 
-      {/* Groups / Communities */}
       {groups.length > 0 && (
         <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
           <div className="flex items-center gap-2 mb-3">
@@ -334,32 +368,25 @@ function RobloxResult({ profile }) {
               </div>
             ))}
           </div>
-          {groups.length > 12 && (
-            <div className="mt-2 text-xs text-slate-500 text-center">+ {groups.length - 12} more groups</div>
-          )}
+          {groups.length > 12 && <div className="mt-2 text-xs text-slate-500 text-center">+ {groups.length - 12} more groups</div>}
         </div>
       )}
 
-      {/* Moderation history */}
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
         <div className="flex items-center gap-2 mb-3">
           <Gavel className="h-4 w-4 text-cyan-400" />
           <h4 className="text-sm font-semibold text-white">Portal Moderation History ({modCount})</h4>
         </div>
         {modCount === 0 ? (
-          <div className="text-sm text-slate-500 py-6 text-center">No moderation actions on record.</div>
+          <div className="text-sm text-slate-500 py-8 text-center">No moderation actions on record — clean history.</div>
         ) : (
           <div className="space-y-2">
             {moderations.map((m) => (
               <div key={m.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-950/40 border border-white/5 px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${MOD_TYPE_STYLES[m.moderation_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>
-                      {m.moderation_type}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${m.status === 'Active' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' : 'text-slate-400 bg-slate-500/10 border-slate-500/20'}`}>
-                      {m.status}
-                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${MOD_TYPE_STYLES[m.moderation_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>{m.moderation_type}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${m.status === 'Active' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' : 'text-slate-400 bg-slate-500/10 border-slate-500/20'}`}>{m.status}</span>
                     {m.duration && <span className="text-xs text-slate-500">{m.duration}</span>}
                   </div>
                   <div className="text-sm text-slate-300 mt-1">{m.reason}</div>
@@ -379,41 +406,127 @@ function RobloxResult({ profile }) {
   );
 }
 
-function DiscordResult({ data }) {
-  const { discordId, username, actions, avatarUrl, hasHistory } = data;
-  const pending = actions.filter((a) => a.status === 'pending').length;
-  const completed = actions.filter((a) => a.status === 'completed').length;
-  const failed = actions.filter((a) => a.status === 'failed').length;
-  const bans = actions.filter((a) => a.action_type === 'ban').length;
-  const timeouts = actions.filter((a) => a.action_type === 'timeout').length;
+function DiscordResult({ data, onFetchProfile, fetching }) {
+  const { discordId, username, actions, avatarUrl, displayName, accentColor, bannerUrl, bio, accountCreated, hasProfile, hasHistory } = data;
+  const modActions = actions.filter((a) => a.action_type !== 'lookup');
+  const pending = modActions.filter((a) => a.status === 'pending').length;
+  const bans = modActions.filter((a) => a.action_type === 'ban').length;
+  const timeouts = modActions.filter((a) => a.action_type === 'timeout').length;
+  const kicks = modActions.filter((a) => a.action_type === 'kick').length;
 
   return (
     <div className="space-y-4">
-      {/* Profile header */}
-      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
-        <div className="flex items-start gap-4">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-indigo-500/10 border border-indigo-500/30 shrink-0">
-            <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-white">{username}</h3>
-            <div className="mt-1 text-xs text-slate-500">Discord ID: {discordId}</div>
-            <div className="mt-1 text-xs text-indigo-400/70 flex items-center gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5" />
-              Profile fetched from portal records
+      {/* Profile header card — Discord styled */}
+      <div className="rounded-2xl bg-[#1e1f22] border border-white/10 overflow-hidden">
+        {/* Banner */}
+        <div
+          className="h-28 relative"
+          style={{
+            backgroundColor: accentColor || '#5865F2',
+            backgroundImage: bannerUrl ? `url(${bannerUrl})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {!bannerUrl && (
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+          )}
+        </div>
+
+        <div className="px-5 pb-5">
+          <div className="flex items-start gap-4 -mt-12">
+            {/* Avatar with ring */}
+            <div className="w-24 h-24 rounded-full overflow-hidden border-[6px] border-[#1e1f22] bg-[#313338] shrink-0 shadow-lg">
+              <img src={avatarUrl} alt={displayName || username} className="w-full h-full object-cover" />
             </div>
 
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Stat icon={Gavel} label="Total Actions" value={actions.length} />
-              <Stat icon={Clock} label="Pending" value={pending} cls="text-amber-300" />
-              <Stat icon={Shield} label="Bans" value={bans} cls="text-rose-300" />
-              <Stat icon={AlertTriangle} label="Timeouts" value={timeouts} cls="text-orange-300" />
+            <div className="flex-1 min-w-0 pt-7">
+              {/* Display name — Discord styled */}
+              <h3
+                className="text-2xl font-bold leading-tight"
+                style={{ color: accentColor || '#f2f3f5' }}
+              >
+                {displayName || username}
+              </h3>
+              {/* Username */}
+              <div className="text-base text-[#949ba3] font-medium">
+                {displayName && displayName !== username ? `@${username}` : `@${username}`}
+              </div>
+              {/* Discord ID */}
+              <div className="text-xs text-[#949ba3]/70 mt-1.5">Discord ID: {discordId}</div>
+
+              {/* Account created */}
+              {accountCreated && (
+                <div className="text-xs text-[#949ba3] mt-2 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Joined Discord: {new Date(accountCreated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  <span className="text-[#949ba3]/60">({accountAge(accountCreated)})</span>
+                </div>
+              )}
             </div>
+
+            {/* Fetch profile button */}
+            {!hasProfile && (
+              <div className="pt-7 shrink-0">
+                <Button
+                  onClick={onFetchProfile}
+                  disabled={fetching}
+                  size="sm"
+                  className="bg-[#5865F2] hover:bg-[#4752c4] text-white border-0"
+                >
+                  {fetching ? (
+                    <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Fetching…</>
+                  ) : (
+                    <><RefreshCw className="h-4 w-4 mr-1.5" /> Fetch Profile</>
+                  )}
+                </Button>
+              </div>
+            )}
+            {hasProfile && (
+              <div className="pt-7 shrink-0">
+                <Button
+                  onClick={onFetchProfile}
+                  disabled={fetching}
+                  size="sm"
+                  variant="outline"
+                  className="bg-white/5 border-white/15 text-slate-300 hover:bg-white/10"
+                >
+                  {fetching ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+                  Refresh
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
-        <div className="mt-3 rounded-lg bg-indigo-500/5 border border-indigo-500/15 px-3 py-2 text-xs text-slate-400">
-          Full Discord profile details (nametag color, exact PFP, bio, join date) require the Discord bot to cache profiles.
-          Showing portal moderation history below.
+
+          {/* Bio */}
+          {bio && (
+            <div className="mt-4 pt-4 border-t border-white/5">
+              <div className="flex items-center gap-1.5 text-xs text-[#949ba3] mb-1.5">
+                <MessageSquare className="h-3.5 w-3.5" /> About Me
+              </div>
+              <p className="text-sm text-[#dbdee1] whitespace-pre-wrap">{bio}</p>
+            </div>
+          )}
+
+          {/* Stats grid */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Stat icon={Gavel} label="Total Actions" value={modActions.length} />
+            <Stat icon={Clock} label="Pending" value={pending} cls="text-amber-300" />
+            <Stat icon={Shield} label="Bans" value={bans} cls="text-rose-300" />
+            <Stat icon={AlertTriangle} label="Timeouts" value={timeouts} cls="text-orange-300" />
+          </div>
+
+          {/* Info note */}
+          {!hasProfile && (
+            <div className="mt-3 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 px-3 py-2 text-xs text-[#a5a8ae] flex items-start gap-2">
+              <Info className="h-4 w-4 text-[#5865F2] mt-0.5 shrink-0" />
+              <span>
+                {fetching
+                  ? 'Your Discord bot is fetching this profile. The real PFP, display name, and banner will appear here in a few seconds…'
+                  : 'Click "Fetch Profile" to have your Discord bot pull this user\'s real PFP, display name, banner, accent color, and bio from Discord.'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -421,36 +534,30 @@ function DiscordResult({ data }) {
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
         <div className="flex items-center gap-2 mb-3">
           <Bot className="h-4 w-4 text-indigo-400" />
-          <h4 className="text-sm font-semibold text-white">Discord Action History ({actions.length})</h4>
+          <h4 className="text-sm font-semibold text-white">Discord Action History ({modActions.length})</h4>
         </div>
-        {actions.length === 0 ? (
+        {modActions.length === 0 ? (
           <div className="text-sm text-slate-500 py-8 text-center">
             <Bot className="h-8 w-8 mx-auto mb-2 opacity-30" />
             No moderation history for this Discord user — they have a clean record in the portal.
           </div>
         ) : (
           <div className="space-y-2">
-            {actions.map((a) => (
+            {modActions.map((a) => (
               <div key={a.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-950/40 border border-white/5 px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${DISCORD_ACTION_STYLES[a.action_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>
-                      {a.action_type}
-                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${DISCORD_ACTION_STYLES[a.action_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>{a.action_type}</span>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
                       a.status === 'completed' ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20' :
                       a.status === 'pending' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' :
                       'text-rose-300 bg-rose-500/10 border-rose-500/20'
-                    }`}>
-                      {a.status}
-                    </span>
+                    }`}>{a.status}</span>
                     {a.duration_minutes && <span className="text-xs text-slate-500">{a.duration_minutes}m</span>}
                   </div>
                   <div className="text-sm text-slate-300 mt-1">{a.reason}</div>
                   {a.result_message && (
-                    <div className={`text-xs mt-0.5 ${a.status === 'failed' ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {a.result_message}
-                    </div>
+                    <div className={`text-xs mt-0.5 ${a.status === 'failed' ? 'text-rose-400' : 'text-emerald-400'}`}>{a.result_message}</div>
                   )}
                   <div className="text-xs text-slate-600 mt-1 flex items-center gap-2">
                     <Clock className="h-3 w-3" />

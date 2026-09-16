@@ -6,6 +6,7 @@
  * moderate Discord users (timeout, kick, ban, etc.) from the admin dashboard.
  *
  * The bot polls the website's API for pending actions, executes them in Discord,
+ * caches the user's profile (PFP, display name, banner, accent color, bio, join date),
  * and reports the result back.
  *
  * ========== SETUP ==========
@@ -24,16 +25,16 @@
  *    const { startModerationPoller } = require('./discord-moderation-poller');
  *    startModerationPoller(client);
  *
- * That's it! The bot will poll every 10 seconds for pending actions.
- *
  * ========== HOW IT WORKS ==========
  *
- * - Staff queues a Discord action from the admin dashboard (Discord tab)
+ * - Staff queues a Discord action from the admin dashboard (Moderations tab)
  * - The action is saved as a "pending" DiscordAction record on the website
  * - This poller fetches pending actions every 10 seconds
- * - For each action, the bot executes it in Discord (timeout/kick/ban/etc.)
- * - The action is updated to "completed" or "failed" with a result message
- * - The dashboard auto-refreshes to show the result
+ * - For each action, the bot:
+ *     1. Fetches and caches the user's full Discord profile
+ *     2. Executes the action (timeout/kick/ban/etc.) or just looks up (for "lookup" type)
+ *     3. Updates the action with status + result + cached profile data
+ * - The dashboard auto-refreshes to show the result and profile
  */
 
 const API_BASE = process.env.PORTAL_API_URL || 'https://base44.app/api/apps';
@@ -51,13 +52,12 @@ async function getPendingActions(appId, apiKey) {
   });
   if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}\n  URL: ${url}\n  AppId: ${appId}`);
   const data = await res.json();
-  // Handle both array or paginated object responses
   const items = Array.isArray(data) ? data : (data.items || data.data || []);
   return items.filter((a) => a.status === 'pending');
 }
 
 /**
- * Updates a Discord action's status and result on the website.
+ * Updates a Discord action on the website.
  */
 async function updateAction(appId, apiKey, id, updates) {
   const url = `${API_BASE}/${appId}/entities/DiscordAction/${id}`;
@@ -71,6 +71,60 @@ async function updateAction(appId, apiKey, id, updates) {
   });
   if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
   return res.json();
+}
+
+/**
+ * Fetches a Discord user's full profile and returns cacheable data.
+ * Tries fetchProfile() for banner/accent/bio, falls back to user properties.
+ */
+async function fetchProfileData(client, userId) {
+  const user = await client.users.fetch(userId, { force: true });
+
+  let bannerUrl = null;
+  let accentColor = null;
+  let bio = null;
+
+  // Try fetchProfile() for banner, accent color, bio (discord.js v14.14+)
+  try {
+    if (typeof user.fetchProfile === 'function') {
+      const profile = await user.fetchProfile();
+      if (profile.bannerURL) {
+        try { bannerUrl = profile.bannerURL({ size: 512, extension: 'png' }); } catch {}
+      }
+      if (profile.accentColor != null) {
+        accentColor = '#' + profile.accentColor.toString(16).padStart(6, '0');
+      }
+      if (profile.bio) bio = profile.bio;
+    }
+  } catch (err) {
+    console.warn(`[PortalPoller] fetchProfile() failed for ${userId}: ${err.message}`);
+  }
+
+  // Fallbacks: try user properties directly
+  if (!accentColor && user.accentColor != null) {
+    accentColor = '#' + user.accentColor.toString(16).padStart(6, '0');
+  }
+  if (!bannerUrl && typeof user.bannerURL === 'function') {
+    try { bannerUrl = user.bannerURL({ size: 512, extension: 'png' }); } catch {}
+  }
+
+  const avatarUrl = user.displayAvatarURL({ size: 256, extension: 'png' });
+  const displayName = user.globalName || user.displayName || null;
+  const accountCreated = user.createdAt ? user.createdAt.toISOString() : null;
+
+  return {
+    user,
+    profileData: {
+      discord_username: user.username,
+      avatar_url: avatarUrl,
+      display_name: displayName,
+      accent_color: accentColor,
+      banner_url: bannerUrl,
+      bio,
+      account_created: accountCreated,
+      profile_fetched_at: new Date().toISOString(),
+    },
+  };
 }
 
 /**
@@ -101,7 +155,7 @@ async function sendModerationDM(client, guild, action, resultText) {
 }
 
 /**
- * Executes a single Discord action using the discord.js client.
+ * Executes a single Discord moderation action using the discord.js client.
  */
 async function executeAction(client, guildId, action) {
   const guild = await client.guilds.fetch(guildId);
@@ -149,7 +203,7 @@ async function executeAction(client, guildId, action) {
 }
 
 /**
- * One poll cycle: fetch pending actions, execute each, update results.
+ * One poll cycle: fetch pending actions, execute each, cache profiles, update results.
  */
 async function pollAndExecute(client) {
   if (isPolling) return;
@@ -173,23 +227,36 @@ async function pollAndExecute(client) {
 
     for (const action of actions) {
       const target = action.discord_username || action.discord_user_id;
-      console.log(`[PortalPoller] Executing ${action.action_type} on ${target}…`);
+      console.log(`[PortalPoller] Processing ${action.action_type} on ${target}…`);
+
+      let result = '';
+      let profileUpdate = {};
+
+      // Always try to fetch and cache the user's profile
       try {
-        const result = await executeAction(client, guildId, action);
-        await updateAction(appId, apiKey, action.id, {
-          status: 'completed',
-          result_message: result,
-          executed_at: new Date().toISOString(),
-        });
-        console.log(`[PortalPoller] ✓ ${result} — ${target}`);
-      } catch (err) {
-        await updateAction(appId, apiKey, action.id, {
-          status: 'failed',
-          result_message: err.message,
-          executed_at: new Date().toISOString(),
-        });
-        console.error(`[PortalPoller] ✗ Failed: ${err.message} — ${target}`);
+        const { user, profileData } = await fetchProfileData(client, action.discord_user_id);
+        profileUpdate = profileData;
+
+        if (action.action_type === 'lookup') {
+          result = `Profile fetched for ${user.username}`;
+        } else {
+          result = await executeAction(client, guildId, action);
+        }
+      } catch (profileErr) {
+        // If it's a lookup, the profile fetch IS the action — fail it
+        if (action.action_type === 'lookup') throw profileErr;
+        // For moderation actions, proceed without profile cache
+        console.warn(`[PortalPoller] Could not cache profile for ${target}: ${profileErr.message}`);
+        result = await executeAction(client, guildId, action);
       }
+
+      await updateAction(appId, apiKey, action.id, {
+        ...profileUpdate,
+        status: 'completed',
+        result_message: result,
+        executed_at: new Date().toISOString(),
+      });
+      console.log(`[PortalPoller] ✓ ${result} — ${target}`);
     }
   } catch (err) {
     console.error('[PortalPoller] Poll error:', err.message);
@@ -219,20 +286,6 @@ function startModerationPoller(client) {
 
 /**
  * Sends moderation DM info to the website so it can issue a web notification.
- *
- * Call this from your bot's sendModerationDM() function — right after (or
- * alongside) the Discord DM send — so the website can show an in-portal
- * notification, email, or website-based message about the action.
- *
- * @param {object} params
- * @param {string} params.discord_user_id   - The target user's Discord ID
- * @param {string} [params.discord_username] - The target user's Discord username
- * @param {string} params.action_type        - timeout, kick, ban, unban, etc.
- * @param {string} params.reason             - Reason shown to the user
- * @param {number} [params.duration_minutes] - Timeout duration (if applicable)
- * @param {string} [params.guild_id]         - The Discord guild ID
- * @param {string} [params.issued_by]        - Staff member who issued it
- * @returns {Promise<object>} The created notification record
  */
 async function sendWebsiteNotification(params) {
   const appId = process.env.PORTAL_APP_ID;
