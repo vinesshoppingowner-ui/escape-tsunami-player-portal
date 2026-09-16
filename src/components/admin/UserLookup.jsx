@@ -151,16 +151,12 @@ export default function UserLookup() {
     // Also check if they have a discord_username stored
     const knownUsername = actions.find((a) => a.discord_username)?.discord_username;
 
-    if (actions.length === 0 && !knownUsername) {
-      setError(`No Discord actions found for user ID ${discordId}. This user has no moderation history in the portal.`);
-      return;
-    }
-
     setDiscordData({
       discordId,
       username: knownUsername || discordId,
       actions,
       avatarUrl: `https://cdn.discordapp.com/embed/avatars/${BigInt(discordId) % 6n}.png`,
+      hasHistory: actions.length > 0,
     });
   };
 
@@ -384,7 +380,7 @@ function RobloxResult({ profile }) {
 }
 
 function DiscordResult({ data }) {
-  const { discordId, username, actions, avatarUrl } = data;
+  const { discordId, username, actions, avatarUrl, hasHistory } = data;
   const pending = actions.filter((a) => a.status === 'pending').length;
   const completed = actions.filter((a) => a.status === 'completed').length;
   const failed = actions.filter((a) => a.status === 'failed').length;
@@ -428,7 +424,10 @@ function DiscordResult({ data }) {
           <h4 className="text-sm font-semibold text-white">Discord Action History ({actions.length})</h4>
         </div>
         {actions.length === 0 ? (
-          <div className="text-sm text-slate-500 py-6 text-center">No Discord actions on record.</div>
+          <div className="text-sm text-slate-500 py-8 text-center">
+            <Bot className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            No moderation history for this Discord user — they have a clean record in the portal.
+          </div>
         ) : (
           <div className="space-y-2">
             {actions.map((a) => (
