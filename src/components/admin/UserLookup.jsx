@@ -175,6 +175,7 @@ export default function UserLookup() {
             '-created_date',
             50
           );
+          // Check for cached profile data
           const profileAction = actions.find((a) => a.avatar_url || a.profile_fetched_at);
           if (profileAction) {
             if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
@@ -191,12 +192,25 @@ export default function UserLookup() {
               hasProfile: true,
               username: profileAction.discord_username || prev.username,
             }));
+            return;
+          }
+          // Also check if the latest lookup action completed/failed without profile data
+          const latestLookup = actions.find((a) => a.action_type === 'lookup');
+          if (latestLookup && (latestLookup.status === 'completed' || latestLookup.status === 'failed')) {
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+            setFetchingProfile(false);
+            setDiscordData((prev) => ({ ...prev, actions }));
+            if (latestLookup.status === 'failed') {
+              setError(`Bot failed to fetch profile: ${latestLookup.result_message || 'unknown error'}`);
+            } else {
+              setError('Bot completed the lookup but returned no profile data. Make sure your bot is running the latest poller version.');
+            }
           }
         } catch { /* keep polling */ }
-        if (attempts >= 12) {
+        if (attempts >= 10) {
           if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
           setFetchingProfile(false);
-          setError('Profile fetch timed out — make sure your Discord bot is running and connected.');
+          setError('Profile fetch timed out — make sure your Discord bot is running the updated poller and connected to the portal.');
         }
       }, 3000);
     } catch (err) {
