@@ -1,0 +1,84 @@
+{
+  "name": "DiscordAction",
+  "type": "object",
+  "properties": {
+    "discord_user_id": {
+      "type": "string",
+      "description": "Discord user ID of the target user"
+    },
+    "discord_username": {
+      "type": "string",
+      "description": "Discord username for display"
+    },
+    "action_type": {
+      "type": "string",
+      "description": "Discord moderation action for the bot to execute",
+      "enum": [
+        "timeout",
+        "untimeout",
+        "kick",
+        "ban",
+        "unban"
+      ],
+      "default": "timeout"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for the action, shown to the user in Discord"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Timeout duration in minutes (only used for timeout actions)"
+    },
+    "status": {
+      "type": "string",
+      "description": "Whether the bot has executed the action",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "issued_by": {
+      "type": "string",
+      "description": "Staff member who issued the action from the dashboard"
+    },
+    "result_message": {
+      "type": "string",
+      "description": "Result message returned by the bot after execution"
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the bot executed the action"
+    }
+  },
+  "required": [
+    "discord_user_id",
+    "action_type",
+    "reason"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
