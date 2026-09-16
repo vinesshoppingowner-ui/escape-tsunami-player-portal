@@ -14,8 +14,8 @@
  * 2. Generate a personal access token and note your App ID.
  * 3. Add these to your bot's .env file:
  *
- *    BASE44_APP_ID=your_app_id_here
- *    BASE44_API_KEY=your_personal_access_token_here
+ *    PORTAL_APP_ID=your_app_id_here
+ *    PORTAL_API_KEY=your_personal_access_token_here
  *    DISCORD_GUILD_ID=your_discord_server_id_here
  *
  * 4. Copy this file into your bot project (next to index.js).
@@ -36,7 +36,7 @@
  * - The dashboard auto-refreshes to show the result
  */
 
-const API_BASE = 'https://app.base44.com/api/apps';
+const API_BASE = process.env.PORTAL_API_URL || 'https://app.base44.com/api/apps';
 const POLL_INTERVAL = 10000; // 10 seconds
 
 let isPolling = false;
@@ -118,12 +118,12 @@ async function pollAndExecute(client) {
   if (isPolling) return;
   isPolling = true;
 
-  const appId = process.env.BASE44_APP_ID;
-  const apiKey = process.env.BASE44_API_KEY;
+  const appId = process.env.PORTAL_APP_ID;
+  const apiKey = process.env.PORTAL_API_KEY;
   const guildId = process.env.DISCORD_GUILD_ID;
 
   if (!appId || !apiKey || !guildId) {
-    console.error('[PortalPoller] Missing env vars. Set BASE44_APP_ID, BASE44_API_KEY, DISCORD_GUILD_ID in .env');
+    console.error('[PortalPoller] Missing env vars. Set PORTAL_APP_ID, PORTAL_API_KEY, DISCORD_GUILD_ID in .env');
     isPolling = false;
     return;
   }
