@@ -25,7 +25,7 @@ import SeasonalEffects from '@/components/SeasonalEffects';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const isDesktopApp = useDesktopApp();
-  const season = useSeasonalTheme('winter');
+  const season = useSeasonalTheme();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
