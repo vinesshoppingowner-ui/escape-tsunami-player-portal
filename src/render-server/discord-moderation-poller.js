@@ -180,4 +180,60 @@ function startModerationPoller(client) {
   setInterval(() => pollAndExecute(client).catch(() => {}), POLL_INTERVAL);
 }
 
-module.exports = { startModerationPoller };
+/**
+ * Sends moderation DM info to the website so it can issue a web notification.
+ *
+ * Call this from your bot's sendModerationDM() function — right after (or
+ * alongside) the Discord DM send — so the website can show an in-portal
+ * notification, email, or website-based message about the action.
+ *
+ * @param {object} params
+ * @param {string} params.discord_user_id   - The target user's Discord ID
+ * @param {string} [params.discord_username] - The target user's Discord username
+ * @param {string} params.action_type        - timeout, kick, ban, unban, etc.
+ * @param {string} params.reason             - Reason shown to the user
+ * @param {number} [params.duration_minutes] - Timeout duration (if applicable)
+ * @param {string} [params.guild_id]         - The Discord guild ID
+ * @param {string} [params.issued_by]        - Staff member who issued it
+ * @returns {Promise<object>} The created notification record
+ */
+async function sendWebsiteNotification(params) {
+  const appId = process.env.PORTAL_APP_ID;
+  const apiKey = process.env.PORTAL_API_KEY;
+  if (!appId || !apiKey) {
+    console.warn('[PortalPoller] Cannot send website notification — missing PORTAL_APP_ID or PORTAL_API_KEY');
+    return null;
+  }
+
+  const { discord_user_id, discord_username, action_type, reason, duration_minutes, guild_id, issued_by } = params;
+  const displayUser = discord_username || discord_user_id || 'Unknown user';
+  const durationText = action_type === 'timeout' && duration_minutes ? ` for ${duration_minutes} minute(s)` : '';
+
+  const url = `${API_BASE}/${appId}/entities/Notification`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      roblox_username: displayUser,
+      title: `Discord ${action_type} issued`,
+      body: reason || `A Discord ${action_type} has been issued against your account${durationText}.`,
+      type: 'moderation_issued',
+      read: false,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[PortalPoller] Website notification failed: API ${res.status}: ${body}`);
+    return null;
+  }
+
+  const data = await res.json();
+  console.log(`[PortalPoller] Website notification sent for ${displayUser}`);
+  return data;
+}
+
+module.exports = { startModerationPoller, sendWebsiteNotification };
