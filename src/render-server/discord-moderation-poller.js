@@ -49,9 +49,9 @@ async function getPendingActions(appId, apiKey) {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}\n  URL: ${url}\n  AppId: ${appId}`);
   const data = await res.json();
-  // Handle both array and paginated object responses
+  // Handle both array or paginated object responses
   const items = Array.isArray(data) ? data : (data.items || data.data || []);
   return items.filter((a) => a.status === 'pending');
 }
@@ -166,7 +166,16 @@ async function pollAndExecute(client) {
  * @param {import('discord.js').Client} client - Your discord.js client
  */
 function startModerationPoller(client) {
+  const appId = process.env.PORTAL_APP_ID;
+  const apiKey = process.env.PORTAL_API_KEY;
+  const guildId = process.env.DISCORD_GUILD_ID;
   console.log('[PortalPoller] Started — polling for pending Discord actions every 10s');
+  console.log('[PortalPoller] Config:');
+  console.log('  API_BASE:', API_BASE);
+  console.log('  PORTAL_APP_ID:', appId ? `${appId.slice(0, 8)}…` : '(missing!)');
+  console.log('  PORTAL_API_KEY:', apiKey ? `${apiKey.slice(0, 6)}…` : '(missing!)');
+  console.log('  DISCORD_GUILD_ID:', guildId ? `${guildId.slice(0, 6)}…` : '(missing!)');
+  console.log('  Poll URL:', `${API_BASE}/${appId}/entities/DiscordAction`);
   pollAndExecute(client).catch(() => {});
   setInterval(() => pollAndExecute(client).catch(() => {}), POLL_INTERVAL);
 }
