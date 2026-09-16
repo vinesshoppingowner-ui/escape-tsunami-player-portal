@@ -1,0 +1,480 @@
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare } from 'lucide-react';
+
+const ROBLOX_USERS_API = 'https://users.roproxy.com/v1';
+const ROBLOX_THUMBS_API = 'https://thumbnails.roproxy.com/v1';
+const ROBLOX_GROUPS_API = 'https://groups.roproxy.com/v1';
+
+const MOD_TYPE_STYLES = {
+  'Warning': 'text-amber-300 bg-amber-500/10 border-amber-500/20',
+  'Mute': 'text-slate-300 bg-slate-500/10 border-slate-500/20',
+  'Kick': 'text-orange-300 bg-orange-500/10 border-orange-500/20',
+  'Temporary Ban': 'text-rose-300 bg-rose-500/10 border-rose-500/20',
+  'Permanent Ban': 'text-red-400 bg-red-500/15 border-red-500/30',
+};
+
+const DISCORD_ACTION_STYLES = {
+  timeout: 'text-amber-300 bg-amber-500/10 border-amber-500/20',
+  untimeout: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20',
+  kick: 'text-orange-300 bg-orange-500/10 border-orange-500/20',
+  ban: 'text-rose-300 bg-rose-500/10 border-rose-500/20',
+  unban: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20',
+};
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days < 1) return 'today';
+  if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`;
+  const years = Math.floor(days / 365);
+  return `${years} year${years !== 1 ? 's' : ''} ago`;
+}
+
+function accountAge(createdDate) {
+  if (!createdDate) return '—';
+  const diff = Date.now() - new Date(createdDate).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days < 365) return `${days} day${days !== 1 ? 's' : ''}`;
+  const years = Math.floor(days / 365);
+  const remDays = days % 365;
+  return `${years} year${years !== 1 ? 's' : ''}, ${remDays} day${remDays !== 1 ? 's' : ''}`;
+}
+
+export default function UserLookup() {
+  const [platform, setPlatform] = useState('roblox');
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [robloxProfile, setRobloxProfile] = useState(null);
+  const [discordData, setDiscordData] = useState(null);
+
+  const search = async () => {
+    const q = query.trim();
+    if (!q) return;
+    setLoading(true);
+    setError(null);
+    setRobloxProfile(null);
+    setDiscordData(null);
+
+    try {
+      if (platform === 'roblox') {
+        await searchRoblox(q);
+      } else {
+        await searchDiscord(q);
+      }
+    } catch (err) {
+      setError(err.message || 'Lookup failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchRoblox = async (username) => {
+    // 1. Resolve user ID via exact username match
+    const searchRes = await fetch(`${ROBLOX_USERS_API}/users/search?keyword=${encodeURIComponent(username)}&limit=10`);
+    if (!searchRes.ok) throw new Error('Roblox user search failed');
+    const searchData = await searchRes.json();
+    const match = (searchData?.data || []).find(
+      (u) => (u.name || '').toLowerCase() === username.toLowerCase()
+    );
+    if (!match) throw new Error(`No Roblox user found with username "${username}"`);
+    const userId = match.id;
+
+    // 2. Fetch full user details, avatar, and groups in parallel
+    const [userRes, headRes, bodyRes, groupsRes] = await Promise.all([
+      fetch(`${ROBLOX_USERS_API}/users/${userId}`),
+      fetch(`${ROBLOX_THUMBS_API}/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
+      fetch(`${ROBLOX_THUMBS_API}/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
+      fetch(`${ROBLOX_GROUPS_API}/users/${userId}/groups/roles`),
+    ]);
+
+    const user = await userRes.json();
+    const headData = await headRes.json();
+    const bodyData = await bodyRes.json();
+    const groupsData = await groupsRes.ok ? await groupsRes.json() : { data: [] };
+
+    const headshot = headData?.data?.[0]?.imageUrl;
+    const fullBody = bodyData?.data?.[0]?.imageUrl;
+    const groups = (groupsData?.data || []).map((g) => ({
+      name: g.group?.name,
+      id: g.group?.id,
+      memberCount: g.group?.memberCount,
+      role: g.role?.name,
+      rank: g.role?.rank,
+    }));
+
+    // 3. Fetch moderation history from our portal
+    let moderations = [];
+    try {
+      moderations = await base44.entities.Moderation.filter(
+        { roblox_username: username },
+        '-moderation_date',
+        50
+      );
+    } catch { /* RLS may block if non-admin, but admins can read all */ }
+
+    setRobloxProfile({
+      userId,
+      username: user.name,
+      displayName: user.displayName,
+      description: user.description,
+      createdDate: user.created,
+      isBanned: user.isBanned,
+      headshot,
+      fullBody,
+      groups,
+      moderations,
+    });
+  };
+
+  const searchDiscord = async (rawId) => {
+    const discordId = rawId.replace(/[^0-9]/g, '');
+    if (!discordId) throw new Error('Enter a valid Discord user ID (numbers only)');
+
+    // Fetch all DiscordActions for this user from our portal
+    let actions = [];
+    try {
+      actions = await base44.entities.DiscordAction.filter(
+        { discord_user_id: discordId },
+        '-created_date',
+        50
+      );
+    } catch { /* ignore */ }
+
+    // Also check if they have a discord_username stored
+    const knownUsername = actions.find((a) => a.discord_username)?.discord_username;
+
+    if (actions.length === 0 && !knownUsername) {
+      setError(`No Discord actions found for user ID ${discordId}. This user has no moderation history in the portal.`);
+      return;
+    }
+
+    setDiscordData({
+      discordId,
+      username: knownUsername || discordId,
+      actions,
+      avatarUrl: `https://cdn.discordapp.com/embed/avatars/${BigInt(discordId) % 6n}.png`,
+    });
+  };
+
+  return (
+    <div>
+      {/* Platform toggle */}
+      <div className="flex gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => { setPlatform('roblox'); setRobloxProfile(null); setDiscordData(null); setError(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+            platform === 'roblox'
+              ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300'
+              : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
+          }`}
+        >
+          <UserIcon className="h-4 w-4 inline mr-1.5" /> Roblox
+        </button>
+        <button
+          type="button"
+          onClick={() => { setPlatform('discord'); setRobloxProfile(null); setDiscordData(null); setError(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+            platform === 'discord'
+              ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300'
+              : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
+          }`}
+        >
+          <Bot className="h-4 w-4 inline mr-1.5" /> Discord
+        </button>
+      </div>
+
+      {/* Search bar */}
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && search()}
+            placeholder={platform === 'roblox' ? 'Enter Roblox username…' : 'Enter Discord user ID…'}
+            className="bg-slate-950/60 border-white/15 text-white pl-9"
+          />
+        </div>
+        <Button
+          onClick={search}
+          disabled={loading || !query.trim()}
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          Lookup
+        </Button>
+      </div>
+
+      {error && (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-4 py-3 text-sm text-rose-300 mb-4 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center py-20 text-slate-400">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
+
+      {/* Roblox results */}
+      {platform === 'roblox' && robloxProfile && (
+        <RobloxResult profile={robloxProfile} />
+      )}
+
+      {/* Discord results */}
+      {platform === 'discord' && discordData && (
+        <DiscordResult data={discordData} />
+      )}
+
+      {!loading && !robloxProfile && !discordData && !error && (
+        <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-20 text-center text-slate-500">
+          <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">
+            {platform === 'roblox'
+              ? 'Search a Roblox username to view their full profile, account age, groups, and moderation history.'
+              : 'Enter a Discord user ID to view their portal moderation history and cached profile info.'}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RobloxResult({ profile }) {
+  const { username, displayName, description, createdDate, isBanned, headshot, fullBody, groups, moderations } = profile;
+  const modCount = moderations.length;
+  const banCount = moderations.filter((m) => m.moderation_type?.includes('Ban')).length;
+  const activeCount = moderations.filter((m) => m.status === 'Active').length;
+
+  return (
+    <div className="space-y-4">
+      {/* Profile header */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+        <div className="flex flex-col sm:flex-row gap-5">
+          <div className="flex gap-4">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/15 shrink-0">
+              {headshot ? (
+                <img src={headshot} alt={username} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <UserIcon className="h-10 w-10 text-slate-500" />
+                </div>
+              )}
+            </div>
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/15 shrink-0 hidden sm:block">
+              {fullBody ? (
+                <img src={fullBody} alt={username} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <UserIcon className="h-10 w-10 text-slate-500" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-bold text-white">{displayName || username}</h3>
+              {displayName && displayName !== username && (
+                <span className="text-sm text-slate-400">@{username}</span>
+              )}
+              {isBanned && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/30">
+                  BANNED
+                </span>
+              )}
+            </div>
+            <div className="mt-1 text-xs text-slate-500">User ID: {profile.userId}</div>
+
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Stat icon={Calendar} label="Account Age" value={accountAge(createdDate)} />
+              <Stat icon={Gavel} label="Total Mods" value={modCount} />
+              <Stat icon={Shield} label="Bans" value={banCount} cls="text-rose-300" />
+              <Stat icon={AlertTriangle} label="Active" value={activeCount} cls="text-amber-300" />
+            </div>
+          </div>
+        </div>
+
+        {description && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1.5">
+              <FileText className="h-3.5 w-3.5" /> Description
+            </div>
+            <p className="text-sm text-slate-300 whitespace-pre-wrap line-clamp-4">{description}</p>
+          </div>
+        )}
+
+        <div className="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
+          <Calendar className="h-3.5 w-3.5" /> Joined Roblox: {createdDate ? new Date(createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+        </div>
+      </div>
+
+      {/* Groups / Communities */}
+      {groups.length > 0 && (
+        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="h-4 w-4 text-cyan-400" />
+            <h4 className="text-sm font-semibold text-white">Communities ({groups.length})</h4>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {groups.slice(0, 12).map((g) => (
+              <div key={g.id} className="flex items-center justify-between rounded-lg bg-slate-950/40 border border-white/5 px-3 py-2">
+                <div className="min-w-0">
+                  <div className="text-sm text-white truncate">{g.name}</div>
+                  <div className="text-xs text-slate-500">{g.role} · Rank {g.rank}</div>
+                </div>
+                <div className="text-xs text-slate-500 shrink-0 ml-2">{g.memberCount?.toLocaleString() || '—'} members</div>
+              </div>
+            ))}
+          </div>
+          {groups.length > 12 && (
+            <div className="mt-2 text-xs text-slate-500 text-center">+ {groups.length - 12} more groups</div>
+          )}
+        </div>
+      )}
+
+      {/* Moderation history */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Gavel className="h-4 w-4 text-cyan-400" />
+          <h4 className="text-sm font-semibold text-white">Portal Moderation History ({modCount})</h4>
+        </div>
+        {modCount === 0 ? (
+          <div className="text-sm text-slate-500 py-6 text-center">No moderation actions on record.</div>
+        ) : (
+          <div className="space-y-2">
+            {moderations.map((m) => (
+              <div key={m.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-950/40 border border-white/5 px-4 py-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${MOD_TYPE_STYLES[m.moderation_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>
+                      {m.moderation_type}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${m.status === 'Active' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' : 'text-slate-400 bg-slate-500/10 border-slate-500/20'}`}>
+                      {m.status}
+                    </span>
+                    {m.duration && <span className="text-xs text-slate-500">{m.duration}</span>}
+                  </div>
+                  <div className="text-sm text-slate-300 mt-1">{m.reason}</div>
+                  {m.details && <div className="text-xs text-slate-500 mt-0.5">{m.details}</div>}
+                  <div className="text-xs text-slate-600 mt-1 flex items-center gap-2">
+                    <Clock className="h-3 w-3" />
+                    {m.moderation_date ? new Date(m.moderation_date).toLocaleDateString() : '—'}
+                    {m.staff_member && <span>· Staff: {m.staff_member}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DiscordResult({ data }) {
+  const { discordId, username, actions, avatarUrl } = data;
+  const pending = actions.filter((a) => a.status === 'pending').length;
+  const completed = actions.filter((a) => a.status === 'completed').length;
+  const failed = actions.filter((a) => a.status === 'failed').length;
+  const bans = actions.filter((a) => a.action_type === 'ban').length;
+  const timeouts = actions.filter((a) => a.action_type === 'timeout').length;
+
+  return (
+    <div className="space-y-4">
+      {/* Profile header */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-indigo-500/10 border border-indigo-500/30 shrink-0">
+            <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-bold text-white">{username}</h3>
+            <div className="mt-1 text-xs text-slate-500">Discord ID: {discordId}</div>
+            <div className="mt-1 text-xs text-indigo-400/70 flex items-center gap-1.5">
+              <MessageSquare className="h-3.5 w-3.5" />
+              Profile fetched from portal records
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Stat icon={Gavel} label="Total Actions" value={actions.length} />
+              <Stat icon={Clock} label="Pending" value={pending} cls="text-amber-300" />
+              <Stat icon={Shield} label="Bans" value={bans} cls="text-rose-300" />
+              <Stat icon={AlertTriangle} label="Timeouts" value={timeouts} cls="text-orange-300" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 rounded-lg bg-indigo-500/5 border border-indigo-500/15 px-3 py-2 text-xs text-slate-400">
+          Full Discord profile details (nametag color, exact PFP, bio, join date) require the Discord bot to cache profiles.
+          Showing portal moderation history below.
+        </div>
+      </div>
+
+      {/* Action history */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Bot className="h-4 w-4 text-indigo-400" />
+          <h4 className="text-sm font-semibold text-white">Discord Action History ({actions.length})</h4>
+        </div>
+        {actions.length === 0 ? (
+          <div className="text-sm text-slate-500 py-6 text-center">No Discord actions on record.</div>
+        ) : (
+          <div className="space-y-2">
+            {actions.map((a) => (
+              <div key={a.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-950/40 border border-white/5 px-4 py-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${DISCORD_ACTION_STYLES[a.action_type] || 'text-slate-300 bg-slate-500/10 border-slate-500/20'}`}>
+                      {a.action_type}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                      a.status === 'completed' ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20' :
+                      a.status === 'pending' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' :
+                      'text-rose-300 bg-rose-500/10 border-rose-500/20'
+                    }`}>
+                      {a.status}
+                    </span>
+                    {a.duration_minutes && <span className="text-xs text-slate-500">{a.duration_minutes}m</span>}
+                  </div>
+                  <div className="text-sm text-slate-300 mt-1">{a.reason}</div>
+                  {a.result_message && (
+                    <div className={`text-xs mt-0.5 ${a.status === 'failed' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      {a.result_message}
+                    </div>
+                  )}
+                  <div className="text-xs text-slate-600 mt-1 flex items-center gap-2">
+                    <Clock className="h-3 w-3" />
+                    {a.created_date ? new Date(a.created_date).toLocaleDateString() : '—'}
+                    {a.issued_by && <span>· By: {a.issued_by}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ icon: Icon, label, value, cls }) {
+  return (
+    <div className="rounded-lg bg-slate-950/40 border border-white/5 p-2.5 text-center">
+      <div className={`text-lg font-bold ${cls || 'text-white'}`}>{value}</div>
+      <div className="text-[10px] text-slate-500 uppercase tracking-wide flex items-center justify-center gap-1">
+        <Icon className="h-2.5 w-2.5" /> {label}
+      </div>
+    </div>
+  );
+}
