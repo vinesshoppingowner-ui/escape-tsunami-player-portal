@@ -74,6 +74,33 @@ async function updateAction(appId, apiKey, id, updates) {
 }
 
 /**
+ * Sends a DM to the target user about the moderation action.
+ * Must be called BEFORE kick/ban (user leaves the server and can't be DM'd after).
+ */
+async function sendModerationDM(client, guild, action, resultText) {
+  try {
+    const user = await client.users.fetch(action.discord_user_id);
+    const embed = {
+      color: 0x1c7ed6,
+      title: `🔔 Moderation Notice — ${guild.name}`,
+      description: `You have received a **${action.action_type}** in **${guild.name}**.`,
+      fields: [
+        { name: 'Action', value: action.action_type, inline: true },
+        ...(action.duration_minutes ? [{ name: 'Duration', value: `${action.duration_minutes} minute(s)`, inline: true }] : []),
+        { name: 'Reason', value: action.reason || 'No reason provided', inline: false },
+        { name: 'Result', value: resultText, inline: false },
+      ],
+      footer: { text: 'Escape Tsunami Staff Team' },
+      timestamp: new Date().toISOString(),
+    };
+    await user.send({ embeds: [embed] });
+    console.log(`[PortalPoller] DM sent to ${action.discord_username || action.discord_user_id}`);
+  } catch (err) {
+    console.warn(`[PortalPoller] Could not DM ${action.discord_user_id}: ${err.message}`);
+  }
+}
+
+/**
  * Executes a single Discord action using the discord.js client.
  */
 async function executeAction(client, guildId, action) {
@@ -83,28 +110,38 @@ async function executeAction(client, guildId, action) {
     case 'timeout': {
       const member = await guild.members.fetch(action.discord_user_id);
       const minutes = action.duration_minutes || 5;
+      const resultText = `Timed out for ${minutes} minute(s)`;
+      await sendModerationDM(client, guild, action, resultText);
       await member.timeout(minutes * 60 * 1000, action.reason || 'No reason provided');
-      return `Timed out for ${minutes} minute(s)`;
+      return resultText;
     }
     case 'untimeout': {
       const member = await guild.members.fetch(action.discord_user_id);
+      const resultText = 'Timeout removed';
+      await sendModerationDM(client, guild, action, resultText);
       await member.timeout(null, action.reason || 'Timeout removed');
-      return 'Timeout removed';
+      return resultText;
     }
     case 'kick': {
       const member = await guild.members.fetch(action.discord_user_id);
+      const resultText = 'Kicked from server';
+      await sendModerationDM(client, guild, action, resultText);
       await member.kick(action.reason || 'No reason provided');
-      return 'Kicked from server';
+      return resultText;
     }
     case 'ban': {
+      const resultText = 'Banned from server';
+      await sendModerationDM(client, guild, action, resultText);
       await guild.bans.create(action.discord_user_id, {
         reason: action.reason || 'No reason provided',
       });
-      return 'Banned from server';
+      return resultText;
     }
     case 'unban': {
+      const resultText = 'Unbanned';
       await guild.bans.remove(action.discord_user_id, action.reason || 'Unbanned');
-      return 'Unbanned';
+      await sendModerationDM(client, guild, action, resultText);
+      return resultText;
     }
     default:
       throw new Error(`Unknown action type: ${action.action_type}`);
