@@ -36,7 +36,7 @@
  * - The dashboard auto-refreshes to show the result
  */
 
-const API_BASE = process.env.PORTAL_API_URL || 'https://app.base44.com/api/apps';
+const API_BASE = process.env.PORTAL_API_URL || 'https://base44.app/api/apps';
 const POLL_INTERVAL = 10000; // 10 seconds
 
 let isPolling = false;
