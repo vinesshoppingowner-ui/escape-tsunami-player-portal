@@ -1,7 +1,7 @@
-import { LifeBuoy, ExternalLink } from 'lucide-react';
+import { LifeBuoy, ExternalLink, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const SUPPORT_URL = 'https://www.roblox.com/communities/33513762';
+const DISCORD_URL = 'https://discord.gg/escapetsunami';
 
 export default function SupportCard() {
   return (
@@ -13,14 +13,14 @@ export default function SupportCard() {
         <div className="flex-1">
           <h2 className="font-semibold text-white">Need help with a moderation?</h2>
           <p className="mt-1 text-sm text-slate-400">
-            Questions about a ban or an appeal? Reach out in our community group and a staff member will assist you.
+            Questions about a ban or an appeal? Join our Discord server and open a support ticket — a staff member will assist you.
           </p>
-          <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="inline-block mt-3">
+          <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="inline-block mt-3">
             <Button
               size="sm"
               className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
             >
-              Get Support <ExternalLink className="h-4 w-4 ml-1.5" />
+              <MessageCircle className="h-4 w-4 mr-1.5" /> Join our Discord &amp; open a ticket <ExternalLink className="h-3.5 w-3.5 ml-1" />
             </Button>
           </a>
         </div>

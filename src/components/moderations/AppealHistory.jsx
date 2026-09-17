@@ -9,6 +9,51 @@ const STATUS_STYLES = {
 };
 const STATUS_ICON = { Pending: Clock, 'Under Review': Clock, Approved: CheckCircle2, Denied: XCircle };
 
+function AppealTimeline({ status }) {
+  const steps = [
+    { key: 'submitted', label: 'Submitted', reached: true },
+    { key: 'review', label: 'Under Review', reached: ['Under Review', 'Approved', 'Denied'].includes(status) },
+    { key: 'resolved', label: 'Resolved', reached: ['Approved', 'Denied'].includes(status) },
+  ];
+
+  return (
+    <div className="mt-4 flex items-center gap-1">
+      {steps.map((step, i) => {
+        const isLast = i === steps.length - 1;
+        return (
+          <div key={step.key} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              <div
+                className={`h-6 w-6 rounded-full flex items-center justify-center border-2 transition-colors ${
+                  step.reached
+                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                    : 'bg-white/[0.03] border-white/15 text-slate-600'
+                }`}
+              >
+                {step.reached ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Clock className="h-3 w-3" />
+                )}
+              </div>
+              <span className={`text-[10px] font-medium ${step.reached ? 'text-cyan-300' : 'text-slate-600'}`}>
+                {step.label}
+              </span>
+            </div>
+            {!isLast && (
+              <div
+                className={`h-0.5 flex-1 mx-1 rounded-full transition-colors ${
+                  steps[i + 1].reached ? 'bg-cyan-400/50' : 'bg-white/10'
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AppealHistory({ appeals = [], moderations = [] }) {
   if (!appeals.length) return null;
   const modMap = Object.fromEntries(moderations.map((m) => [m.id, m]));
@@ -45,6 +90,8 @@ export default function AppealHistory({ appeals = [], moderations = [] }) {
                   <StatusIcon className="h-3.5 w-3.5" /> {a.status}
                 </span>
               </div>
+
+              <AppealTimeline status={a.status} />
 
               {a.staff_response ? (
                 <div className="mt-3 flex items-start gap-2 rounded-lg bg-slate-950/50 border border-white/10 p-3">

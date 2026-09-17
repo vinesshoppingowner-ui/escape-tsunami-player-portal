@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, User, LogOut, RefreshCw, LogIn, Sparkles } from 'lucide-react';
+import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
@@ -13,10 +13,10 @@ import AppealHistory from '@/components/moderations/AppealHistory';
 import NotificationsBell from '@/components/moderations/NotificationsBell';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
-import DevSandbox from '@/components/moderations/DevSandbox';
-import PatchNotes from '@/components/portal/PatchNotes';
 import SupportCard from '@/components/portal/SupportCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
+
+const COMMUNITY_GUIDELINES_URL = 'https://discord.gg/escapetsunami';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -26,11 +26,14 @@ export default function Portal() {
   const [appeals, setAppeals] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeModeration, setActiveModeration] = useState(null);
 
-  // pull verified username from profile once user loads
+  const moderationsRef = useRef(null);
+  const appealsRef = useRef(null);
+
   useEffect(() => {
     if (user?.roblox_username) {
       setSavedUsername(user.roblox_username);
@@ -48,6 +51,7 @@ export default function Portal() {
       setModerations(mods || []);
       setAppeals(apps || []);
       setNotifications(notes || []);
+      setLastUpdated(new Date());
     } finally {
       setLoading(false);
     }
@@ -101,6 +105,24 @@ export default function Portal() {
 
   const refresh = () => savedUsername && loadData(savedUsername);
 
+  const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const activeCount = moderations.filter((m) => m.status === 'Active').length;
+  const lastModDate = moderations
+    .map((m) => m.moderation_date)
+    .filter(Boolean)
+    .sort()
+    .pop();
+  const daysSinceLast = lastModDate
+    ? Math.floor((Date.now() - new Date(lastModDate).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const stats = [
+    { label: 'Active moderations', value: activeCount, onClick: () => scrollTo(moderationsRef) },
+    { label: 'Appeals submitted', value: appeals.length, onClick: () => scrollTo(appealsRef) },
+    { label: 'Awaiting decision', value: appeals.filter((a) => a.status === 'Pending' || a.status === 'Under Review').length, onClick: () => scrollTo(appealsRef) },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteNav />
@@ -147,33 +169,60 @@ export default function Portal() {
           <VerifyAccount onVerified={handleVerified} />
         ) : (
           <>
-            {/* Account standing */}
+            {/* Account standing + guidelines link */}
             <div className="mt-8">
               <AccountStanding moderations={moderations} />
+              <div className="mt-2">
+                <a href={COMMUNITY_GUIDELINES_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+                  <BookOpen className="h-3.5 w-3.5" /> View Community Guidelines
+                </a>
+              </div>
             </div>
 
-            {/* Stats */}
+            {/* Next milestone */}
+            {activeCount === 0 && (
+              <div className="mt-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15 px-4 py-3 flex items-center gap-3">
+                <Trophy className="h-4 w-4 text-emerald-400 shrink-0" />
+                <div className="text-sm">
+                  {daysSinceLast !== null ? (
+                    <span className="text-slate-300">
+                      <span className="font-semibold text-emerald-300">{daysSinceLast} day{daysSinceLast !== 1 ? 's' : ''}</span> without a warning — keep it up! Next milestone: <span className="text-emerald-300">6 months = Veteran status</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-300">Clean slate — stay warning-free for <span className="text-emerald-300">6 months</span> to earn Veteran status 🏆</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Stats — clickable */}
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {[
-                { label: 'Active moderations', value: moderations.filter((m) => m.status === 'Active').length },
-                { label: 'Appeals submitted', value: appeals.length },
-                { label: 'Awaiting decision', value: appeals.filter((a) => a.status === 'Pending' || a.status === 'Under Review').length },
-              ].map((s) => (
-                <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+              {stats.map((s) => (
+                <button
+                  key={s.label}
+                  onClick={s.onClick}
+                  className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-left hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all cursor-pointer"
+                >
                   <div className="text-2xl font-bold text-white">{s.value}</div>
                   <div className="text-xs text-slate-400 mt-0.5">{s.label}</div>
-                </div>
+                </button>
               ))}
             </div>
 
             {/* Status bar */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-sm">
-                <span className="inline-flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white/5 border border-white/10">
+                <a
+                  href={`https://www.roblox.com/search/users?keyword=${encodeURIComponent(savedUsername)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-colors"
+                >
                   <RobloxAvatar username={savedUsername} size={28} />
                   <span className="text-slate-300">Verified as</span>
                   <span className="font-semibold text-white">{savedUsername}</span>
-                </span>
+                  <ExternalLink className="h-3 w-3 text-slate-500" />
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <NotificationsBell notifications={notifications} onMarkAllRead={markAllRead} />
@@ -188,8 +237,15 @@ export default function Portal() {
               </div>
             </div>
 
+            {/* Last updated */}
+            {lastUpdated && (
+              <div className="mt-2 text-xs text-slate-500">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </div>
+            )}
+
             {/* Moderations */}
-            <div className="mt-6">
+            <div ref={moderationsRef} className="mt-6 scroll-mt-24">
               {loading ? (
                 <div className="flex items-center justify-center py-24 text-slate-400">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading your moderations…
@@ -224,10 +280,11 @@ export default function Portal() {
               )}
             </div>
 
-            {moderations.filter((m) => m.status === 'Active').length === 0 && <DevSandbox />}
-            <PatchNotes />
             <SupportCard />
-            <AppealHistory appeals={appeals} moderations={moderations} />
+
+            <div ref={appealsRef} className="scroll-mt-24">
+              <AppealHistory appeals={appeals} moderations={moderations} />
+            </div>
           </>
         )}
       </main>
