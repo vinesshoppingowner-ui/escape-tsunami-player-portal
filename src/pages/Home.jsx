@@ -72,6 +72,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950" />
           <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-cyan-500/20 blur-[140px]" />
           <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-blue-600/20 blur-[120px]" />
+          <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         </div>
 
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
@@ -119,8 +120,8 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {stats.map((s) => (
-                  <div key={s.label} className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3.5 backdrop-blur-sm">
-                    <s.icon className="h-4 w-4 text-cyan-400 mb-2" />
+                  <div key={s.label} className="group rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3.5 backdrop-blur-sm hover:bg-white/[0.07] hover:border-cyan-500/30 transition-all duration-300">
+                    <s.icon className="h-4 w-4 text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
                     <div className="text-xl font-semibold text-white">{s.value}</div>
                     <div className="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">{s.label}</div>
                   </div>
@@ -175,7 +176,7 @@ export default function Home() {
       <section className="px-5 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="text-xs font-semibold tracking-[0.2em] uppercase text-cyan-400 mb-3">How it plays</div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.2em] uppercase text-cyan-300 mb-4">How it plays</div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Survive, collect, and rise</h2>
             <p className="mt-4 text-slate-400">Everything you can do in-game, in one quick look.</p>
           </div>
@@ -185,9 +186,10 @@ export default function Home() {
               <motion.div
                 key={f.title}
                 variants={fade} custom={i} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-60px' }}
-                className="group rounded-2xl bg-white/[0.05] border border-white/15 p-6 shadow-lg shadow-cyan-950/40 hover:border-cyan-500/40 hover:bg-white/[0.07] hover:shadow-cyan-500/10 transition-all"
+                className="group relative rounded-2xl bg-white/[0.05] border border-white/15 p-6 shadow-lg shadow-cyan-950/40 hover:border-cyan-500/40 hover:bg-white/[0.07] hover:shadow-cyan-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
               >
-                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-cyan-500/20 group-hover:shadow-lg transition-transform">
                   <f.icon className="h-5 w-5 text-cyan-300" />
                 </div>
                 <h3 className="font-semibold text-white text-lg">{f.title}</h3>
@@ -201,7 +203,8 @@ export default function Home() {
       {/* Member Portal CTA */}
       <section className="px-5 py-20">
         <div className="max-w-5xl mx-auto">
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 sm:p-14">
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 sm:p-14 shadow-2xl shadow-cyan-950/50">
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-cyan-500/20 via-transparent to-blue-600/20 opacity-50" style={{ mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', maskComposite: 'exclude', padding: '1px' }} />
             <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-cyan-500/20 blur-[100px]" />
             <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-blue-600/20 blur-[100px]" />
             <div className="relative grid md:grid-cols-[1.4fr_1fr] gap-8 items-center">
