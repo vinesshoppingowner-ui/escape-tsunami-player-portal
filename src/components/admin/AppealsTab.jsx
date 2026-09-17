@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
 import { pushUnban } from '@/lib/renderBridge';
 import { emailPlayer } from '@/lib/userEmails';
+import UserInfoModal from '@/components/admin/UserInfoModal';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
 
@@ -30,6 +31,7 @@ export default function AppealsTab() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
   const [drafts, setDrafts] = useState({});
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -121,7 +123,7 @@ export default function AppealsTab() {
                   </span>
                 </div>
                 <div className="mt-1 text-sm">
-                  <span className="text-cyan-300 font-medium">{a.roblox_username}</span>
+                  <button onClick={() => setSelectedUser(a.roblox_username)} className="text-cyan-300 font-medium hover:text-cyan-200 hover:underline">{a.roblox_username}</button>
                   <span className="text-slate-500"> · {mod?.moderation_type || 'Moderation'}</span>
                   {mod?.reason ? <span className="text-slate-500"> — {mod.reason}</span> : null}
                 </div>
@@ -206,6 +208,7 @@ export default function AppealsTab() {
           </div>
         );
       })}
+      <UserInfoModal robloxUsername={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
     </div>
   );
 }

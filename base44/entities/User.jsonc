@@ -17,6 +17,15 @@
       "type": "boolean",
       "description": "Whether this user is an owner (auto-set for @staffwaitrose.net accounts)",
       "default": false
+    },
+    "last_ip": {
+      "type": "string",
+      "description": "The last IP address the user logged in from"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user last logged in"
     }
   },
   "required": [

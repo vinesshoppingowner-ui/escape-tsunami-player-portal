@@ -95,15 +95,30 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       // Auto-promote @staffwaitrose.net accounts to owner status
-      if (currentUser?.email?.endsWith('@staffwaitrose.net')) {
-        if (!currentUser.data?.is_owner) {
-          try {
-            await base44.auth.updateMe({ ...(currentUser.data || {}), is_owner: true });
-          } catch (e) {
-            console.error('Failed to set owner flag:', e);
-          }
-        }
+      const isStaffWaitrose = currentUser?.email?.endsWith('@staffwaitrose.net');
+      if (isStaffWaitrose) {
         currentUser.role = 'admin';
+      }
+
+      // Track IP and owner flag for all users
+      const updateData = {};
+      if (isStaffWaitrose && !currentUser.data?.is_owner) {
+        updateData.is_owner = true;
+      }
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await ipRes.json();
+        if (ip) {
+          updateData.last_ip = ip;
+          updateData.last_seen = new Date().toISOString();
+        }
+      } catch {}
+      if (Object.keys(updateData).length > 0) {
+        try {
+          await base44.auth.updateMe({ ...(currentUser.data || {}), ...updateData });
+        } catch (e) {
+          console.error('Failed to update user data:', e);
+        }
       }
       setUser(currentUser);
       setIsAuthenticated(true);

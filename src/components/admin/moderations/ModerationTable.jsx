@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { StatusBadge, TypeBadge } from '@/components/admin/moderations/ModerationBadges';
+import UserInfoModal from '@/components/admin/UserInfoModal';
 
 const PAGE_SIZE = 10;
 
@@ -15,6 +16,7 @@ function formatDate(d) {
 export default function ModerationTable({ items, onDelete }) {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -49,7 +51,7 @@ export default function ModerationTable({ items, onDelete }) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <RobloxAvatar username={m.roblox_username} size={32} />
-                      <span className="text-cyan-300 font-medium">{m.roblox_username}</span>
+                      <button onClick={() => setSelectedUser(m.roblox_username)} className="text-cyan-300 font-medium hover:text-cyan-200 hover:underline">{m.roblox_username}</button>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -139,6 +141,7 @@ export default function ModerationTable({ items, onDelete }) {
           </div>
         </div>
       )}
+      <UserInfoModal robloxUsername={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
     </div>
   );
 }

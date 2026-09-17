@@ -4,8 +4,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info } from 'lucide-react';
+import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info, Mail, Globe, ShieldBan } from 'lucide-react';
 import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
+import { useToast } from '@/components/ui/use-toast';
 
 const ROBLOX_USERS_API = 'https://users.roproxy.com/v1';
 const ROBLOX_THUMBS_API = 'https://thumbnails.roproxy.com/v1';
@@ -95,12 +96,17 @@ export default function UserLookup() {
 
     let moderations = [];
     let appeals = [];
+    let websiteAccount = null;
     try {
       [moderations, appeals] = await Promise.all([
         base44.entities.Moderation.filter({ roblox_username: userData.name }, '-moderation_date', 50),
         base44.entities.Appeal.filter({ roblox_username: userData.name }, '-created_date', 50),
       ]);
     } catch { /* RLS */ }
+    try {
+      const users = await base44.entities.User.filter({ roblox_username: userData.name }, '-created_date', 5);
+      if (users.length > 0) websiteAccount = users[0];
+    } catch {}
 
     setRobloxProfile({
       userId,
@@ -120,6 +126,7 @@ export default function UserLookup() {
       })),
       moderations,
       appeals,
+      websiteAccount,
     });
   };
 
@@ -304,6 +311,9 @@ export default function UserLookup() {
 }
 
 function RobloxResult({ profile, onReload }) {
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  const [banningIp, setBanningIp] = useState(false);
   const { username, displayName, description, createdDate, isBanned, headshot, fullBody, groups, moderations } = profile;
   const modCount = moderations.length;
   const banCount = moderations.filter((m) => m.moderation_type?.includes('Ban')).length;
@@ -363,6 +373,74 @@ function RobloxResult({ profile, onReload }) {
         <div className="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5" /> Joined Roblox: {createdDate ? new Date(createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
         </div>
+      </div>
+
+      {/* Website Account Info */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <UserIcon className="h-4 w-4 text-cyan-400" />
+          <h4 className="text-sm font-semibold text-white">Website Account</h4>
+          {profile.websiteAccount ? (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Registered</span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/15 text-slate-400 border border-slate-500/30">Not registered</span>
+          )}
+        </div>
+        {profile.websiteAccount ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-slate-400 shrink-0" />
+              <span className="text-slate-500">Email:</span>
+              <span className="text-white">{profile.websiteAccount.email}</span>
+            </div>
+            {profile.websiteAccount.data?.last_ip && (
+              <div className="flex items-center gap-2 text-sm">
+                <Globe className="h-4 w-4 text-slate-400 shrink-0" />
+                <span className="text-slate-500">Last IP:</span>
+                <span className="text-white font-mono">{profile.websiteAccount.data.last_ip}</span>
+              </div>
+            )}
+            {profile.websiteAccount.data?.last_seen && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                <span className="text-slate-500">Last seen:</span>
+                <span className="text-white">{new Date(profile.websiteAccount.data.last_seen).toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm">
+              <Shield className="h-4 w-4 text-slate-400 shrink-0" />
+              <span className="text-slate-500">Role:</span>
+              <span className="text-white">{profile.websiteAccount.role || 'user'}</span>
+            </div>
+            {profile.websiteAccount.data?.last_ip && (
+              <Button
+                size="sm"
+                onClick={async () => {
+                  setBanningIp(true);
+                  try {
+                    await base44.entities.IpBan.create({
+                      ip_address: profile.websiteAccount.data.last_ip,
+                      reason: `Banned via user lookup — ${username}`,
+                      banned_by: currentUser?.email || 'Unknown',
+                    });
+                    toast({ title: 'IP banned successfully' });
+                  } catch {
+                    toast({ title: 'Failed to ban IP', variant: 'destructive' });
+                  } finally {
+                    setBanningIp(false);
+                  }
+                }}
+                disabled={banningIp}
+                className="bg-rose-600 hover:bg-rose-500 text-white border-0 mt-2"
+              >
+                {banningIp ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <ShieldBan className="h-4 w-4 mr-1.5" />}
+                Ban IP Address
+              </Button>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">This Roblox user has not created an account on the portal.</p>
+        )}
       </div>
 
       {groups.length > 0 && (
