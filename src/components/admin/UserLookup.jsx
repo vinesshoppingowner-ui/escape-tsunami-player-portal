@@ -430,117 +430,54 @@ function DiscordResult({ data, onFetchProfile, fetching }) {
 
   return (
     <div className="space-y-4">
-      {/* Profile header card — Discord styled */}
-      <div className="rounded-2xl bg-[#1e1f22] border border-white/10 overflow-hidden">
-        {/* Banner */}
-        <div
-          className="h-28 relative"
-          style={{
-            backgroundColor: accentColor || '#5865F2',
-            backgroundImage: bannerUrl ? `url(${bannerUrl})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          {!bannerUrl && (
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-          )}
+      {/* Profile header card */}
+      <div className="rounded-2xl bg-[#1e1f22] border border-white/10 p-5">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-[#313338] shrink-0 shadow-lg">
+            <img src={avatarUrl} alt={displayName || username} className="w-full h-full object-cover" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            {/* Display name */}
+            <h3
+              className="text-2xl font-bold leading-tight"
+              style={{ color: accentColor || '#f2f3f5' }}
+            >
+              {displayName || username}
+            </h3>
+            {/* Username */}
+            <div className="text-base text-[#949ba3] font-medium">@{username}</div>
+            {/* Discord ID */}
+            <div className="text-xs text-[#949ba3]/70 mt-1.5">Discord ID: {discordId}</div>
+
+            {/* Account created */}
+            {accountCreated && (
+              <div className="text-xs text-[#949ba3] mt-2 flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                Joined Discord: {new Date(accountCreated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                <span className="text-[#949ba3]/60">({accountAge(accountCreated)})</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="px-5 pb-5">
-          <div className="flex items-start gap-4 -mt-12">
-            {/* Avatar with ring */}
-            <div className="w-24 h-24 rounded-full overflow-hidden border-[6px] border-[#1e1f22] bg-[#313338] shrink-0 shadow-lg">
-              <img src={avatarUrl} alt={displayName || username} className="w-full h-full object-cover" />
+        {/* Bio */}
+        {bio && (
+          <div className="mt-4 pt-4 border-t border-white/5">
+            <div className="flex items-center gap-1.5 text-xs text-[#949ba3] mb-1.5">
+              <MessageSquare className="h-3.5 w-3.5" /> About Me
             </div>
-
-            <div className="flex-1 min-w-0 pt-7">
-              {/* Display name — Discord styled */}
-              <h3
-                className="text-2xl font-bold leading-tight"
-                style={{ color: accentColor || '#f2f3f5' }}
-              >
-                {displayName || username}
-              </h3>
-              {/* Username */}
-              <div className="text-base text-[#949ba3] font-medium">
-                {displayName && displayName !== username ? `@${username}` : `@${username}`}
-              </div>
-              {/* Discord ID */}
-              <div className="text-xs text-[#949ba3]/70 mt-1.5">Discord ID: {discordId}</div>
-
-              {/* Account created */}
-              {accountCreated && (
-                <div className="text-xs text-[#949ba3] mt-2 flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Joined Discord: {new Date(accountCreated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  <span className="text-[#949ba3]/60">({accountAge(accountCreated)})</span>
-                </div>
-              )}
-            </div>
-
-            {/* Fetch profile button */}
-            {!hasProfile && (
-              <div className="pt-7 shrink-0">
-                <Button
-                  onClick={onFetchProfile}
-                  disabled={fetching}
-                  size="sm"
-                  className="bg-[#5865F2] hover:bg-[#4752c4] text-white border-0"
-                >
-                  {fetching ? (
-                    <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Fetching…</>
-                  ) : (
-                    <><RefreshCw className="h-4 w-4 mr-1.5" /> Fetch Profile</>
-                  )}
-                </Button>
-              </div>
-            )}
-            {hasProfile && (
-              <div className="pt-7 shrink-0">
-                <Button
-                  onClick={onFetchProfile}
-                  disabled={fetching}
-                  size="sm"
-                  variant="outline"
-                  className="bg-white/5 border-white/15 text-slate-300 hover:bg-white/10"
-                >
-                  {fetching ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
-                  Refresh
-                </Button>
-              </div>
-            )}
+            <p className="text-sm text-[#dbdee1] whitespace-pre-wrap">{bio}</p>
           </div>
+        )}
 
-          {/* Bio */}
-          {bio && (
-            <div className="mt-4 pt-4 border-t border-white/5">
-              <div className="flex items-center gap-1.5 text-xs text-[#949ba3] mb-1.5">
-                <MessageSquare className="h-3.5 w-3.5" /> About Me
-              </div>
-              <p className="text-sm text-[#dbdee1] whitespace-pre-wrap">{bio}</p>
-            </div>
-          )}
-
-          {/* Stats grid */}
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Stat icon={Gavel} label="Total Actions" value={modActions.length} />
-            <Stat icon={Clock} label="Pending" value={pending} cls="text-amber-300" />
-            <Stat icon={Shield} label="Bans" value={bans} cls="text-rose-300" />
-            <Stat icon={AlertTriangle} label="Timeouts" value={timeouts} cls="text-orange-300" />
-          </div>
-
-          {/* Info note */}
-          {!hasProfile && (
-            <div className="mt-3 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 px-3 py-2 text-xs text-[#a5a8ae] flex items-start gap-2">
-              <Info className="h-4 w-4 text-[#5865F2] mt-0.5 shrink-0" />
-              <span>
-                {fetching
-                  ? 'Your Discord bot is fetching this profile. The real PFP, display name, and banner will appear here in a few seconds…'
-                  : 'Click "Fetch Profile" to have your Discord bot pull this user\'s real PFP, display name, banner, accent color, and bio from Discord.'}
-              </span>
-            </div>
-          )}
+        {/* Stats grid */}
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Stat icon={Gavel} label="Total Actions" value={modActions.length} />
+          <Stat icon={Clock} label="Pending" value={pending} cls="text-amber-300" />
+          <Stat icon={Shield} label="Bans" value={bans} cls="text-rose-300" />
+          <Stat icon={AlertTriangle} label="Timeouts" value={timeouts} cls="text-orange-300" />
         </div>
       </div>
 
