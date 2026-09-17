@@ -91,10 +91,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
         // Resolve exact Roblox username casing (case-insensitive match)
         let resolvedUsername = form.roblox_username;
         try {
-          const searchRes = await fetch(`https://users.roproxy.com/v1/users/search?keyword=${encodeURIComponent(form.roblox_username)}&limit=10`);
-          if (searchRes.ok) {
-            const searchData = await searchRes.json();
-            const match = (searchData?.data || []).find((u) => (u.name || '').toLowerCase() === form.roblox_username.toLowerCase());
+          const userRes = await fetch(`https://users.roproxy.com/v1/usernames/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [form.roblox_username], excludeBannedUsers: false }),
+          });
+          if (userRes.ok) {
+            const match = (await userRes.json()).data?.[0];
             if (match) resolvedUsername = match.name;
           }
         } catch { /* use typed name as fallback */ }

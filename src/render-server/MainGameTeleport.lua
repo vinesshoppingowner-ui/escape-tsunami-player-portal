@@ -44,6 +44,13 @@ local function teleportIfBanned(player)
 
 	local data = checkBanStatus(player.Name)
 
+	-- Retry once after a brief delay if the first check failed (Render cold start)
+	if not data then
+		task.wait(2)
+		if not player:IsDescendantOf(Players) then return end
+		data = checkBanStatus(player.Name)
+	end
+
 	if data and data.banned == true then
 		print("[BanCheck] " .. player.Name .. " is banned — teleporting to Ban Land")
 		teleporting[player.UserId] = true
@@ -69,11 +76,15 @@ Players.PlayerRemoving:Connect(function(player)
 	teleporting[player.UserId] = nil
 end)
 
--- Poll all connected players every 15 seconds for mid-session bans
+-- Poll all connected players every 5 seconds for mid-session bans
+-- (faster polling so players banned from the portal get teleported quickly
+--  without needing to rejoin)
 task.spawn(function()
-	while task.wait(15) do
+	while task.wait(5) do
 		for _, player in ipairs(Players:GetPlayers()) do
-			teleportIfBanned(player)
+			task.spawn(function()
+				teleportIfBanned(player)
+			end)
 		end
 	end
 end)

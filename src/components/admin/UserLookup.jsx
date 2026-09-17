@@ -74,23 +74,21 @@ export default function UserLookup() {
   };
 
   const searchRoblox = async (username) => {
-    const searchRes = await fetch(`${ROBLOX_USERS_API}/users/search?keyword=${encodeURIComponent(username)}&limit=10`);
-    if (!searchRes.ok) throw new Error('Roblox user search failed');
-    const searchData = await searchRes.json();
-    const match = (searchData?.data || []).find(
-      (u) => (u.name || '').toLowerCase() === username.toLowerCase()
-    );
-    if (!match) throw new Error(`No Roblox user found with username "${username}"`);
-    const userId = match.id;
+    const userRes = await fetch(`${ROBLOX_USERS_API}/usernames/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
+    });
+    if (!userRes.ok) throw new Error('Roblox user lookup failed');
+    const userData = (await userRes.json()).data?.[0];
+    if (!userData) throw new Error(`No Roblox user found with username "${username}"`);
+    const userId = userData.id;
 
-    const [userRes, headRes, bodyRes, groupsRes] = await Promise.all([
-      fetch(`${ROBLOX_USERS_API}/users/${userId}`),
+    const [headRes, bodyRes, groupsRes] = await Promise.all([
       fetch(`${ROBLOX_THUMBS_API}/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
       fetch(`${ROBLOX_THUMBS_API}/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
       fetch(`${ROBLOX_GROUPS_API}/users/${userId}/groups/roles`),
     ]);
-
-    const userData = await userRes.json();
     const headData = await headRes.json();
     const bodyData = await bodyRes.json();
     const groupsData = groupsRes.ok ? await groupsRes.json() : { data: [] };
