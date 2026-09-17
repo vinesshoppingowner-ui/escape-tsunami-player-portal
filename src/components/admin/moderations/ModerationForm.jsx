@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Gavel, Copy, Bot } from 'lucide-react';
+import { Loader2, Gavel, Copy, Bot, User as UserIcon, FileText, ShieldCheck } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
@@ -32,6 +32,14 @@ const DURATION_PRESETS = [
   { value: '30d', label: '30 days' },
   { value: 'custom', label: 'Custom…' },
 ];
+
+const typeColor = (type) => {
+  if (type === 'Permanent Ban') return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+  if (type === 'Temporary Ban') return 'bg-orange-500/15 text-orange-300 border-orange-500/30';
+  if (type === 'Kick') return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+  if (type === 'Mute') return 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30';
+  return 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+};
 
 const empty = {
   platform: 'roblox',
@@ -81,14 +89,14 @@ export default function ModerationForm({ open, onClose, onCreated }) {
       } else {
         if (!form.roblox_username || !form.reason) return;
         await base44.entities.Moderation.create({ ...form, moderation_date: new Date().toISOString() });
-        await base44.entities.Notification.create({
+        base44.entities.Notification.create({
           roblox_username: form.roblox_username,
           title: `New ${form.moderation_type} issued`,
           body: form.reason || 'A moderation action has been added to your account.',
           type: 'moderation_issued',
           read: false,
         });
-        await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
+        logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
         emailPlayer({
           robloxUsername: form.roblox_username,
           subject: `New ${form.moderation_type} on your account`,
@@ -205,6 +213,9 @@ export default function ModerationForm({ open, onClose, onCreated }) {
             </>
           ) : (
             <>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70">
+                <UserIcon className="h-3 w-3" /> Player & Action
+              </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-slate-400">Roblox username *</Label>
@@ -241,6 +252,12 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                     <Input value={form.duration} onChange={(e) => set('duration')(e.target.value)} placeholder="e.g. 12h, 5d" className="bg-slate-950/60 border-white/15 text-white mt-1" />
                   </div>
                 )}
+              </div>
+
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70 pt-1">
+                <ShieldCheck className="h-3 w-3" /> Staff & Status
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-slate-400">Staff member</Label>
                   <Input value={form.staff_member} onChange={(e) => set('staff_member')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
@@ -256,10 +273,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-slate-400">Details</Label>
+                <Label className="text-xs text-slate-400">Additional details</Label>
                 <Textarea rows={2} value={form.details} onChange={(e) => set('details')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
               </div>
 
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70 pt-1">
+                <FileText className="h-3 w-3" /> Evidence
+              </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-slate-400">Evidence type</Label>
@@ -284,6 +304,25 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   <div className="sm:col-span-2">
                     <Label className="text-xs text-slate-400">Screenshot URL</Label>
                     <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/60 border-white/15 text-white mt-1" />
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl bg-slate-950/60 border border-white/10 p-4 space-y-2.5">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Preview</div>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                    <UserIcon className="h-4 w-4 text-cyan-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{form.roblox_username || 'Unknown player'}</div>
+                    <div className="text-xs text-slate-400">{form.duration ? `${form.moderation_type} · ${form.duration}` : form.moderation_type}</div>
+                  </div>
+                  <span className={`ml-auto text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${typeColor(form.moderation_type)}`}>{form.status}</span>
+                </div>
+                {form.reason && (
+                  <div className="text-xs text-slate-400 pt-2 border-t border-white/5">
+                    <span className="text-slate-500">Reason: </span>{form.reason}
                   </div>
                 )}
               </div>
