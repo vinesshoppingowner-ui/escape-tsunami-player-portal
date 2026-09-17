@@ -92,11 +92,11 @@ export default function Home() {
               <span className="block text-white/90 text-3xl sm:text-4xl lg:text-5xl mt-2 font-semibold">For Developers</span>
             </motion.h1>
 
-            <motion.p variants={fade} custom={2} initial="hidden" animate="show" className="mt-6 text-lg text-slate-300 max-w-xl leading-relaxed">
+            <motion.p variants={fade} custom={2} initial="hidden" animate="show" className="mt-6 text-lg text-slate-200 max-w-xl leading-[1.6]">
               Sprint through the chaos, collect your favorite Developers, and outrun towering tsunamis. Upgrade, rebirth, and climb the leaderboards — your Developers keep earning even while you are offline.
             </motion.p>
 
-            <motion.div variants={fade} custom={3} initial="hidden" animate="show" className="mt-8 flex flex-wrap gap-3">
+            <motion.div variants={fade} custom={3} initial="hidden" animate="show" className="mt-8 flex flex-wrap gap-4">
               <a href={GAME.url} target="_blank" rel="noreferrer">
                 <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0 h-12 px-7 text-base shadow-lg shadow-cyan-500/25">
                   <Gamepad2 className="h-5 w-5 mr-2" /> Play on Roblox
@@ -109,8 +109,8 @@ export default function Home() {
               </Link>
             </motion.div>
 
-            <motion.div variants={fade} custom={4} initial="hidden" animate="show" className="mt-10">
-              <div className="flex items-center gap-2 mb-2.5 text-[11px] text-cyan-400/80">
+            <motion.div variants={fade} custom={4} initial="hidden" animate="show" className="mt-12">
+              <div className="flex items-center gap-2 mb-3 text-[11px] font-medium uppercase tracking-wider text-cyan-400/80">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
@@ -135,7 +135,7 @@ export default function Home() {
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
             className="relative mx-auto w-full max-w-md"
           >
-            <div className="absolute -inset-4 bg-gradient-to-br from-cyan-500/30 to-blue-600/30 rounded-[2rem] blur-2xl" />
+            <div className="absolute -inset-6 bg-gradient-to-br from-cyan-500/40 to-blue-600/40 rounded-[2.5rem] blur-3xl" />
             <div className="relative rounded-[2rem] overflow-hidden border border-white/15 shadow-2xl shadow-cyan-900/40 bg-slate-900">
               <div className="relative aspect-square">
                 <Image
@@ -146,8 +146,13 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-5">
-                  <div className="text-xs text-cyan-300 font-medium tracking-wide uppercase">Now Playing</div>
-                  <div className="text-lg font-semibold text-white mt-0.5">{GAME.name}</div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-cyan-300" />
+                    <div>
+                      <div className="text-lg font-semibold text-white">{statsLoading ? '…' : `${fmt(live?.playing ?? 0)} playing now`}</div>
+                      <div className="text-xs text-cyan-300/80 font-medium tracking-wide uppercase">Join the community</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

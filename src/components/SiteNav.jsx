@@ -41,8 +41,8 @@ export default function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  active ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                  active ? 'text-white border-cyan-400' : 'text-slate-300 hover:text-white border-transparent'
                 }`}
               >
                 {l.label}
@@ -52,11 +52,6 @@ export default function SiteNav() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          <a href={GAME_URL} target="_blank" rel="noreferrer">
-            <Button size="sm" variant="ghost" className="text-slate-200 hover:text-white hover:bg-white/10">
-              Play on Roblox
-            </Button>
-          </a>
           <Link to="/portal">
             <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               <LogIn className="h-4 w-4 mr-1.5" /> Member Portal
