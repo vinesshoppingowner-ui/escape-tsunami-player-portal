@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw, Bot, Clock, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Trash2, Gavel, Copy, Search, Bot, Clock, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
-import { pushBan, pushUnban, syncAllBans } from '@/lib/renderBridge';
+import { pushBan, pushUnban } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
@@ -53,7 +53,6 @@ export default function ModerationsTab() {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [query, setQuery] = useState('');
-  const [syncing, setSyncing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -130,18 +129,6 @@ export default function ModerationsTab() {
     await load();
   };
 
-  const syncBans = async () => {
-    setSyncing(true);
-    try {
-      await syncAllBans(list);
-      toast({ title: 'Bans synced to game server' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Sync failed', description: e.message });
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const copyForDiscord = () => {
     const text = [
       `**${form.moderation_type}** — ${form.roblox_username || 'Unknown'}`,
@@ -183,24 +170,13 @@ export default function ModerationsTab() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-400">{list.length} moderation{list.length !== 1 ? 's' : ''} on record.</p>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={syncBans}
-            disabled={syncing}
-            className="bg-white/5 border-white/15 text-white hover:bg-white/10"
-          >
-            <RefreshCw className={`h-4 w-4 mr-1.5 ${syncing ? 'animate-spin' : ''}`} /> Sync bans to game
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setShowForm((s) => !s)}
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-          >
-            <Plus className="h-4 w-4 mr-1.5" /> {showForm ? 'Cancel' : 'New moderation'}
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          onClick={() => setShowForm((s) => !s)}
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
+        >
+          <Plus className="h-4 w-4 mr-1.5" /> {showForm ? 'Cancel' : 'New moderation'}
+        </Button>
       </div>
 
       <div className="relative mb-4">

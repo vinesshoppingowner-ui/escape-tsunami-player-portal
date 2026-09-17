@@ -85,6 +85,7 @@ export default function UsersTab() {
             className="h-9 rounded-md border border-white/15 bg-slate-950/60 px-2 text-sm text-white"
           >
             <option value="user">Member</option>
+            <option value="staff">Staff</option>
             <option value="admin">Admin</option>
           </select>
           <Button
@@ -128,6 +129,7 @@ export default function UsersTab() {
                 className="h-9 rounded-md border border-white/15 bg-slate-950/60 px-2 text-sm text-white"
               >
                 <option value="user">user</option>
+                <option value="staff">staff</option>
                 <option value="admin">admin</option>
               </select>
             </div>

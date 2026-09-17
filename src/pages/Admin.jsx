@@ -11,7 +11,7 @@ import UserLookup from '@/components/admin/UserLookup';
 export default function Admin() {
   const { user } = useAuth();
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'staff') {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
         <SiteNav />
@@ -20,11 +20,13 @@ export default function Admin() {
             <ShieldAlert className="h-7 w-7 text-rose-400" />
           </div>
           <h1 className="font-display text-2xl font-bold">Staff only</h1>
-          <p className="mt-2 text-slate-400">You need an admin account to access the staff dashboard.</p>
+          <p className="mt-2 text-slate-400">You need a staff or admin account to access this dashboard.</p>
         </main>
       </div>
     );
   }
+
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -40,15 +42,15 @@ export default function Admin() {
           <TabsList className="flex w-full overflow-x-auto bg-white/5 border border-white/10 h-10">
             <TabsTrigger value="appeals" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
-            <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>
+            {isAdmin && <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>}
             <TabsTrigger value="lookup" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">User Lookup</TabsTrigger>
-            <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>
+            {isAdmin && <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>}
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
-          <TabsContent value="users"><UsersTab /></TabsContent>
+          {isAdmin && <TabsContent value="users"><UsersTab /></TabsContent>}
           <TabsContent value="lookup"><UserLookup /></TabsContent>
-          <TabsContent value="logs"><StaffLogsTab /></TabsContent>
+          {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
         </Tabs>
       </main>
     </div>
