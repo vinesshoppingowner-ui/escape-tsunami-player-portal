@@ -3,6 +3,7 @@ import { Waves, LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
+import { useDesktopApp } from '@/hooks/useDesktopApp';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
@@ -10,6 +11,7 @@ export default function SiteNav() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
+  const isDesktopApp = useDesktopApp();
 
   const desktopLinks = [
     { label: 'Home', to: '/' },
@@ -23,7 +25,7 @@ export default function SiteNav() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-slate-950/60 border-b border-white/10">
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center gap-6">
+      <div className={`max-w-6xl mx-auto px-5 h-16 flex items-center ${isDesktopApp ? 'gap-6' : 'justify-between'}`}>
         <Link to="/" className="flex items-center gap-2.5 group">
           <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/30">
             <Waves className="h-5 w-5 text-white" strokeWidth={2.5} />
@@ -59,7 +61,7 @@ export default function SiteNav() {
           </Link>
         </div>
 
-        <div className="flex-1" />
+        {isDesktopApp && <div className="flex-1" />}
 
         <button
           className="md:hidden text-white p-2"
