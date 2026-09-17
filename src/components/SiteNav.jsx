@@ -23,7 +23,7 @@ export default function SiteNav() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-slate-950/60 border-b border-white/10">
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2.5 group">
           <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/30">
             <Waves className="h-5 w-5 text-white" strokeWidth={2.5} />
@@ -58,6 +58,8 @@ export default function SiteNav() {
             </Button>
           </Link>
         </div>
+
+        <div className="flex-1" />
 
         <button
           className="md:hidden text-white p-2"

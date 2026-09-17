@@ -27,34 +27,23 @@ const AuthenticatedApp = () => {
   const isDesktopApp = useDesktopApp();
   const season = useSeasonalTheme();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
+  const isLoading = isLoadingPublicSettings || isLoadingAuth;
+  const showSplash = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
+
+  let content;
+  if (isLoading) {
+    content = (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // Render the main app
-  return (
-    <>
-      <SeasonalEffects season={season} />
-      {(isDesktopApp || new URLSearchParams(window.location.search).has('splash')) && (
-        <DesktopSplashScreen forceShow={!isDesktopApp} />
-      )}
-      <DesktopNotifications isDesktopApp={isDesktopApp} />
+  } else if (authError?.type === 'user_not_registered') {
+    content = <UserNotRegisteredError />;
+  } else if (authError?.type === 'auth_required') {
+    navigateToLogin();
+    content = null;
+  } else {
+    content = (
       <Routes>
         {/* Add your page Route elements here */}
         <Route path="/login" element={<Login />} />
@@ -68,6 +57,15 @@ const AuthenticatedApp = () => {
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
+    );
+  }
+
+  return (
+    <>
+      <SeasonalEffects season={season} />
+      {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
+      <DesktopNotifications isDesktopApp={isDesktopApp} />
+      {content}
     </>
   );
 };

@@ -93,7 +93,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
         try {
           const userRes = await fetch(`https://users.roproxy.com/v1/usernames/users`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ usernames: [form.roblox_username], excludeBannedUsers: false }),
           });
           if (userRes.ok) {

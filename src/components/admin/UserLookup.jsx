@@ -76,7 +76,7 @@ export default function UserLookup() {
   const searchRoblox = async (username) => {
     const userRes = await fetch(`${ROBLOX_USERS_API}/usernames/users`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
     });
     if (!userRes.ok) throw new Error('Roblox user lookup failed');

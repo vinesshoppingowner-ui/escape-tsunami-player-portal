@@ -4,15 +4,25 @@ import { Waves } from 'lucide-react';
 
 /**
  * Branded splash screen shown only when the app launches as an installed
- * desktop application. Fades out after the app is ready.
+ * desktop application. Stays visible until the app is ready, with a
+ * minimum branding display time of 1.2s.
  */
-export default function DesktopSplashScreen({ forceShow = false }) {
+export default function DesktopSplashScreen({ ready = true }) {
   const [visible, setVisible] = useState(true);
+  const [minElapsed, setMinElapsed] = useState(false);
 
+  // Minimum display time for branding
   useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 2600);
+    const t = setTimeout(() => setMinElapsed(true), 1200);
     return () => clearTimeout(t);
   }, []);
+
+  // Hide when app is ready AND minimum time has passed
+  useEffect(() => {
+    if (ready && minElapsed) {
+      setVisible(false);
+    }
+  }, [ready, minElapsed]);
 
   return (
     <AnimatePresence>
