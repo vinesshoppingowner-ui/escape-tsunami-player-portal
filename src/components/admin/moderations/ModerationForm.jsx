@@ -11,6 +11,7 @@ import { Loader2, Gavel, Copy, Bot } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
+import { emailPlayer } from '@/lib/userEmails';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -88,6 +89,11 @@ export default function ModerationForm({ open, onClose, onCreated }) {
           read: false,
         });
         await logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
+        emailPlayer({
+          robloxUsername: form.roblox_username,
+          subject: `New ${form.moderation_type} on your account`,
+          body: `Hi ${form.roblox_username},\n\nA ${form.moderation_type} has been issued on your account.\nReason: ${form.reason}\n${form.duration ? `Duration: ${form.duration}\n` : ''}\nView details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+        });
 
         if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
           try {

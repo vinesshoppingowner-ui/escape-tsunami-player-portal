@@ -15,6 +15,7 @@ import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import SupportCard from '@/components/portal/SupportCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
+import { emailPlayer } from '@/lib/userEmails';
 
 const COMMUNITY_GUIDELINES_URL = 'https://discord.gg/escapetsunami';
 
@@ -100,6 +101,13 @@ export default function Portal() {
       reason,
       appealId: created?.id,
     });
+    if (user?.email) {
+      emailPlayer({
+        email: user.email,
+        subject: 'Your appeal has been submitted',
+        body: `Hi ${savedUsername},\n\nYour appeal for "${activeModeration?.moderation_type || 'your moderation'}" has been received. Our staff team will review it shortly.\n\nYou can track the status in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+      });
+    }
     await loadData(savedUsername);
   };
 

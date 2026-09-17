@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
 import { pushUnban } from '@/lib/renderBridge';
+import { emailPlayer } from '@/lib/userEmails';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
 
@@ -80,6 +81,11 @@ export default function AppealsTab() {
         read: false,
       });
       await logStaffAction(user, 'appeal_decision', appeal.roblox_username, `Set appeal to ${draft.status}${mod ? ` (${mod.moderation_type})` : ''}`);
+      await emailPlayer({
+        robloxUsername: appeal.roblox_username,
+        subject: `Your appeal has been ${draft.status.toLowerCase()}`,
+        body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+      });
       await load();
     } finally {
       setSavingId(null);

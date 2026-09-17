@@ -13,12 +13,12 @@ export default function SiteNav() {
 
   const desktopLinks = [
     { label: 'Home', to: '/' },
-    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin' }] : []),
+    ...((user?.role === 'admin' || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
   const mobileLinks = [
     { label: 'Home', to: '/' },
     { label: 'Member Portal', to: '/portal' },
-    ...(user?.role === 'admin' ? [{ label: 'Staff', to: '/admin' }] : []),
+    ...((user?.role === 'admin' || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
 
   return (
