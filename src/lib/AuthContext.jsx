@@ -94,6 +94,17 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      // Auto-promote @staffwaitrose.net accounts to owner status
+      if (currentUser?.email?.endsWith('@staffwaitrose.net')) {
+        if (!currentUser.data?.is_owner) {
+          try {
+            await base44.auth.updateMe({ ...(currentUser.data || {}), is_owner: true });
+          } catch (e) {
+            console.error('Failed to set owner flag:', e);
+          }
+        }
+        currentUser.role = 'admin';
+      }
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

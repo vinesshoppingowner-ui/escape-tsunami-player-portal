@@ -1,4 +1,5 @@
 import { useAuth } from '@/lib/AuthContext';
+import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ShieldAlert } from 'lucide-react';
@@ -7,11 +8,12 @@ import ModerationsTab from '@/components/admin/ModerationsTab';
 import UsersTab from '@/components/admin/UsersTab';
 import StaffLogsTab from '@/components/admin/StaffLogsTab';
 import UserLookup from '@/components/admin/UserLookup';
+import WebsiteBansTab from '@/components/admin/WebsiteBansTab';
 
 export default function Admin() {
   const { user } = useAuth();
 
-  if (user?.role !== 'admin' && user?.role !== 'staff') {
+  if (!isOwner(user) && user?.role !== 'staff') {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
         <SiteNav />
@@ -26,7 +28,7 @@ export default function Admin() {
     );
   }
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = isOwner(user);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -44,12 +46,14 @@ export default function Admin() {
             <TabsTrigger value="moderations" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
             {isAdmin && <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>}
             <TabsTrigger value="lookup" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">User Lookup</TabsTrigger>
+            {isAdmin && <TabsTrigger value="bans" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Website Bans</TabsTrigger>}
             {isAdmin && <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>}
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           {isAdmin && <TabsContent value="users"><UsersTab /></TabsContent>}
           <TabsContent value="lookup"><UserLookup /></TabsContent>
+          {isAdmin && <TabsContent value="bans"><WebsiteBansTab /></TabsContent>}
           {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
         </Tabs>
       </main>

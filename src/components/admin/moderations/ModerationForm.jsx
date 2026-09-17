@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Gavel, Copy, Bot, User as UserIcon, FileText, ShieldCheck } from 'lucide-react';
+import { Loader2, Gavel, Copy, Bot, User as UserIcon, FileText, ShieldCheck, Clock, Zap } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
@@ -41,6 +41,13 @@ const typeColor = (type) => {
   return 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
 };
 
+const typeIcon = (type) => {
+  if (type === 'Permanent Ban' || type === 'Temporary Ban') return <Gavel className="h-3 w-3" />;
+  if (type === 'Kick') return <Zap className="h-3 w-3" />;
+  if (type === 'Mute') return <Clock className="h-3 w-3" />;
+  return <FileText className="h-3 w-3" />;
+};
+
 const empty = {
   platform: 'roblox',
   roblox_username: '',
@@ -57,6 +64,18 @@ const empty = {
   discord_username: '',
   action_type: 'timeout',
   duration_minutes: 5,
+};
+
+const SectionHeader = ({ icon: Icon, label, color = 'cyan' }) => {
+  const colorMap = {
+    cyan: 'text-cyan-400/80',
+    indigo: 'text-indigo-400/80',
+  };
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] text-[11px] font-semibold uppercase tracking-wider ${colorMap[color] || colorMap.cyan}`}>
+      <Icon className="h-3 w-3" /> {label}
+    </div>
+  );
 };
 
 export default function ModerationForm({ open, onClose, onCreated }) {
@@ -149,76 +168,83 @@ export default function ModerationForm({ open, onClose, onCreated }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
-      <DialogContent className="bg-slate-900 border-white/15 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white text-lg">New moderation</DialogTitle>
+          <DialogTitle className="text-white text-lg flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30">
+              <Gavel className="h-4 w-4 text-cyan-300" />
+            </span>
+            New moderation
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Platform selector */}
-          <div>
-            <Label className="text-xs text-slate-400">Platform</Label>
-            <div className="mt-1 flex gap-2">
-              <button
-                type="button"
-                onClick={() => set('platform')('roblox')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                  form.platform === 'roblox'
-                    ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300'
-                    : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
-                }`}
-              >
-                Roblox
-              </button>
-              <button
-                type="button"
-                onClick={() => set('platform')('discord')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors inline-flex items-center gap-1.5 ${
-                  form.platform === 'discord'
-                    ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300'
-                    : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
-                }`}
-              >
-                <Bot className="h-3.5 w-3.5" /> Discord
-              </button>
-            </div>
+        <div className="space-y-5">
+          {/* Platform selector — segmented control */}
+          <div className="flex gap-1 p-1 rounded-xl bg-slate-950/80 border border-white/10">
+            <button
+              type="button"
+              onClick={() => set('platform')('roblox')}
+              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                form.platform === 'roblox'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 text-cyan-300'
+                  : 'border border-transparent text-slate-400 hover:text-white'
+              }`}
+            >
+              Roblox
+            </button>
+            <button
+              type="button"
+              onClick={() => set('platform')('discord')}
+              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all inline-flex items-center justify-center gap-1.5 ${
+                form.platform === 'discord'
+                  ? 'bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border border-indigo-500/40 text-indigo-300'
+                  : 'border border-transparent text-slate-400 hover:text-white'
+              }`}
+            >
+              <Bot className="h-3.5 w-3.5" /> Discord
+            </button>
           </div>
 
           {form.platform === 'discord' ? (
             <>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-slate-400">Discord user ID *</Label>
-                  <Input value={form.discord_user_id} onChange={(e) => set('discord_user_id')(e.target.value)} placeholder="e.g. 123456789012345678" className="bg-slate-950/60 border-white/15 text-white mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Discord username (optional)</Label>
-                  <Input value={form.discord_username} onChange={(e) => set('discord_username')(e.target.value)} placeholder="e.g. username" className="bg-slate-950/60 border-white/15 text-white mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Action type</Label>
-                  <CustomDropdown
-                    value={form.action_type}
-                    onChange={set('action_type')}
-                    options={DISCORD_ACTIONS}
-                    className="mt-1"
-                  />
-                </div>
-                {form.action_type === 'timeout' && (
+              <div className="space-y-3">
+                <SectionHeader icon={Bot} label="Discord Action" color="indigo" />
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs text-slate-400">Duration (minutes)</Label>
-                    <Input type="number" min="1" value={form.duration_minutes} onChange={(e) => set('duration_minutes')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
+                    <Label className="text-xs text-slate-400">Discord user ID *</Label>
+                    <Input value={form.discord_user_id} onChange={(e) => set('discord_user_id')(e.target.value)} placeholder="e.g. 123456789012345678" className="bg-slate-950/60 border-white/10 text-white mt-1 font-mono text-sm" />
                   </div>
-                )}
+                  <div>
+                    <Label className="text-xs text-slate-400">Discord username (optional)</Label>
+                    <Input value={form.discord_username} onChange={(e) => set('discord_username')(e.target.value)} placeholder="e.g. username" className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-400">Action type</Label>
+                    <CustomDropdown
+                      value={form.action_type}
+                      onChange={set('action_type')}
+                      options={DISCORD_ACTIONS}
+                      className="mt-1"
+                    />
+                  </div>
+                  {form.action_type === 'timeout' && (
+                    <div>
+                      <Label className="text-xs text-slate-400">Duration (minutes)</Label>
+                      <Input type="number" min="1" value={form.duration_minutes} onChange={(e) => set('duration_minutes')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-400">Reason *</Label>
+                  <Textarea rows={2} value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs text-slate-400">Reason *</Label>
-                <Textarea rows={2} value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
-              </div>
-              <div className="flex items-start gap-2 rounded-lg bg-indigo-500/5 border border-indigo-500/15 p-3 text-xs text-slate-400">
+
+              <div className="flex items-start gap-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/15 p-3.5 text-xs text-slate-400">
                 <Bot className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                 <span>Your Discord bot will pick this up and execute it within ~10 seconds.</span>
               </div>
+
               <div className="flex justify-end">
                 <Button onClick={create} disabled={saving || !form.discord_user_id || !form.reason} className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0">
                   {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Queuing</> : <><Bot className="h-4 w-4 mr-1.5" /> Queue Discord action</>}
@@ -227,74 +253,85 @@ export default function ModerationForm({ open, onClose, onCreated }) {
             </>
           ) : (
             <>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70">
-                <UserIcon className="h-3 w-3" /> Player & Action
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
+              {/* Player & Action */}
+              <div className="space-y-3">
+                <SectionHeader icon={UserIcon} label="Player & Action" />
                 <div>
                   <Label className="text-xs text-slate-400">Roblox username *</Label>
-                  <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
+                  <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
                 </div>
                 <div>
                   <Label className="text-xs text-slate-400">Type</Label>
-                  <CustomDropdown
-                    value={form.moderation_type}
-                    onChange={set('moderation_type')}
-                    options={TYPES.map((t) => ({ value: t, label: t }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Reason *</Label>
-                  <Input value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Duration</Label>
-                  <CustomDropdown
-                    value={durationMode}
-                    onChange={(v) => {
-                      setDurationMode(v);
-                      if (v !== 'custom') set('duration')(v);
-                    }}
-                    options={DURATION_PRESETS}
-                    className="mt-1"
-                  />
-                </div>
-                {durationMode === 'custom' && (
-                  <div className="sm:col-span-2">
-                    <Label className="text-xs text-slate-400">Custom duration</Label>
-                    <Input value={form.duration} onChange={(e) => set('duration')(e.target.value)} placeholder="e.g. 12h, 5d" className="bg-slate-950/60 border-white/15 text-white mt-1" />
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    {TYPES.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => set('moderation_type')(t)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                          form.moderation_type === t
+                            ? typeColor(t)
+                            : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        {typeIcon(t)} {t}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-slate-400">Reason *</Label>
+                    <Input value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-400">Duration</Label>
+                    <CustomDropdown
+                      value={durationMode}
+                      onChange={(v) => {
+                        setDurationMode(v);
+                        if (v !== 'custom') set('duration')(v);
+                      }}
+                      options={DURATION_PRESETS}
+                      className="mt-1"
+                    />
+                  </div>
+                  {durationMode === 'custom' && (
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs text-slate-400">Custom duration</Label>
+                      <Input value={form.duration} onChange={(e) => set('duration')(e.target.value)} placeholder="e.g. 12h, 5d" className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70 pt-1">
-                <ShieldCheck className="h-3 w-3" /> Staff & Status
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-slate-400">Staff member</Label>
-                  <Input value={form.staff_member} onChange={(e) => set('staff_member')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
+              {/* Staff & Status */}
+              <div className="space-y-3">
+                <SectionHeader icon={ShieldCheck} label="Staff & Status" />
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-slate-400">Staff member</Label>
+                    <Input value={form.staff_member} onChange={(e) => set('staff_member')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-400">Status</Label>
+                    <CustomDropdown
+                      value={form.status}
+                      onChange={set('status')}
+                      options={STATUSES.map((s) => ({ value: s, label: s }))}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-slate-400">Status</Label>
-                  <CustomDropdown
-                    value={form.status}
-                    onChange={set('status')}
-                    options={STATUSES.map((s) => ({ value: s, label: s }))}
-                    className="mt-1"
-                  />
+                  <Label className="text-xs text-slate-400">Additional details</Label>
+                  <Textarea rows={2} value={form.details} onChange={(e) => set('details')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
                 </div>
-              </div>
-              <div>
-                <Label className="text-xs text-slate-400">Additional details</Label>
-                <Textarea rows={2} value={form.details} onChange={(e) => set('details')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1" />
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400/70 pt-1">
-                <FileText className="h-3 w-3" /> Evidence
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
+              {/* Evidence */}
+              <div className="space-y-3">
+                <SectionHeader icon={FileText} label="Evidence" />
                 <div>
                   <Label className="text-xs text-slate-400">Evidence type</Label>
                   <CustomDropdown
@@ -309,24 +346,25 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   />
                 </div>
                 {form.evidence_type === 'chat_log' && (
-                  <div className="sm:col-span-2">
+                  <div>
                     <Label className="text-xs text-slate-400">Chat log</Label>
-                    <Textarea rows={4} value={form.evidence_text} onChange={(e) => set('evidence_text')(e.target.value)} className="bg-slate-950/60 border-white/15 text-white mt-1 font-mono text-xs" placeholder="Paste the in-game chat log…" />
+                    <Textarea rows={4} value={form.evidence_text} onChange={(e) => set('evidence_text')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1 font-mono text-xs" placeholder="Paste the in-game chat log…" />
                   </div>
                 )}
                 {form.evidence_type === 'screenshot' && (
-                  <div className="sm:col-span-2">
+                  <div>
                     <Label className="text-xs text-slate-400">Screenshot URL</Label>
-                    <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/60 border-white/15 text-white mt-1" />
+                    <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/60 border-white/10 text-white mt-1" />
                   </div>
                 )}
               </div>
 
-              <div className="rounded-xl bg-slate-950/60 border border-white/10 p-4 space-y-2.5">
+              {/* Preview */}
+              <div className="rounded-xl bg-gradient-to-br from-slate-950/80 to-slate-900/40 border border-white/10 p-4 space-y-3">
                 <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Preview</div>
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                    <UserIcon className="h-4 w-4 text-cyan-300" />
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                    <UserIcon className="h-4.5 w-4.5 text-cyan-300" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-white truncate">{form.roblox_username || 'Unknown player'}</div>
@@ -335,14 +373,15 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   <span className={`ml-auto text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${typeColor(form.moderation_type)}`}>{form.status}</span>
                 </div>
                 {form.reason && (
-                  <div className="text-xs text-slate-400 pt-2 border-t border-white/5">
+                  <div className="text-xs text-slate-400 pt-2.5 border-t border-white/5">
                     <span className="text-slate-500">Reason: </span>{form.reason}
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={copyForDiscord} className="bg-white/5 border-white/15 text-white hover:bg-white/10">
+              {/* Footer */}
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="outline" onClick={copyForDiscord} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
                   <Copy className="h-4 w-4 mr-1.5" /> Copy for Discord
                 </Button>
                 <Button onClick={create} disabled={saving || !form.roblox_username || !form.reason} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">

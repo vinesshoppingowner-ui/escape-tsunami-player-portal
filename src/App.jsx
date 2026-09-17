@@ -21,6 +21,7 @@ import DesktopSplashScreen from '@/components/desktop/DesktopSplashScreen';
 import DesktopNotifications from '@/components/desktop/DesktopNotifications';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import SeasonalEffects from '@/components/SeasonalEffects';
+import IpBanCheck from '@/components/IpBanCheck';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,12 +62,12 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <>
+    <IpBanCheck>
       <SeasonalEffects season={season} />
       {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
       <DesktopNotifications isDesktopApp={isDesktopApp} />
       {content}
-    </>
+    </IpBanCheck>
   );
 };
 

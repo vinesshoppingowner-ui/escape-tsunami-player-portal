@@ -12,6 +12,11 @@
     "roblox_username": {
       "type": "string",
       "description": "The player's Roblox username, used to link in-game moderations"
+    },
+    "is_owner": {
+      "type": "boolean",
+      "description": "Whether this user is an owner (auto-set for @staffwaitrose.net accounts)",
+      "default": false
     }
   },
   "required": [
