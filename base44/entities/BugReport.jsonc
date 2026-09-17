@@ -56,6 +56,11 @@
           "user_condition": {
             "role": "staff"
           }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
         }
       ]
     },
@@ -73,6 +78,11 @@
           "user_condition": {
             "role": "staff"
           }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
         }
       ]
     },
@@ -86,6 +96,11 @@
         {
           "user_condition": {
             "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
           }
         }
       ]
