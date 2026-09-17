@@ -14,10 +14,16 @@ import NotificationsBell from '@/components/moderations/NotificationsBell';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import SupportCard from '@/components/portal/SupportCard';
+import GoodStandingTips from '@/components/portal/GoodStandingTips';
+import WhatsNewFeed from '@/components/portal/WhatsNewFeed';
+import QuickLinks from '@/components/portal/QuickLinks';
+import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
+import BugReportDialog from '@/components/portal/BugReportDialog';
+import SecurityCard from '@/components/portal/SecurityCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
 
-const COMMUNITY_GUIDELINES_URL = 'https://discord.gg/escapetsunami';
+const COMMUNITY_GUIDELINES_URL = 'https://discord.gg/NCBqfpwPuT';
 
 export default function Portal() {
   const { user, logout } = useAuth();
@@ -31,6 +37,8 @@ export default function Portal() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeModeration, setActiveModeration] = useState(null);
+  const [appealModalOpen, setAppealModalOpen] = useState(false);
+  const [bugReportOpen, setBugReportOpen] = useState(false);
 
   const moderationsRef = useRef(null);
   const appealsRef = useRef(null);
@@ -126,9 +134,9 @@ export default function Portal() {
     : null;
 
   const stats = [
-    { label: 'Active moderations', value: activeCount, onClick: () => scrollTo(moderationsRef) },
-    { label: 'Appeals submitted', value: appeals.length, onClick: () => scrollTo(appealsRef) },
-    { label: 'Awaiting decision', value: appeals.filter((a) => a.status === 'Pending' || a.status === 'Under Review').length, onClick: () => scrollTo(appealsRef) },
+    { label: activeCount === 0 ? 'No active issues' : 'Active moderations', value: activeCount === 0 ? 'Healthy' : activeCount, onClick: () => scrollTo(moderationsRef), healthy: activeCount === 0 },
+    { label: 'Appeals submitted', value: appeals.length, onClick: () => setAppealModalOpen(true) },
+    { label: 'Awaiting decision', value: appeals.filter((a) => a.status === 'Pending' || a.status === 'Under Review').length, onClick: () => setAppealModalOpen(true) },
   ];
 
   return (
@@ -204,15 +212,19 @@ export default function Portal() {
             )}
 
             {/* Stats — clickable */}
-            <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
               {stats.map((s) => (
                 <button
                   key={s.label}
                   onClick={s.onClick}
-                  className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-left hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all cursor-pointer"
+                  className={`rounded-2xl border p-3 sm:p-4 text-left transition-all cursor-pointer ${
+                    s.healthy
+                      ? 'bg-emerald-500/[0.06] border-emerald-500/20 hover:bg-emerald-500/[0.1] hover:border-emerald-500/30'
+                      : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-cyan-500/30'
+                  }`}
                 >
-                  <div className="text-2xl font-bold text-white">{s.value}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{s.label}</div>
+                  <div className={`text-xl sm:text-2xl font-bold ${s.healthy ? 'text-emerald-300' : 'text-white'}`}>{s.value}</div>
+                  <div className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{s.label}</div>
                 </button>
               ))}
             </div>
@@ -244,6 +256,9 @@ export default function Portal() {
                 )}
               </div>
             </div>
+
+            {/* Quick Links */}
+            <QuickLinks onReportBug={() => setBugReportOpen(true)} />
 
             {/* Last updated */}
             {lastUpdated && (
@@ -288,11 +303,17 @@ export default function Portal() {
               )}
             </div>
 
+            <GoodStandingTips />
+
             <SupportCard />
 
             <div ref={appealsRef} className="scroll-mt-24">
               <AppealHistory appeals={appeals} moderations={moderations} />
             </div>
+
+            <WhatsNewFeed />
+
+            <SecurityCard user={user} robloxUsername={savedUsername} />
           </>
         )}
       </main>
@@ -303,6 +324,19 @@ export default function Portal() {
         moderation={activeModeration}
         robloxUsername={savedUsername}
         onSubmit={submitAppeal}
+      />
+
+      <AppealDetailsModal
+        open={appealModalOpen}
+        onClose={() => setAppealModalOpen(false)}
+        appeals={appeals}
+        moderations={moderations}
+      />
+
+      <BugReportDialog
+        open={bugReportOpen}
+        onClose={() => setBugReportOpen(false)}
+        robloxUsername={savedUsername}
       />
     </div>
   );

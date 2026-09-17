@@ -1,7 +1,7 @@
 import { LifeBuoy, ExternalLink, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const DISCORD_URL = 'https://discord.gg/escapetsunami';
+const DISCORD_URL = 'https://discord.gg/NCBqfpwPuT';
 
 export default function SupportCard() {
   return (
