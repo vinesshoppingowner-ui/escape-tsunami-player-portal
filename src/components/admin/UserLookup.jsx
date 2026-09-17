@@ -99,8 +99,8 @@ export default function UserLookup() {
     let appeals = [];
     try {
       [moderations, appeals] = await Promise.all([
-        base44.entities.Moderation.filter({ roblox_username: username }, '-moderation_date', 50),
-        base44.entities.Appeal.filter({ roblox_username: username }, '-created_date', 50),
+        base44.entities.Moderation.filter({ roblox_username: userData.name }, '-moderation_date', 50),
+        base44.entities.Appeal.filter({ roblox_username: userData.name }, '-created_date', 50),
       ]);
     } catch { /* RLS */ }
 

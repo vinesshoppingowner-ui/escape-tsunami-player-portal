@@ -88,25 +88,36 @@ export default function ModerationForm({ open, onClose, onCreated }) {
         toast({ title: 'Discord action queued', description: 'Your bot will execute it within ~10 seconds.' });
       } else {
         if (!form.roblox_username || !form.reason) return;
-        await base44.entities.Moderation.create({ ...form, moderation_date: new Date().toISOString() });
+        // Resolve exact Roblox username casing (case-insensitive match)
+        let resolvedUsername = form.roblox_username;
+        try {
+          const searchRes = await fetch(`https://users.roproxy.com/v1/users/search?keyword=${encodeURIComponent(form.roblox_username)}&limit=10`);
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const match = (searchData?.data || []).find((u) => (u.name || '').toLowerCase() === form.roblox_username.toLowerCase());
+            if (match) resolvedUsername = match.name;
+          }
+        } catch { /* use typed name as fallback */ }
+        const modData = { ...form, roblox_username: resolvedUsername, moderation_date: new Date().toISOString() };
+        await base44.entities.Moderation.create(modData);
         base44.entities.Notification.create({
-          roblox_username: form.roblox_username,
+          roblox_username: resolvedUsername,
           title: `New ${form.moderation_type} issued`,
           body: form.reason || 'A moderation action has been added to your account.',
           type: 'moderation_issued',
           read: false,
         });
-        logStaffAction(user, 'moderation_issued', form.roblox_username, `Issued ${form.moderation_type} — ${form.reason}`);
+        logStaffAction(user, 'moderation_issued', resolvedUsername, `Issued ${form.moderation_type} — ${form.reason}`);
         emailPlayer({
-          robloxUsername: form.roblox_username,
+          robloxUsername: resolvedUsername,
           subject: `New ${form.moderation_type} on your account`,
-          body: `Hi ${form.roblox_username},\n\nA ${form.moderation_type} has been issued on your account.\nReason: ${form.reason}\n${form.duration ? `Duration: ${form.duration}\n` : ''}\nView details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+          body: `Hi ${resolvedUsername},\n\nA ${form.moderation_type} has been issued on your account.\nReason: ${form.reason}\n${form.duration ? `Duration: ${form.duration}\n` : ''}\nView details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
         });
 
         if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
           try {
-            await pushBan(form);
-            toast({ title: 'Ban pushed to game server', description: `${form.roblox_username} is now banned in-game.` });
+            await pushBan(modData);
+            toast({ title: 'Ban pushed to game server', description: `${resolvedUsername} is now banned in-game.` });
           } catch (e) {
             toast({ variant: 'destructive', title: 'Failed to push ban to game', description: e.message });
           }
