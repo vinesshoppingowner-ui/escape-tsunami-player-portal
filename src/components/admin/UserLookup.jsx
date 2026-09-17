@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info } from 'lucide-react';
+import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
 
 const ROBLOX_USERS_API = 'https://users.roproxy.com/v1';
 const ROBLOX_THUMBS_API = 'https://thumbnails.roproxy.com/v1';
@@ -95,12 +96,12 @@ export default function UserLookup() {
     const groupsData = groupsRes.ok ? await groupsRes.json() : { data: [] };
 
     let moderations = [];
+    let appeals = [];
     try {
-      moderations = await base44.entities.Moderation.filter(
-        { roblox_username: username },
-        '-moderation_date',
-        50
-      );
+      [moderations, appeals] = await Promise.all([
+        base44.entities.Moderation.filter({ roblox_username: username }, '-moderation_date', 50),
+        base44.entities.Appeal.filter({ roblox_username: username }, '-created_date', 50),
+      ]);
     } catch { /* RLS */ }
 
     setRobloxProfile({
@@ -120,6 +121,7 @@ export default function UserLookup() {
         rank: g.role?.rank,
       })),
       moderations,
+      appeals,
     });
   };
 
@@ -280,7 +282,7 @@ export default function UserLookup() {
         </div>
       )}
 
-      {platform === 'roblox' && robloxProfile && <RobloxResult profile={robloxProfile} />}
+      {platform === 'roblox' && robloxProfile && <RobloxResult profile={robloxProfile} onReload={search} />}
       {platform === 'discord' && discordData && (
         <DiscordResult
           data={discordData}
@@ -303,7 +305,7 @@ export default function UserLookup() {
   );
 }
 
-function RobloxResult({ profile }) {
+function RobloxResult({ profile, onReload }) {
   const { username, displayName, description, createdDate, isBanned, headshot, fullBody, groups, moderations } = profile;
   const modCount = moderations.length;
   const banCount = moderations.filter((m) => m.moderation_type?.includes('Ban')).length;
@@ -416,6 +418,8 @@ function RobloxResult({ profile }) {
           </div>
         )}
       </div>
+
+      <UserLookupAppeals appeals={profile.appeals || []} moderations={moderations} username={profile.username} onUpdated={onReload} />
     </div>
   );
 }

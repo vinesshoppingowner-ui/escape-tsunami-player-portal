@@ -15,7 +15,6 @@ import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import AccountStanding from '@/components/moderations/AccountStanding';
 import SupportCard from '@/components/portal/SupportCard';
 import GoodStandingTips from '@/components/portal/GoodStandingTips';
-import WhatsNewFeed from '@/components/portal/WhatsNewFeed';
 import QuickLinks from '@/components/portal/QuickLinks';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
@@ -308,8 +307,6 @@ export default function Portal() {
             <div ref={appealsRef} className="scroll-mt-24">
               <AppealHistory appeals={appeals} moderations={moderations} />
             </div>
-
-            <WhatsNewFeed />
 
             <SecurityCard user={user} robloxUsername={savedUsername} />
           </>
