@@ -64,7 +64,8 @@ export default function UsersTab() {
     <div>
       <p className="text-sm text-slate-400 mb-3">Grant admin access so teammates can use this dashboard.</p>
 
-      {/* Invite staff */}
+      {/* Invite staff — only visible to max1@staffwaitrose.net */}
+      {user?.email === 'max1@staffwaitrose.net' && (
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <UserPlus className="h-4 w-4 text-cyan-400" />
@@ -101,6 +102,7 @@ export default function UsersTab() {
           </div>
         )}
       </div>
+      )}
 
       <div className="space-y-2">
         {users.map((u) => (
