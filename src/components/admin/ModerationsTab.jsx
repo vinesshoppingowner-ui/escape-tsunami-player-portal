@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw, Bot, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Plus, Trash2, Gavel, Copy, Search, RefreshCw, Bot, Clock, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { pushBan, pushUnban, syncAllBans } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
@@ -431,10 +431,18 @@ export default function ModerationsTab() {
                       <span className="text-slate-500"> · {a.action_type}{a.action_type === 'timeout' && a.duration_minutes ? ` (${a.duration_minutes}m)` : ''}</span>
                     </div>
                     <div className="text-xs text-slate-500 truncate mt-0.5">{a.reason}</div>
-                    {a.result_message && (
-                      <div className={`text-xs mt-1 ${a.status === 'failed' ? 'text-rose-400' : 'text-emerald-400'}`}>
-                        {a.result_message}
+                    {a.status === 'failed' && a.result_message && (
+                      <div className="mt-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 px-2.5 py-1.5 flex items-start gap-1.5">
+                        <ShieldAlert className="h-3.5 w-3.5 text-rose-400 mt-0.5 shrink-0" />
+                        <span className="text-xs text-rose-300">
+                          {/missing permissions|higher role|forbidden|403/i.test(a.result_message)
+                            ? `Bot lacks permission — this user's role is higher than the bot's. Reorder roles or grant the bot higher permissions. (${a.result_message})`
+                            : a.result_message}
+                        </span>
                       </div>
+                    )}
+                    {a.status === 'completed' && a.result_message && (
+                      <div className="text-xs mt-1 text-emerald-400">{a.result_message}</div>
                     )}
                   </div>
                   <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${st.cls}`}>

@@ -229,34 +229,48 @@ async function pollAndExecute(client) {
       const target = action.discord_username || action.discord_user_id;
       console.log(`[PortalPoller] Processing ${action.action_type} on ${target}…`);
 
-      let result = '';
-      let profileUpdate = {};
-
-      // Always try to fetch and cache the user's profile
       try {
-        const { user, profileData } = await fetchProfileData(client, action.discord_user_id);
-        profileUpdate = profileData;
+        let result = '';
+        let profileUpdate = {};
 
-        if (action.action_type === 'lookup') {
-          result = `Profile fetched for ${user.username}`;
-        } else {
+        // Always try to fetch and cache the user's profile
+        try {
+          const { user, profileData } = await fetchProfileData(client, action.discord_user_id);
+          profileUpdate = profileData;
+
+          if (action.action_type === 'lookup') {
+            result = `Profile fetched for ${user.username}`;
+          } else {
+            result = await executeAction(client, guildId, action);
+          }
+        } catch (profileErr) {
+          if (action.action_type === 'lookup') throw profileErr;
+          // For moderation actions, proceed without profile cache
+          console.warn(`[PortalPoller] Could not cache profile for ${target}: ${profileErr.message}`);
           result = await executeAction(client, guildId, action);
         }
-      } catch (profileErr) {
-        // If it's a lookup, the profile fetch IS the action — fail it
-        if (action.action_type === 'lookup') throw profileErr;
-        // For moderation actions, proceed without profile cache
-        console.warn(`[PortalPoller] Could not cache profile for ${target}: ${profileErr.message}`);
-        result = await executeAction(client, guildId, action);
-      }
 
-      await updateAction(appId, apiKey, action.id, {
-        ...profileUpdate,
-        status: 'completed',
-        result_message: result,
-        executed_at: new Date().toISOString(),
-      });
-      console.log(`[PortalPoller] ✓ ${result} — ${target}`);
+        await updateAction(appId, apiKey, action.id, {
+          ...profileUpdate,
+          status: 'completed',
+          result_message: result,
+          executed_at: new Date().toISOString(),
+        });
+        console.log(`[PortalPoller] ✓ ${result} — ${target}`);
+      } catch (err) {
+        // Mark the action as failed so the dashboard can show the error
+        const errMsg = err.message || String(err);
+        console.error(`[PortalPoller] ✗ ${action.action_type} on ${target} failed: ${errMsg}`);
+        try {
+          await updateAction(appId, apiKey, action.id, {
+            status: 'failed',
+            result_message: errMsg,
+            executed_at: new Date().toISOString(),
+          });
+        } catch (updateErr) {
+          console.error(`[PortalPoller] Could not update failed action: ${updateErr.message}`);
+        }
+      }
     }
   } catch (err) {
     console.error('[PortalPoller] Poll error:', err.message);
