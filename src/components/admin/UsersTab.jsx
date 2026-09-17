@@ -2,13 +2,19 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
-import { Loader2, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { Loader2, ShieldCheck, User as UserIcon, UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function UsersTab() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('max1@staffwaitrose.net');
+  const [inviteRole, setInviteRole] = useState('admin');
+  const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -19,6 +25,24 @@ export default function UsersTab() {
     }
   };
   useEffect(() => { load(); }, []);
+
+  const invite = async () => {
+    const email = inviteEmail.trim();
+    if (!email) return;
+    setInviting(true);
+    setInviteMsg(null);
+    try {
+      await base44.users.inviteUser(email, inviteRole);
+      await logStaffAction(user, 'user_role_changed', email, `Invited ${email} as ${inviteRole}`);
+      setInviteMsg({ type: 'success', text: `Invitation sent to ${email}.` });
+      setInviteEmail('');
+      await load();
+    } catch (err) {
+      setInviteMsg({ type: 'error', text: err.message || 'Invitation failed.' });
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const setRole = async (u, role) => {
     setSavingId(u.id);
@@ -39,6 +63,45 @@ export default function UsersTab() {
   return (
     <div>
       <p className="text-sm text-slate-400 mb-3">Grant admin access so teammates can use this dashboard.</p>
+
+      {/* Invite staff */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-5">
+        <div className="flex items-center gap-2 mb-3">
+          <UserPlus className="h-4 w-4 text-cyan-400" />
+          <h3 className="text-sm font-semibold text-white">Invite a staff member</h3>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            type="email"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder="staff@example.com"
+            className="bg-slate-950/60 border-white/15 text-white flex-1"
+          />
+          <select
+            value={inviteRole}
+            onChange={(e) => setInviteRole(e.target.value)}
+            className="h-9 rounded-md border border-white/15 bg-slate-950/60 px-2 text-sm text-white"
+          >
+            <option value="user">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+          <Button
+            onClick={invite}
+            disabled={inviting || !inviteEmail.trim()}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
+          >
+            {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+            Invite
+          </Button>
+        </div>
+        {inviteMsg && (
+          <div className={`mt-2 text-xs ${inviteMsg.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {inviteMsg.text}
+          </div>
+        )}
+      </div>
+
       <div className="space-y-2">
         {users.map((u) => (
           <div key={u.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
