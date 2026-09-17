@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { ScrollText, CheckCircle2, XCircle, Clock, MessageSquare } from 'lucide-react';
+import { ScrollText, CheckCircle2, XCircle, Clock, MessageSquare, Calendar } from 'lucide-react';
 
 const STATUS_STYLES = {
-  Pending: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  'Under Review': 'bg-blue-500/10 text-blue-300 border-blue-500/20',
-  Approved: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  Denied: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+  Pending: { badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30', accent: 'border-l-amber-500/50' },
+  'Under Review': { badge: 'bg-violet-500/15 text-violet-300 border-violet-500/30', accent: 'border-l-violet-500/50' },
+  Approved: { badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', accent: 'border-l-emerald-500/50' },
+  Denied: { badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30', accent: 'border-l-rose-500/50' },
 };
 const STATUS_ICON = { Pending: Clock, 'Under Review': Clock, Approved: CheckCircle2, Denied: XCircle };
 
@@ -70,23 +70,27 @@ export default function AppealHistory({ appeals = [], moderations = [] }) {
         {appeals.map((a, i) => {
           const mod = modMap[a.moderation_id];
           const StatusIcon = STATUS_ICON[a.status] || Clock;
+          const style = STATUS_STYLES[a.status] || STATUS_STYLES.Pending;
           return (
             <motion.div
               key={a.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: i * 0.04 }}
-              className="rounded-2xl bg-white/[0.03] border border-white/10 p-5"
+              className={`rounded-2xl bg-white/[0.03] border border-white/10 border-l-2 ${style.accent} p-5`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-sm text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <Calendar className="h-3.5 w-3.5" /> {new Date(a.created_date).toLocaleDateString()}
+                  </div>
+                  <div className="mt-1.5 text-sm text-slate-400">
                     Appeal for <span className="text-white font-medium">{mod?.moderation_type || 'Moderation'}</span>
                     {mod?.reason ? <span className="text-slate-500"> — {mod.reason}</span> : null}
                   </div>
                   <p className="mt-2 text-sm text-slate-300">{a.appeal_reason}</p>
                 </div>
-                <span className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[a.status] || ''}`}>
+                <span className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${style.badge}`}>
                   <StatusIcon className="h-3.5 w-3.5" /> {a.status}
                 </span>
               </div>

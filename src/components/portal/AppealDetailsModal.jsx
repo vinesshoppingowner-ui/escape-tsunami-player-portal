@@ -2,10 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollText, Calendar, Clock, UserCog, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
 
 const STATUS_STYLES = {
-  Pending: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  'Under Review': 'bg-blue-500/10 text-blue-300 border-blue-500/20',
-  Approved: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  Denied: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+  Pending: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+  'Under Review': 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+  Approved: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+  Denied: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
 };
 const STATUS_ICON = { Pending: Clock, 'Under Review': Clock, Approved: CheckCircle2, Denied: XCircle };
 

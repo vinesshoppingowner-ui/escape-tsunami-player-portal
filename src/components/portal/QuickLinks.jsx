@@ -1,10 +1,10 @@
-import { MessageCircle, Bug, BookOpen } from 'lucide-react';
+import { MessageCircle, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const DISCORD_URL = 'https://discord.gg/NCBqfpwPuT';
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
-export default function QuickLinks({ onReportBug }) {
+export default function QuickLinks() {
   return (
     <div className="mt-4 flex flex-wrap gap-2">
       <a href={DISCORD_URL} target="_blank" rel="noreferrer">
@@ -12,9 +12,6 @@ export default function QuickLinks({ onReportBug }) {
           <MessageCircle className="h-4 w-4 mr-1.5" /> Join Discord
         </Button>
       </a>
-      <Button size="sm" variant="outline" onClick={onReportBug} className="bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white">
-        <Bug className="h-4 w-4 mr-1.5" /> Report a Bug
-      </Button>
       <a href={GAME_URL} target="_blank" rel="noreferrer">
         <Button size="sm" variant="outline" className="bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white">
           <BookOpen className="h-4 w-4 mr-1.5" /> Game Page

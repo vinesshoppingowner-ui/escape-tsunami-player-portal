@@ -18,7 +18,6 @@ import GoodStandingTips from '@/components/portal/GoodStandingTips';
 import WhatsNewFeed from '@/components/portal/WhatsNewFeed';
 import QuickLinks from '@/components/portal/QuickLinks';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
-import BugReportDialog from '@/components/portal/BugReportDialog';
 import SecurityCard from '@/components/portal/SecurityCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
@@ -38,7 +37,6 @@ export default function Portal() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeModeration, setActiveModeration] = useState(null);
   const [appealModalOpen, setAppealModalOpen] = useState(false);
-  const [bugReportOpen, setBugReportOpen] = useState(false);
 
   const moderationsRef = useRef(null);
   const appealsRef = useRef(null);
@@ -258,7 +256,7 @@ export default function Portal() {
             </div>
 
             {/* Quick Links */}
-            <QuickLinks onReportBug={() => setBugReportOpen(true)} />
+            <QuickLinks />
 
             {/* Last updated */}
             {lastUpdated && (
@@ -331,12 +329,6 @@ export default function Portal() {
         onClose={() => setAppealModalOpen(false)}
         appeals={appeals}
         moderations={moderations}
-      />
-
-      <BugReportDialog
-        open={bugReportOpen}
-        onClose={() => setBugReportOpen(false)}
-        robloxUsername={savedUsername}
       />
     </div>
   );
