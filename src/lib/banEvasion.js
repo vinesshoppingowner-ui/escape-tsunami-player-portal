@@ -168,6 +168,17 @@ export async function hasBanTokenIDB() {
   return !!token && decrypt(token).includes(':');
 }
 
+// Clear all client-side ban artifacts (token + fingerprint blacklist + IndexedDB).
+// Called when the server confirms the IP is no longer banned.
+export function clearBanToken() {
+  try { localStorage.removeItem(BAN_TOKEN_KEY); } catch {}
+  try { localStorage.removeItem(BANNED_FPS_KEY); } catch {}
+  try {
+    document.cookie = `${BAN_TOKEN_KEY}=; path=/; max-age=0; SameSite=Strict`;
+  } catch {}
+  idbSet('banToken', null).catch(() => {});
+}
+
 // === Fingerprint ban list ===
 export function addBannedFingerprint(fp) {
   try {

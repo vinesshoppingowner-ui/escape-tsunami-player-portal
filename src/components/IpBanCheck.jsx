@@ -6,6 +6,7 @@ import {
   setBanToken,
   hasBanToken,
   hasBanTokenIDB,
+  clearBanToken,
   addBannedFingerprint,
   isFingerprintBanned,
   checkRateLimit,
@@ -28,52 +29,73 @@ export default function IpBanCheck({ children }) {
         return;
       }
 
-      // 2. Persistent ban token (localStorage + cookie + IndexedDB)
-      if (hasBanToken() || await hasBanTokenIDB()) {
-        if (!cancelled) setStatus('banned');
-        return;
-      }
-
-      // 3. Rate limiting — stop automated ban evasion / brute-force
-      if (!checkRateLimit()) {
-        if (!cancelled) setStatus('banned');
-        return;
-      }
-
-      // 4. Browser fingerprint — identify device even if IP changes
-      const fp = await generateFingerprint();
-      if (isFingerprintBanned(fp)) {
-        if (!cancelled) setStatus('banned');
-        return;
-      }
-
-      // 5. IP check + intelligence
+      // 2. Check server-side IP ban first (authoritative source of truth)
+      let ip = null;
+      let serverBanned = false;
+      let serverChecked = false;
       try {
         const [ipRes, bans] = await Promise.all([
           fetch('https://api.ipify.org?format=json').then((r) => r.json()),
           base44.entities.IpBan.list(),
         ]);
         if (cancelled) return;
-        const isBanned = bans.some((b) => b.ip_address === ipRes.ip);
-        if (isBanned) {
-          setBanToken(fp);
-          addBannedFingerprint(fp);
-          setStatus('banned');
+        ip = ipRes.ip;
+        serverBanned = bans.some((b) => b.ip_address === ip);
+        serverChecked = true;
+      } catch {
+        // Server unreachable — fail open for the initial check
+      }
+
+      // 3. Server confirms ban — persist tokens and block
+      if (serverBanned) {
+        const fp = await generateFingerprint();
+        setBanToken(fp);
+        addBannedFingerprint(fp);
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 4. Server says NOT banned — clear any stale client-side ban tokens/fingerprints
+      if (serverChecked) {
+        const hasToken = hasBanToken() || await hasBanTokenIDB();
+        const fp = await generateFingerprint();
+        if (hasToken || isFingerprintBanned(fp)) {
+          clearBanToken();
+        }
+      } else if (hasBanToken() || await hasBanTokenIDB()) {
+        // Server unreachable but stale token exists — keep blocked (fail closed)
+        if (!cancelled) setStatus('banned');
+        return;
+      } else {
+        // Server unreachable, no token — check fingerprint as fallback
+        const fp = await generateFingerprint();
+        if (isFingerprintBanned(fp)) {
+          if (!cancelled) setStatus('banned');
           return;
         }
+      }
 
-        // 6. IP intelligence — VPN / proxy / hosting / known ASN
-        const intel = await checkIpIntelligence(ipRes.ip);
-        if (intel.threat) {
-          // Force proof-of-work challenge for suspicious connections
-          const solved = await solveChallenge();
-          if (!solved) {
-            if (!cancelled) setStatus('banned');
-            return;
+      // 5. Rate limiting — stop automated ban evasion / brute-force
+      if (!checkRateLimit()) {
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 6. IP intelligence — VPN / proxy / hosting / known ASN
+      if (serverChecked && ip) {
+        try {
+          const intel = await checkIpIntelligence(ip);
+          if (intel.threat) {
+            // Force proof-of-work challenge for suspicious connections
+            const solved = await solveChallenge();
+            if (!solved) {
+              if (!cancelled) setStatus('banned');
+              return;
+            }
           }
+        } catch {
+          // Fail open
         }
-      } catch {
-        // Fail open
       }
 
       if (!cancelled) setStatus('ok');
