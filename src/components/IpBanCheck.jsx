@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { ShieldBan } from 'lucide-react';
+import {
+  generateFingerprint,
+  setBanToken,
+  hasBanToken,
+  addBannedFingerprint,
+  isFingerprintBanned,
+  checkRateLimit,
+  validateClient,
+} from '@/lib/banEvasion';
 
 export default function IpBanCheck({ children }) {
   const [status, setStatus] = useState('checking'); // 'checking' | 'banned' | 'ok'
@@ -8,6 +17,32 @@ export default function IpBanCheck({ children }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // 1. User-Agent / client validation — block scripts & headless browsers
+      if (!validateClient()) {
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 2. Persistent ban token (localStorage + cookie) — survives IP changes
+      if (hasBanToken()) {
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 3. Rate limiting — stop automated ban evasion / brute-force
+      if (!checkRateLimit()) {
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 4. Browser fingerprint — identify device even if IP changes
+      const fp = await generateFingerprint();
+      if (isFingerprintBanned(fp)) {
+        if (!cancelled) setStatus('banned');
+        return;
+      }
+
+      // 5. IP check against database ban list
       try {
         const [ipRes, bans] = await Promise.all([
           fetch('https://api.ipify.org?format=json').then((r) => r.json()),
@@ -15,7 +50,14 @@ export default function IpBanCheck({ children }) {
         ]);
         if (cancelled) return;
         const isBanned = bans.some((b) => b.ip_address === ipRes.ip);
-        setStatus(isBanned ? 'banned' : 'ok');
+        if (isBanned) {
+          // Stamp this device so future visits are blocked even if IP changes
+          setBanToken(fp);
+          addBannedFingerprint(fp);
+          setStatus('banned');
+        } else {
+          setStatus('ok');
+        }
       } catch {
         // Fail open — don't block access if the check fails
         if (!cancelled) setStatus('ok');
