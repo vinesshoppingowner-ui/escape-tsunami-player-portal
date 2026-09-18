@@ -325,3 +325,8 @@
 [data-season="winter"] .snowflake-spin {
   animation: snowflake-spin 8s linear infinite;
 }
+
+/* ===== No UI Corners — sharp edges everywhere ===== */
+*, *::before, *::after {
+  border-radius: 0 !important;
+}

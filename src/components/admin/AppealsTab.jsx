@@ -8,6 +8,7 @@ import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
 import { pushUnban } from '@/lib/renderBridge';
 import { emailPlayer } from '@/lib/userEmails';
 import UserInfoModal from '@/components/admin/UserInfoModal';
+import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
 
@@ -87,6 +88,13 @@ export default function AppealsTab() {
         robloxUsername: appeal.roblox_username,
         subject: `Your appeal has been ${draft.status.toLowerCase()}`,
         body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+      });
+      await sendAppealDecisionWebhook({
+        username: appeal.roblox_username,
+        moderationType: mod?.moderation_type,
+        decision: draft.status,
+        staffName: user?.full_name || user?.email || 'Unknown staff',
+        appealId: appeal.id,
       });
       await load();
     } finally {

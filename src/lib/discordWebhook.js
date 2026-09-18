@@ -39,3 +39,48 @@ export async function sendAppealWebhook({ username, moderationType, reason, appe
     /* ignore — webhook must never block the appeal flow */
   }
 }
+
+/**
+ * Pings the staff Discord channel when a staff member handles an appeal.
+ * Shows the decision and who handled it, so staff don't duplicate work.
+ * Fire-and-forget: never throws, never blocks the decision flow.
+ */
+export async function sendAppealDecisionWebhook({ username, moderationType, decision, staffName, appealId }) {
+  try {
+    const adminUrl = `${window.location.origin}/admin`;
+    const colors = {
+      Approved: 0x22c55e,
+      Denied: 0xef4444,
+      'Under Review': 0x8b5cf6,
+      Pending: 0xf59e0b,
+    };
+    const emojis = {
+      Approved: '✅',
+      Denied: '❌',
+      'Under Review': '🔍',
+      Pending: '⏳',
+    };
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `${emojis[decision] || '📋'} Appeal handled — ${decision}`,
+            url: adminUrl,
+            color: colors[decision] || 0x64748b,
+            fields: [
+              { name: 'Player', value: username || 'Unknown', inline: true },
+              { name: 'Moderation', value: moderationType || '—', inline: true },
+              { name: 'Handled by', value: staffName || 'Unknown staff', inline: true },
+            ],
+            footer: { text: appealId ? `Appeal ID: ${appealId}` : 'Escape Tsunami Portal' },
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }),
+    });
+  } catch {
+    /* ignore */
+  }
+}

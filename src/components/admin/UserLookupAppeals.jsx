@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
 import { emailPlayer } from '@/lib/userEmails';
 import { pushUnban } from '@/lib/renderBridge';
+import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, ScrollText, Clock, CheckCircle2, XCircle, Calendar } from 'lucide-react';
@@ -55,6 +56,13 @@ export default function UserLookupAppeals({ appeals = [], moderations = [], user
         robloxUsername: username,
         subject: `Your appeal has been ${draft.status.toLowerCase()}`,
         body: `Hi ${username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n\u2014 Escape Tsunami Staff Team`,
+      });
+      sendAppealDecisionWebhook({
+        username,
+        moderationType: mod?.moderation_type,
+        decision: draft.status,
+        staffName: user?.full_name || user?.email || 'Unknown staff',
+        appealId: appeal.id,
       });
       onUpdated?.();
     } finally {
