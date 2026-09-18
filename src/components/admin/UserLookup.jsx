@@ -7,10 +7,30 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info, Mail, Globe, ShieldBan } from 'lucide-react';
 import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
 import { useToast } from '@/components/ui/use-toast';
+import { findUserByRobloxUsername } from '@/lib/userLookup';
 
-const ROBLOX_USERS_API = 'https://users.roproxy.com/v1';
-const ROBLOX_THUMBS_API = 'https://thumbnails.roproxy.com/v1';
-const ROBLOX_GROUPS_API = 'https://groups.roproxy.com/v1';
+const ROBLOX_USERS_HOSTS = [
+  'https://users.roproxy.com/v1',
+  'https://users.rproxy.app/v1',
+];
+const ROBLOX_THUMBS_HOSTS = [
+  'https://thumbnails.roproxy.com/v1',
+  'https://thumbnails.rproxy.app/v1',
+];
+const ROBLOX_GROUPS_HOSTS = [
+  'https://groups.roproxy.com/v1',
+  'https://groups.rproxy.app/v1',
+];
+
+async function fetchWithFallback(hosts, path, init) {
+  for (const host of hosts) {
+    try {
+      const res = await fetch(`${host}${path}`, init);
+      if (res.ok) return await res.json();
+    } catch {}
+  }
+  return null;
+}
 
 const MOD_TYPE_STYLES = {
   'Warning': 'text-amber-300 bg-amber-500/10 border-amber-500/20',
@@ -75,24 +95,31 @@ export default function UserLookup() {
   };
 
   const searchRoblox = async (username) => {
-    const userRes = await fetch(`${ROBLOX_USERS_API}/usernames/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
-    });
-    if (!userRes.ok) throw new Error('Roblox user lookup failed');
-    const userData = (await userRes.json()).data?.[0];
+    // Try multiple Roblox API proxies — if one is down, the next is used
+    let userData = null;
+    let proxyResponded = false;
+    for (const host of ROBLOX_USERS_HOSTS) {
+      try {
+        const userRes = await fetch(`${host}/usernames/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
+        });
+        if (!userRes.ok) continue;
+        proxyResponded = true;
+        userData = (await userRes.json()).data?.[0];
+        break;
+      } catch {}
+    }
+    if (!proxyResponded) throw new Error('Roblox user lookup failed — all proxies unavailable, try again in a moment');
     if (!userData) throw new Error(`No Roblox user found with username "${username}"`);
     const userId = userData.id;
 
-    const [headRes, bodyRes, groupsRes] = await Promise.all([
-      fetch(`${ROBLOX_THUMBS_API}/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
-      fetch(`${ROBLOX_THUMBS_API}/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
-      fetch(`${ROBLOX_GROUPS_API}/users/${userId}/groups/roles`),
+    const [headData, bodyData, groupsData] = await Promise.all([
+      fetchWithFallback(ROBLOX_THUMBS_HOSTS, `/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
+      fetchWithFallback(ROBLOX_THUMBS_HOSTS, `/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`),
+      fetchWithFallback(ROBLOX_GROUPS_HOSTS, `/users/${userId}/groups/roles`),
     ]);
-    const headData = await headRes.json();
-    const bodyData = await bodyRes.json();
-    const groupsData = groupsRes.ok ? await groupsRes.json() : { data: [] };
 
     let moderations = [];
     let appeals = [];
@@ -103,10 +130,7 @@ export default function UserLookup() {
         base44.entities.Appeal.filter({ roblox_username: userData.name }, '-created_date', 50),
       ]);
     } catch { /* RLS */ }
-    try {
-      const users = await base44.entities.User.filter({ roblox_username: userData.name }, '-created_date', 5);
-      if (users.length > 0) websiteAccount = users[0];
-    } catch {}
+    websiteAccount = await findUserByRobloxUsername(userData.name);
 
     setRobloxProfile({
       userId,

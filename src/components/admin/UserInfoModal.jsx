@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, Globe, Clock, ShieldBan, User as UserIcon, XCircle, Shield } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { findUserByRobloxUsername } from '@/lib/userLookup';
 
 export default function UserInfoModal({ robloxUsername, open, onClose }) {
   const { user } = useAuth();
@@ -19,8 +20,8 @@ export default function UserInfoModal({ robloxUsername, open, onClose }) {
     setAccount(null);
     (async () => {
       try {
-        const users = await base44.entities.User.filter({ roblox_username: robloxUsername }, '-created_date', 5);
-        if (users.length > 0) setAccount(users[0]);
+        const account = await findUserByRobloxUsername(robloxUsername);
+        if (account) setAccount(account);
       } catch {
         // Permission denied or no users
       } finally {
