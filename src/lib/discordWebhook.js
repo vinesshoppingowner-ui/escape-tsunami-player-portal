@@ -1,5 +1,5 @@
 const WEBHOOK_URL =
-  'https://discord.com/api/webhooks/1543810368164470804/HD5c_gWi9pyaKiN_aNDyrsubJ8McdGDnUxOlj7X-8cTff7-43GKzC5DmuhPYT_InjSU';
+  'https://discord.com/api/webhooks/1550634657320673400/ootH6wYSRKEGLVQnkuZgFRys2jEZr8KrAe2UOYFwAgJj7cAupR1UPJP8j_4j-Pvou5jv';
 
 /**
  * Pings the staff Discord channel when a player submits an appeal.
