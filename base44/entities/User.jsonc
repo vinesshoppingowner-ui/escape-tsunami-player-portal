@@ -18,6 +18,11 @@
       "description": "Whether this user is an owner (auto-set for @staffwaitrose.net accounts)",
       "default": false
     },
+    "banned": {
+      "type": "boolean",
+      "description": "Whether this user account has been banned from the portal",
+      "default": false
+    },
     "last_ip": {
       "type": "string",
       "description": "The last IP address the user logged in from"

@@ -5,14 +5,19 @@ import {
   generateFingerprint,
   setBanToken,
   hasBanToken,
+  hasBanTokenIDB,
   addBannedFingerprint,
   isFingerprintBanned,
   checkRateLimit,
   validateClient,
+  checkIpIntelligence,
+  solveChallenge,
 } from '@/lib/banEvasion';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function IpBanCheck({ children }) {
-  const [status, setStatus] = useState('checking'); // 'checking' | 'banned' | 'ok'
+  const [status, setStatus] = useState('checking');
+  const { user, isLoadingAuth } = useAuth(); // 'checking' | 'banned' | 'ok'
 
   useEffect(() => {
     let cancelled = false;
@@ -23,8 +28,8 @@ export default function IpBanCheck({ children }) {
         return;
       }
 
-      // 2. Persistent ban token (localStorage + cookie) — survives IP changes
-      if (hasBanToken()) {
+      // 2. Persistent ban token (localStorage + cookie + IndexedDB)
+      if (hasBanToken() || await hasBanTokenIDB()) {
         if (!cancelled) setStatus('banned');
         return;
       }
@@ -42,7 +47,7 @@ export default function IpBanCheck({ children }) {
         return;
       }
 
-      // 5. IP check against database ban list
+      // 5. IP check + intelligence
       try {
         const [ipRes, bans] = await Promise.all([
           fetch('https://api.ipify.org?format=json').then((r) => r.json()),
@@ -51,20 +56,37 @@ export default function IpBanCheck({ children }) {
         if (cancelled) return;
         const isBanned = bans.some((b) => b.ip_address === ipRes.ip);
         if (isBanned) {
-          // Stamp this device so future visits are blocked even if IP changes
           setBanToken(fp);
           addBannedFingerprint(fp);
           setStatus('banned');
-        } else {
-          setStatus('ok');
+          return;
+        }
+
+        // 6. IP intelligence — VPN / proxy / hosting / known ASN
+        const intel = await checkIpIntelligence(ipRes.ip);
+        if (intel.threat) {
+          // Force proof-of-work challenge for suspicious connections
+          const solved = await solveChallenge();
+          if (!solved) {
+            if (!cancelled) setStatus('banned');
+            return;
+          }
         }
       } catch {
-        // Fail open — don't block access if the check fails
-        if (!cancelled) setStatus('ok');
+        // Fail open
       }
+
+      if (!cancelled) setStatus('ok');
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Account-linked ban — block banned users even on a new IP or alternate account
+  useEffect(() => {
+    if (!isLoadingAuth && user?.data?.banned) {
+      setStatus('banned');
+    }
+  }, [user, isLoadingAuth]);
 
   if (status === 'banned') {
     return (
