@@ -85,16 +85,16 @@ export default function VerifyAccount({ onVerified }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-      className="mt-8 bg-white/[0.03] border border-white/10 overflow-hidden"
+      className="mt-8 rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden shadow-xl shadow-cyan-950/30"
     >
       {/* Step indicator bar */}
       <div className="flex border-b border-white/10">
-        <div className={`flex-1 px-6 py-3 text-xs font-medium uppercase tracking-wider flex items-center gap-2 transition-colors ${step === 'enter' ? 'text-cyan-300 bg-cyan-500/5' : 'text-slate-500'}`}>
-          <span className={`flex h-5 w-5 items-center justify-center text-[10px] border transition-colors ${step === 'enter' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' : 'border-white/15 text-slate-500'}`}>1</span>
+        <div className={`flex-1 px-6 py-3.5 text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-colors ${step === 'enter' ? 'text-cyan-300 bg-cyan-500/[0.07]' : 'text-slate-500'}`}>
+          <span className={`flex h-5 w-5 items-center justify-center text-[10px] rounded-full border transition-colors ${step === 'enter' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' : 'border-white/15 text-slate-500'}`}>1</span>
           Username
         </div>
-        <div className={`flex-1 px-6 py-3 text-xs font-medium uppercase tracking-wider flex items-center gap-2 transition-colors ${step === 'verify' ? 'text-cyan-300 bg-cyan-500/5' : 'text-slate-500'}`}>
-          <span className={`flex h-5 w-5 items-center justify-center text-[10px] border transition-colors ${step === 'verify' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' : 'border-white/15 text-slate-500'}`}>2</span>
+        <div className={`flex-1 px-6 py-3.5 text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-colors ${step === 'verify' ? 'text-cyan-300 bg-cyan-500/[0.07]' : 'text-slate-500'}`}>
+          <span className={`flex h-5 w-5 items-center justify-center text-[10px] rounded-full border transition-colors ${step === 'verify' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' : 'border-white/15 text-slate-500'}`}>2</span>
           Verify Bio
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function VerifyAccount({ onVerified }) {
         {step === 'enter' && (
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
                 <Fingerprint className="h-6 w-6 text-cyan-300" />
               </div>
               <div>
@@ -141,7 +141,7 @@ export default function VerifyAccount({ onVerified }) {
         {step === 'verify' && (
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
                 <KeyRound className="h-6 w-6 text-cyan-300" />
               </div>
               <div>
@@ -154,7 +154,7 @@ export default function VerifyAccount({ onVerified }) {
             </p>
 
             {/* Code display */}
-            <div className="bg-slate-950/60 border border-cyan-500/20 p-5 flex items-center justify-between gap-3">
+            <div className="rounded-xl bg-slate-950/60 border border-cyan-500/20 p-5 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Your verification code</div>
                 <code className="font-mono text-2xl tracking-[0.3em] text-cyan-300 font-bold select-all">{code}</code>
@@ -172,14 +172,14 @@ export default function VerifyAccount({ onVerified }) {
                 'Click Verify — we read your bio and confirm it is you instantly.',
               ].map((text, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
-                  <span className="flex h-6 w-6 items-center justify-center text-xs font-bold border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 shrink-0">{i + 1}</span>
+                  <span className="flex h-6 w-6 items-center justify-center text-xs font-bold rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 shrink-0">{i + 1}</span>
                   {text}
                 </div>
               ))}
             </div>
 
             {error && (
-              <div className="mt-4 flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 p-3">
+              <div className="mt-4 rounded-lg flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 p-3">
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /> <span>{error}</span>
               </div>
             )}

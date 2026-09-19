@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy } from 'lucide-react';
+import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
@@ -160,20 +160,20 @@ export default function Portal() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="mt-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-cyan-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            className="mt-6 rounded-2xl bg-gradient-to-br from-cyan-500/[0.08] to-blue-600/[0.08] border border-cyan-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-lg shadow-cyan-950/20"
           >
-            <div className="h-10 w-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
+            <div className="h-11 w-11 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
               <Sparkles className="h-5 w-5 text-cyan-300" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-white text-sm">Browsing as guest</h3>
-              <p className="mt-0.5 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-400 leading-relaxed">
                 You can verify your Roblox account and view your moderations without signing in. Sign in to save your profile, get notifications when your appeals are answered, and unlock more.
               </p>
             </div>
-            <Link to="/login">
-              <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0 shrink-0">
-                <LogIn className="h-4 w-4 mr-1.5" /> Sign in
+            <Link to="/login" className="shrink-0">
+              <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
+                Sign in <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
           </motion.div>
