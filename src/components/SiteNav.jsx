@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X } from 'lucide-react';
+import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
@@ -16,15 +16,17 @@ export default function SiteNav() {
   const isDesktopLayout = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
 
   const desktopLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'My Appeals', to: '/my-appeals' },
-    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
+    { label: 'Home', to: '/', icon: Home },
+    { label: 'My Appeals', to: '/my-appeals', icon: Scale },
+    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3 }] : []),
   ];
   const mobileLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'Member Portal', to: '/portal' },
-    { label: 'My Appeals', to: '/my-appeals' },
-    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
+    { label: 'Home', to: '/', icon: Home },
+    { label: 'Member Portal', to: '/portal', icon: LogIn },
+    { label: 'My Appeals', to: '/my-appeals', icon: Scale },
+    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3 }] : []),
   ];
 
   return (
@@ -47,10 +49,11 @@ export default function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 inline-flex items-center gap-1.5 ${
                   active ? 'text-white border-cyan-400' : 'text-slate-300 hover:text-white border-transparent'
                 }`}
               >
+                {l.icon && <l.icon className="h-3.5 w-3.5" />}
                 {l.label}
               </Link>
             );
@@ -83,8 +86,9 @@ export default function SiteNav() {
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="block px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/5 text-sm"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/5 text-sm"
             >
+              {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
               {l.label}
             </Link>
           ))}
