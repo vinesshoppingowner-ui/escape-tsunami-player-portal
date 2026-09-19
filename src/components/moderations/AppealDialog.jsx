@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldAlert, Calendar, Clock, UserCog } from 'lucide-react';
+import { Loader2, ShieldAlert, Calendar, Clock, UserCog, X } from 'lucide-react';
 
 const MIN_CHARS = 20;
 const MAX_CHARS = 500;
@@ -12,7 +12,6 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
   const [submitting, setSubmitting] = useState(false);
   const textareaRef = useRef(null);
 
-  // Reset + focus when the dialog opens
   useEffect(() => {
     if (open) {
       setReason('');
@@ -45,13 +44,19 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-lg p-0 overflow-hidden">
-        {/* Header band */}
-        <div className="p-6 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="h-11 w-11 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <ShieldAlert className="h-5 w-5 text-rose-400" />
+      <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-lg p-0 flex flex-col gap-0 max-h-[90vh] overflow-y-auto">
+        {/* Header band with close button */}
+        <div className="p-6 pb-4 border-b border-white/10">
+          <div className="flex items-start justify-between gap-4">
+            <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+              <ShieldAlert className="h-6 w-6 text-rose-400" />
             </div>
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
           <DialogTitle className="text-xl font-semibold mt-4">Appeal your moderation</DialogTitle>
           <DialogDescription className="text-slate-400 mt-1.5 leading-relaxed">
@@ -59,11 +64,11 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
           </DialogDescription>
         </div>
 
-        <div className="px-6 pb-6 space-y-5">
+        <div className="p-6 space-y-5">
           {/* Moderation context */}
           <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
             <div className="text-slate-500 text-[11px] uppercase tracking-wider font-medium">Moderation</div>
-            <div className="mt-1.5 flex items-center gap-2">
+            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
               <span className="text-white font-semibold">{moderation?.moderation_type}</span>
               {moderation?.reason && <span className="text-slate-400">— {moderation.reason}</span>}
             </div>
@@ -82,7 +87,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label htmlFor="appeal-reason" className="text-sm font-medium text-white">Your appeal</label>
-              <span className={`text-xs ${tooShort ? 'text-amber-400' : count >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
+              <span className={`text-xs font-mono ${tooShort ? 'text-amber-400' : count >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
                 {count}/{MAX_CHARS}
               </span>
             </div>
