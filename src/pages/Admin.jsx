@@ -9,6 +9,7 @@ import UsersTab from '@/components/admin/UsersTab';
 import StaffLogsTab from '@/components/admin/StaffLogsTab';
 import UserLookup from '@/components/admin/UserLookup';
 import WebsiteBansTab from '@/components/admin/WebsiteBansTab';
+import DashboardTab from '@/components/admin/DashboardTab';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -48,6 +49,7 @@ export default function Admin() {
             <TabsTrigger value="lookup" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">User Lookup</TabsTrigger>
             {isAdmin && <TabsTrigger value="bans" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Website Bans</TabsTrigger>}
             {isAdmin && <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="dashboard" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Dashboard</TabsTrigger>}
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
@@ -55,7 +57,8 @@ export default function Admin() {
           <TabsContent value="lookup"><UserLookup /></TabsContent>
           {isAdmin && <TabsContent value="bans"><WebsiteBansTab /></TabsContent>}
           {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
-        </Tabs>
+          {isAdmin && <TabsContent value="dashboard"><DashboardTab /></TabsContent>}
+          </Tabs>
       </main>
     </div>
   );
