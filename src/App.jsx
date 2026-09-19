@@ -13,6 +13,7 @@ import Portal from './pages/Portal';
 import MyAppeals from './pages/MyAppeals';
 import Admin from './pages/Admin';
 import Analytics from './pages/Analytics';
+import Dashboard from './pages/Dashboard';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
           <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

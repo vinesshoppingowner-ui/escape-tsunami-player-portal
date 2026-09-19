@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone } from 'lucide-react';
+import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -61,6 +61,7 @@ export default function SiteNav() {
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
+    ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
   const mobileLinks = [
     { label: 'Home', to: '/', icon: Home },
@@ -68,6 +69,7 @@ export default function SiteNav() {
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
+    ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
 
   const BANNER_COLORS = {
