@@ -9,6 +9,7 @@ import { Loader2, Gavel, Lock, X, MessageSquare, Zap, Clock, CheckCircle2, XCirc
 import { pushUnban, fetchChatLogs, fetchExploitLogs } from '@/lib/renderBridge';
 import { emailPlayer } from '@/lib/userEmails';
 import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
+import CustomDropdown from '@/components/ui/custom-dropdown';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
 
@@ -240,13 +241,12 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="w-full sm:w-48">
                 <label className="text-xs text-slate-400 mb-1 block">Decision</label>
-                <select
+                <CustomDropdown
                   value={draft.status}
-                  onChange={(e) => setDraft({ ...draft, status: e.target.value })}
-                  className="w-full h-9 rounded-md border border-white/15 bg-slate-950/60 px-3 text-sm text-white"
-                >
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                  onChange={(v) => setDraft({ ...draft, status: v })}
+                  options={STATUSES.map((s) => ({ value: s, label: s }))}
+                  placeholder="Select decision"
+                />
                 {draft.status === 'Denied' && (
                   <label className="mt-2 flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
                     <input
@@ -262,17 +262,16 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-slate-400">Staff response (shown to player)</label>
-                  <select
+                  <CustomDropdown
                     value=""
-                    onChange={(e) => {
-                      const t = TEMPLATES.find((x) => x.label === e.target.value);
+                    onChange={(v) => {
+                      const t = TEMPLATES.find((x) => x.label === v);
                       if (t) setDraft({ ...draft, staff_response: t.text });
                     }}
-                    className="h-7 rounded-md border border-white/15 bg-slate-950/60 px-2 text-xs text-slate-300"
-                  >
-                    <option value="">Templates…</option>
-                    {TEMPLATES.map((t) => <option key={t.label} value={t.label}>{t.label}</option>)}
-                  </select>
+                    options={TEMPLATES.map((t) => ({ value: t.label, label: t.label }))}
+                    placeholder="Templates…"
+                    buttonClassName="h-7 text-xs"
+                  />
                 </div>
                 <Textarea
                   rows={2}

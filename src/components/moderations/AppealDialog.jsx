@@ -25,7 +25,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
   }, [open]);
 
   const handleSubmit = async () => {
-    if (reason.trim().length < MIN_CHARS || submitting) return;
+    if (reason.trim().length < MIN_CHARS || whyAccepted.trim().length < MIN_CHARS || deserved.trim().length < MIN_CHARS || submitting) return;
     setSubmitting(true);
     try {
       await onSubmit({
@@ -42,9 +42,16 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
     }
   };
 
-  const count = reason.trim().length;
-  const tooShort = count > 0 && count < MIN_CHARS;
-  const canSubmit = count >= MIN_CHARS && count <= MAX_CHARS && !submitting;
+  const count1 = reason.trim().length;
+  const count2 = whyAccepted.trim().length;
+  const count3 = deserved.trim().length;
+  const tooShort1 = count1 > 0 && count1 < MIN_CHARS;
+  const tooShort2 = count2 > 0 && count2 < MIN_CHARS;
+  const tooShort3 = count3 > 0 && count3 < MIN_CHARS;
+  const canSubmit = count1 >= MIN_CHARS && count1 <= MAX_CHARS
+    && count2 >= MIN_CHARS && count2 <= MAX_CHARS
+    && count3 >= MIN_CHARS && count3 <= MAX_CHARS
+    && !submitting;
 
   const meta = [
     moderation?.moderation_date && { icon: Calendar, label: new Date(moderation.moderation_date).toLocaleDateString() },
@@ -95,8 +102,8 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
               <label htmlFor="appeal-reason" className="text-sm font-medium text-white">
                 1. Explain what happened <span className="text-rose-400">*</span>
               </label>
-              <span className={`text-xs font-mono ${tooShort ? 'text-amber-400' : count >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {count}/{MAX_CHARS}
+              <span className={`text-xs font-mono ${tooShort1 ? 'text-amber-400' : count1 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
+                {count1}/{MAX_CHARS}
               </span>
             </div>
             <Textarea
@@ -110,14 +117,19 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
               rows={5}
               className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
             />
-            {tooShort && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
+            {tooShort1 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
           </div>
 
           {/* Q2: Why should your appeal be accepted? */}
           <div className="space-y-2">
-            <label htmlFor="appeal-why" className="text-sm font-medium text-white">
-              2. Why should your appeal be accepted?
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="appeal-why" className="text-sm font-medium text-white">
+                2. Why should your appeal be accepted? <span className="text-rose-400">*</span>
+              </label>
+              <span className={`text-xs font-mono ${tooShort2 ? 'text-amber-400' : count2 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
+                {count2}/{MAX_CHARS}
+              </span>
+            </div>
             <Textarea
               id="appeal-why"
               value={whyAccepted}
@@ -127,13 +139,19 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
               rows={4}
               className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
             />
+            {tooShort2 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
           </div>
 
           {/* Q3: Did you deserve this infraction? */}
           <div className="space-y-2">
-            <label htmlFor="appeal-deserved" className="text-sm font-medium text-white">
-              3. Did you deserve this infraction in your opinion?
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="appeal-deserved" className="text-sm font-medium text-white">
+                3. Did you deserve this infraction in your opinion? <span className="text-rose-400">*</span>
+              </label>
+              <span className={`text-xs font-mono ${tooShort3 ? 'text-amber-400' : count3 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
+                {count3}/{MAX_CHARS}
+              </span>
+            </div>
             <Textarea
               id="appeal-deserved"
               value={deserved}
@@ -143,6 +161,7 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
               rows={4}
               className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
             />
+            {tooShort3 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
           </div>
 
           {/* Footer */}

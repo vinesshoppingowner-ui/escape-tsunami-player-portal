@@ -40,14 +40,27 @@ export default function AppealsTab() {
 
   const modFor = (id) => moderations.find((m) => m.id === id);
 
+  const PRIORITY_RANK = { High: 0, Medium: 1, Low: 2 };
+  const sortedAppeals = [...appeals].sort((a, b) => {
+    const pa = PRIORITY_RANK[priorityFor(modFor(a.moderation_id)).label] ?? 1;
+    const pb = PRIORITY_RANK[priorityFor(modFor(b.moderation_id)).label] ?? 1;
+    if (pa !== pb) return pa - pb;
+    return new Date(b.created_date) - new Date(a.created_date);
+  });
+
+  const pendingCount = appeals.filter((a) => a.status === 'Pending').length;
+
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading appeals…</div>;
   }
   if (!appeals.length) {
     return (
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center">
-        <CheckCircle2 className="h-7 w-7 mx-auto mb-2 text-emerald-400/70" />
-        <div className="text-sm text-slate-300">All caught up! No pending appeals right now.</div>
+        <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+          <CheckCircle2 className="h-7 w-7 text-emerald-400" />
+        </div>
+        <div className="text-sm font-medium text-white">All caught up!</div>
+        <div className="text-xs text-slate-500 mt-1">No appeals waiting for review right now.</div>
       </div>
     );
   }
@@ -55,11 +68,12 @@ export default function AppealsTab() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2.5 mb-3">
-        <h2 className="text-lg font-semibold text-white">Pending review</h2>
+        <h2 className="text-lg font-semibold text-white">Appeals queue</h2>
         <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">{appeals.length}</span>
-        <span className="text-xs text-slate-500 ml-1">Click an appeal to review the full case</span>
+        {pendingCount > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">{pendingCount} new</span>}
+        <span className="text-xs text-slate-500 ml-auto">Sorted by priority · Click to review</span>
       </div>
-      {appeals.map((a) => {
+      {sortedAppeals.map((a) => {
         const mod = modFor(a.moderation_id);
         const priority = priorityFor(mod);
         const st = STATUS_STYLES[a.status] || STATUS_STYLES['Pending'];

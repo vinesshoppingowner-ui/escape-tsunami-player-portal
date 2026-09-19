@@ -7,6 +7,7 @@ import { pushUnban } from '@/lib/renderBridge';
 import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import CustomDropdown from '@/components/ui/custom-dropdown';
 import { Loader2, Gavel, ScrollText, Clock, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
@@ -105,13 +106,12 @@ export default function UserLookupAppeals({ appeals = [], moderations = [], user
                 <div className="mt-3 flex flex-col sm:flex-row gap-3">
                   <div className="w-full sm:w-44">
                     <label className="text-xs text-slate-400 mb-1 block">Decision</label>
-                    <select
+                    <CustomDropdown
                       value={draft.status}
-                      onChange={(e) => setDraft(a.id, { status: e.target.value })}
-                      className="w-full h-9 rounded-md border border-white/15 bg-slate-950/60 px-3 text-sm text-white"
-                    >
-                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                      onChange={(v) => setDraft(a.id, { status: v })}
+                      options={STATUSES.map((s) => ({ value: s, label: s }))}
+                      placeholder="Select decision"
+                    />
                   </div>
                   <div className="flex-1">
                     <label className="text-xs text-slate-400 mb-1 block">Staff response</label>
