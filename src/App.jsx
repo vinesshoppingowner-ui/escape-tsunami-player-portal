@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Portal from './pages/Portal';
+import MyAppeals from './pages/MyAppeals';
 import Admin from './pages/Admin';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Home />} />
         <Route path="/portal" element={<Portal />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

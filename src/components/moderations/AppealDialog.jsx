@@ -9,12 +9,16 @@ const MAX_CHARS = 500;
 
 export default function AppealDialog({ open, onClose, moderation, robloxUsername, onSubmit }) {
   const [reason, setReason] = useState('');
+  const [whyAccepted, setWhyAccepted] = useState('');
+  const [deserved, setDeserved] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const textareaRef = useRef(null);
 
   useEffect(() => {
     if (open) {
       setReason('');
+      setWhyAccepted('');
+      setDeserved('');
       setSubmitting(false);
       setTimeout(() => textareaRef.current?.focus(), 50);
     }
@@ -24,8 +28,14 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
     if (reason.trim().length < MIN_CHARS || submitting) return;
     setSubmitting(true);
     try {
-      await onSubmit(reason.trim());
+      await onSubmit({
+        appeal_reason: reason.trim(),
+        why_accepted: whyAccepted.trim(),
+        deserved_infraction: deserved.trim(),
+      });
       setReason('');
+      setWhyAccepted('');
+      setDeserved('');
       onClose();
     } finally {
       setSubmitting(false);
@@ -45,22 +55,18 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-lg p-0 flex flex-col gap-0 max-h-[90vh] overflow-y-auto">
-        {/* Header band with close button */}
         <div className="p-6 pb-4 border-b border-white/10">
           <div className="flex items-start justify-between gap-4">
             <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
               <ShieldAlert className="h-6 w-6 text-rose-400" />
             </div>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 transition-colors"
-            >
+            <button onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 transition-colors">
               <X className="h-5 w-5" />
             </button>
           </div>
           <DialogTitle className="text-xl font-semibold mt-4">Appeal your moderation</DialogTitle>
           <DialogDescription className="text-slate-400 mt-1.5 leading-relaxed">
-            Explain why this {moderation?.moderation_type?.toLowerCase() || 'moderation'} should be reviewed or lifted. Be honest and respectful — your appeal goes straight to the staff team.
+            Answer the questions below so staff can review your case. Be honest and respectful — your appeal goes straight to the staff team.
           </DialogDescription>
         </div>
 
@@ -83,10 +89,12 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
             )}
           </div>
 
-          {/* Appeal input */}
+          {/* Q1: Appeal reason */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="appeal-reason" className="text-sm font-medium text-white">Your appeal</label>
+              <label htmlFor="appeal-reason" className="text-sm font-medium text-white">
+                1. Explain what happened <span className="text-rose-400">*</span>
+              </label>
               <span className={`text-xs font-mono ${tooShort ? 'text-amber-400' : count >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
                 {count}/{MAX_CHARS}
               </span>
@@ -96,19 +104,45 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
               ref={textareaRef}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit();
-              }}
+              onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit(); }}
               placeholder="Tell us what happened, why the decision should be reconsidered, or any context the staff may have missed…"
               maxLength={MAX_CHARS}
-              rows={6}
+              rows={5}
               className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
             />
-            {tooShort ? (
-              <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>
-            ) : (
-              <p className="text-xs text-slate-500">Tip: press ⌘/Ctrl + Enter to submit.</p>
-            )}
+            {tooShort && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
+          </div>
+
+          {/* Q2: Why should your appeal be accepted? */}
+          <div className="space-y-2">
+            <label htmlFor="appeal-why" className="text-sm font-medium text-white">
+              2. Why should your appeal be accepted?
+            </label>
+            <Textarea
+              id="appeal-why"
+              value={whyAccepted}
+              onChange={(e) => setWhyAccepted(e.target.value)}
+              placeholder="Explain why you believe this appeal deserves to be approved…"
+              maxLength={MAX_CHARS}
+              rows={4}
+              className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
+            />
+          </div>
+
+          {/* Q3: Did you deserve this infraction? */}
+          <div className="space-y-2">
+            <label htmlFor="appeal-deserved" className="text-sm font-medium text-white">
+              3. Did you deserve this infraction in your opinion?
+            </label>
+            <Textarea
+              id="appeal-deserved"
+              value={deserved}
+              onChange={(e) => setDeserved(e.target.value)}
+              placeholder="Be honest — do you feel the moderation was justified? Why or why not?"
+              maxLength={MAX_CHARS}
+              rows={4}
+              className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
+            />
           </div>
 
           {/* Footer */}

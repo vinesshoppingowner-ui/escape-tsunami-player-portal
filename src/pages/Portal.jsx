@@ -93,17 +93,19 @@ export default function Portal() {
     setDialogOpen(true);
   };
 
-  const submitAppeal = async (reason) => {
+  const submitAppeal = async ({ appeal_reason, why_accepted, deserved_infraction }) => {
     const created = await base44.entities.Appeal.create({
       moderation_id: activeModeration.id,
       roblox_username: savedUsername,
-      appeal_reason: reason,
+      appeal_reason,
+      why_accepted,
+      deserved_infraction,
       status: 'Pending',
     });
     sendAppealWebhook({
       username: savedUsername,
       moderationType: activeModeration?.moderation_type,
-      reason,
+      reason: appeal_reason,
       appealId: created?.id,
     });
     if (user?.email) {

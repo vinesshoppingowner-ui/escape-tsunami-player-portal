@@ -42,3 +42,17 @@ export async function syncAllBans(moderations) {
   if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
   return res.json();
 }
+
+export async function fetchChatLogs(username) {
+  const res = await fetch(`${RENDER_SERVER_URL}/api/logs/chat/${encodeURIComponent(username)}`);
+  if (!res.ok) throw new Error(`Failed to fetch chat logs: ${res.status}`);
+  const data = await res.json();
+  return data.logs || [];
+}
+
+export async function fetchExploitLogs(username) {
+  const res = await fetch(`${RENDER_SERVER_URL}/api/logs/exploits/${encodeURIComponent(username)}`);
+  if (!res.ok) throw new Error(`Failed to fetch exploit logs: ${res.status}`);
+  const data = await res.json();
+  return data.logs || [];
+}

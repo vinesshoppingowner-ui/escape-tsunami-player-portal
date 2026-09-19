@@ -17,11 +17,13 @@ export default function SiteNav() {
 
   const desktopLinks = [
     { label: 'Home', to: '/' },
+    { label: 'My Appeals', to: '/my-appeals' },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
   const mobileLinks = [
     { label: 'Home', to: '/' },
     { label: 'Member Portal', to: '/portal' },
+    { label: 'My Appeals', to: '/my-appeals' },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin' }] : []),
   ];
 

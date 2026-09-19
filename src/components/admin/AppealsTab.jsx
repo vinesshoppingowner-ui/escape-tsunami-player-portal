@@ -1,22 +1,14 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
-import { logStaffAction } from '@/lib/staffLog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Gavel, Lock, FileText, CheckCircle2 } from 'lucide-react';
-import { pushUnban } from '@/lib/renderBridge';
-import { emailPlayer } from '@/lib/userEmails';
-import UserInfoModal from '@/components/admin/UserInfoModal';
-import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
+import { Loader2, CheckCircle2, ChevronRight } from 'lucide-react';
+import AppealReviewModal from '@/components/admin/AppealReviewModal';
 
-const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
-
-const TEMPLATES = [
-  { label: 'Standard Reject', text: 'Your appeal has been denied. After reviewing the case, the moderation stands. Please respect the decision.' },
-  { label: 'Standard Lift', text: 'Your appeal has been approved and the moderation has been lifted. Welcome back — please follow the rules going forward.' },
-  { label: 'Evidence Required', text: 'We need more information to review your appeal. Please reply with any screenshots or context that support your case.' },
-];
+const STATUS_STYLES = {
+  'Pending': 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+  'Under Review': 'bg-violet-500/10 text-violet-300 border-violet-500/20',
+  'Approved': 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  'Denied': 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+};
 
 const priorityFor = (mod) => {
   const t = mod?.moderation_type;
@@ -26,13 +18,10 @@ const priorityFor = (mod) => {
 };
 
 export default function AppealsTab() {
-  const { user } = useAuth();
   const [appeals, setAppeals] = useState([]);
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState(null);
-  const [drafts, setDrafts] = useState({});
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -51,57 +40,6 @@ export default function AppealsTab() {
 
   const modFor = (id) => moderations.find((m) => m.id === id);
 
-  const draftFor = (a) =>
-    drafts[a.id] || {
-      status: a.status,
-      staff_response: a.staff_response || '',
-      internal_notes: a.internal_notes || '',
-      can_reappeal: a.can_reappeal !== false,
-    };
-  const setDraft = (id, patch) =>
-    setDrafts((d) => ({ ...d, [id]: { ...draftFor({ id }), ...patch } }));
-
-  const save = async (appeal) => {
-    const draft = draftFor(appeal);
-    const mod = modFor(appeal.moderation_id);
-    setSavingId(appeal.id);
-    try {
-      await base44.entities.Appeal.update(appeal.id, {
-        status: draft.status,
-        staff_response: draft.staff_response,
-        internal_notes: draft.internal_notes,
-        can_reappeal: draft.can_reappeal,
-      });
-      if (draft.status === 'Approved' && mod && mod.status !== 'Repealed') {
-        await base44.entities.Moderation.update(mod.id, { status: 'Repealed' });
-        await pushUnban(appeal.roblox_username);
-      }
-      await base44.entities.Notification.create({
-        roblox_username: appeal.roblox_username,
-        title: `Appeal ${draft.status.toLowerCase()}`,
-        body: draft.staff_response || `Your appeal for ${mod?.moderation_type || 'your moderation'} has been ${draft.status.toLowerCase()}.`,
-        type: 'appeal_decision',
-        read: false,
-      });
-      await logStaffAction(user, 'appeal_decision', appeal.roblox_username, `Set appeal to ${draft.status}${mod ? ` (${mod.moderation_type})` : ''}`);
-      await emailPlayer({
-        robloxUsername: appeal.roblox_username,
-        subject: `Your appeal has been ${draft.status.toLowerCase()}`,
-        body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
-      });
-      await sendAppealDecisionWebhook({
-        username: appeal.roblox_username,
-        moderationType: mod?.moderation_type,
-        decision: draft.status,
-        staffName: user?.full_name || user?.email || 'Unknown staff',
-        appealId: appeal.id,
-      });
-      await load();
-    } finally {
-      setSavingId(null);
-    }
-  };
-
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading appeals…</div>;
   }
@@ -115,108 +53,45 @@ export default function AppealsTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      <p className="text-sm text-slate-400 mb-2">Click an appeal to review the full case — including chat logs and exploit detections.</p>
       {appeals.map((a) => {
         const mod = modFor(a.moderation_id);
-        const draft = draftFor(a);
         const priority = priorityFor(mod);
         return (
-          <div key={a.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
+          <button
+            key={a.id}
+            onClick={() => setSelected(a)}
+            className="w-full text-left rounded-2xl bg-white/[0.03] border border-white/10 p-4 hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all group"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-cyan-300 font-medium">{a.roblox_username}</span>
+                  <span className="text-slate-500 text-sm">· {mod?.moderation_type || 'Moderation'}</span>
+                  {mod?.reason && <span className="text-slate-500 text-sm hidden sm:inline">— {mod.reason}</span>}
+                </div>
+                <div className="mt-1 flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-slate-500">{new Date(a.created_date).toLocaleString()}</span>
-                  <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${priority.cls}`}>
-                    {priority.label} priority
-                  </span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${priority.cls}`}>{priority.label} priority</span>
                 </div>
-                <div className="mt-1 text-sm">
-                  <button onClick={() => setSelectedUser(a.roblox_username)} className="text-cyan-300 font-medium hover:text-cyan-200 hover:underline">{a.roblox_username}</button>
-                  <span className="text-slate-500"> · {mod?.moderation_type || 'Moderation'}</span>
-                  {mod?.reason ? <span className="text-slate-500"> — {mod.reason}</span> : null}
-                </div>
-                <p className="mt-2 text-sm text-slate-300">{a.appeal_reason}</p>
+                <p className="mt-1.5 text-sm text-slate-400 truncate">{a.appeal_reason}</p>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">{a.status}</span>
-            </div>
-
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-              <div className="w-full sm:w-48">
-                <label className="text-xs text-slate-400 mb-1 block">Decision</label>
-                <select
-                  value={draft.status}
-                  onChange={(e) => setDraft(a.id, { status: e.target.value })}
-                  className="w-full h-9 rounded-md border border-white/15 bg-slate-950/60 px-3 text-sm text-white"
-                >
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-                {draft.status === 'Denied' && (
-                  <label className="mt-2 flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={draft.can_reappeal}
-                      onChange={(e) => setDraft(a.id, { can_reappeal: e.target.checked })}
-                      className="mt-0.5 h-4 w-4 rounded border-white/20 bg-slate-950 accent-cyan-500"
-                    />
-                    <span>Allow this player to submit a new appeal</span>
-                  </label>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-slate-400">Staff response (shown to player)</label>
-                  <div className="flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5 text-slate-500" />
-                    <select
-                      value=""
-                      onChange={(e) => {
-                        const t = TEMPLATES.find((x) => x.label === e.target.value);
-                        if (t) setDraft(a.id, { staff_response: t.text });
-                      }}
-                      className="h-7 rounded-md border border-white/15 bg-slate-950/60 px-2 text-xs text-slate-300"
-                    >
-                      <option value="">Templates…</option>
-                      {TEMPLATES.map((t) => <option key={t.label} value={t.label}>{t.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <Textarea
-                  rows={2}
-                  value={draft.staff_response}
-                  onChange={(e) => setDraft(a.id, { staff_response: e.target.value })}
-                  className="bg-slate-950/60 border-white/15 text-white"
-                  placeholder="Explain the decision…"
-                />
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-xs px-2.5 py-1 rounded-full border ${STATUS_STYLES[a.status] || STATUS_STYLES['Pending']}`}>{a.status}</span>
+                <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-300 transition-colors" />
               </div>
             </div>
-
-            <div className="mt-3">
-              <label className="text-xs text-slate-400 mb-1 flex items-center gap-1.5">
-                <Lock className="h-3.5 w-3.5 text-slate-500" /> Internal notes (staff only — never shown to player)
-              </label>
-              <Textarea
-                rows={2}
-                value={draft.internal_notes}
-                onChange={(e) => setDraft(a.id, { internal_notes: e.target.value })}
-                className="bg-slate-950/60 border-white/10 text-slate-300 placeholder:text-slate-600"
-                placeholder="Private context for the mod team, e.g. prior toxicity history…"
-              />
-            </div>
-
-            <div className="mt-3 flex justify-end">
-              <Button
-                size="sm"
-                onClick={() => save(a)}
-                disabled={savingId === a.id}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-              >
-                {savingId === a.id ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Saving</> : <><Gavel className="h-4 w-4 mr-1.5" /> Save decision</>}
-              </Button>
-            </div>
-          </div>
+          </button>
         );
       })}
-      <UserInfoModal robloxUsername={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
+      <AppealReviewModal
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        appeal={selected}
+        moderation={selected ? modFor(selected.moderation_id) : null}
+        onSaved={load}
+      />
     </div>
   );
 }
