@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
@@ -14,19 +15,37 @@ export default function SiteNav() {
   const { user } = useAuth();
   const isDesktopApp = useDesktopApp();
   const isDesktopLayout = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
+  const [hasNewActivity, setHasNewActivity] = useState(false);
+
+  useEffect(() => {
+    if (!isOwner(user)) return;
+    (async () => {
+      try {
+        const [latestMod, latestAppeal] = await Promise.all([
+          base44.entities.Moderation.list('-created_date', 1),
+          base44.entities.Appeal.list('-created_date', 1),
+        ]);
+        const lastVisited = localStorage.getItem('analytics_last_visited');
+        const lastVisitedTime = lastVisited ? new Date(lastVisited).getTime() : 0;
+        const modTime = latestMod?.[0]?.created_date ? new Date(latestMod[0].created_date).getTime() : 0;
+        const appealTime = latestAppeal?.[0]?.created_date ? new Date(latestAppeal[0].created_date).getTime() : 0;
+        setHasNewActivity(modTime > lastVisitedTime || appealTime > lastVisitedTime);
+      } catch {}
+    })();
+  }, [user, location.pathname]);
 
   const desktopLinks = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
-    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3 }] : []),
+    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
   ];
   const mobileLinks = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
-    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3 }] : []),
+    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
   ];
 
   return (
@@ -55,6 +74,12 @@ export default function SiteNav() {
               >
                 {l.icon && <l.icon className="h-3.5 w-3.5" />}
                 {l.label}
+                {l.showDot && (
+                  <span className="relative flex h-2 w-2 ml-0.5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -90,6 +115,12 @@ export default function SiteNav() {
             >
               {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
               {l.label}
+              {l.showDot && (
+                <span className="relative flex h-2 w-2 ml-auto">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                </span>
+              )}
             </Link>
           ))}
           <a href={GAME_URL} target="_blank" rel="noreferrer" className="block px-3 py-2.5 rounded-lg text-cyan-300 text-sm">

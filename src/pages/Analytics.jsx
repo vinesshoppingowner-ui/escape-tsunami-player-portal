@@ -8,6 +8,7 @@ import AnalyticsStats from '@/components/analytics/AnalyticsStats';
 import ModerationAnalytics from '@/components/analytics/ModerationAnalytics';
 import AppealAnalytics from '@/components/analytics/AppealAnalytics';
 import StaffActivity from '@/components/analytics/StaffActivity';
+import StaffSearch from '@/components/analytics/StaffSearch';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export default function Analytics() {
 
   useEffect(() => {
     if (!isOwner(user)) return;
+    localStorage.setItem('analytics_last_visited', new Date().toISOString());
     (async () => {
       try {
         const [mods, apps, staffLogs] = await Promise.all([
@@ -71,6 +73,7 @@ export default function Analytics() {
         <p className="mt-2 text-slate-400">Track moderations, appeals, and staff activity across the portal.</p>
 
         <AnalyticsStats moderations={moderations} appeals={appeals} logs={logs} />
+        <StaffSearch moderations={moderations} appeals={appeals} logs={logs} />
         <ModerationAnalytics moderations={moderations} />
         <AppealAnalytics appeals={appeals} logs={logs} />
         <StaffActivity logs={logs} />
