@@ -262,6 +262,7 @@
 /* Pill-shaped frosty CTA buttons */
 [data-season="winter"] .from-cyan-500.to-blue-600,
 [data-season="winter"] .from-cyan-400.to-blue-500 {
+  border-radius: 9999px !important;
   box-shadow:
     0 0 20px rgba(77, 171, 247, 0.3),
     0 4px 15px rgba(28, 126, 214, 0.2),
@@ -283,6 +284,7 @@
 /* Frosty outline / secondary buttons */
 [data-season="winter"] .bg-white\/5.border-white\/15,
 [data-season="winter"] .bg-white\/\[0.05\].border-white\/15 {
+  border-radius: 9999px !important;
   border-color: rgba(165, 216, 255, 0.2) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(77, 171, 247, 0.08) !important;
 }
@@ -322,9 +324,4 @@
 }
 [data-season="winter"] .snowflake-spin {
   animation: snowflake-spin 8s linear infinite;
-}
-
-/* ===== No UI Corners — sharp edges everywhere ===== */
-*, *::before, *::after {
-  border-radius: 0 !important;
 }
