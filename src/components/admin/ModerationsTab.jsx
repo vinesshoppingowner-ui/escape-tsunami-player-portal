@@ -139,10 +139,12 @@ export default function ModerationsTab() {
       <QuickStats list={list} />
 
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-slate-400">
-          {filtered.length} moderation{filtered.length !== 1 ? 's' : ''}
-          {hasFilters && ` (filtered from ${list.length})`}
-        </p>
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-lg font-semibold text-white">All moderations</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">
+            {filtered.length}{hasFilters ? ` of ${list.length}` : ''}
+          </span>
+        </div>
         <Button
           size="sm"
           onClick={() => setShowForm(true)}
@@ -153,7 +155,7 @@ export default function ModerationsTab() {
       </div>
 
       {/* Search + filters */}
-      <div className="space-y-3 mb-4">
+      <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3 space-y-3 mb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
           <Input

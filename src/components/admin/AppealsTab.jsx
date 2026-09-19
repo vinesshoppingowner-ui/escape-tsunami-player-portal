@@ -54,10 +54,15 @@ export default function AppealsTab() {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-400 mb-2">Click an appeal to review the full case — including chat logs and exploit detections.</p>
+      <div className="flex items-center gap-2.5 mb-3">
+        <h2 className="text-lg font-semibold text-white">Pending review</h2>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">{appeals.length}</span>
+        <span className="text-xs text-slate-500 ml-1">Click an appeal to review the full case</span>
+      </div>
       {appeals.map((a) => {
         const mod = modFor(a.moderation_id);
         const priority = priorityFor(mod);
+        const st = STATUS_STYLES[a.status] || STATUS_STYLES['Pending'];
         return (
           <button
             key={a.id}
@@ -69,17 +74,17 @@ export default function AppealsTab() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-cyan-300 font-medium">{a.roblox_username}</span>
                   <span className="text-slate-500 text-sm">· {mod?.moderation_type || 'Moderation'}</span>
-                  {mod?.reason && <span className="text-slate-500 text-sm hidden sm:inline">— {mod.reason}</span>}
                 </div>
-                <div className="mt-1 flex items-center gap-2 flex-wrap">
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-slate-500">{new Date(a.created_date).toLocaleString()}</span>
-                  <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${priority.cls}`}>{priority.label} priority</span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${priority.cls}`}>{priority.label}</span>
                 </div>
-                <p className="mt-1.5 text-sm text-slate-400 truncate">{a.appeal_reason}</p>
+                <p className="mt-2 text-sm text-slate-400 line-clamp-2">{a.appeal_reason}</p>
+                {mod?.reason && <p className="mt-1 text-xs text-slate-500 truncate">Moderation reason: {mod.reason}</p>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs px-2.5 py-1 rounded-full border ${STATUS_STYLES[a.status] || STATUS_STYLES['Pending']}`}>{a.status}</span>
-                <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-300 transition-colors" />
+                <span className={`text-xs px-2.5 py-1 rounded-full border ${st}`}>{a.status}</span>
+                <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-300 transition-colors transition-transform group-hover:translate-x-0.5" />
               </div>
             </div>
           </button>

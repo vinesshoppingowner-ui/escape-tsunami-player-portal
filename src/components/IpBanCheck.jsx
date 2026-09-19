@@ -110,6 +110,22 @@ export default function IpBanCheck({ children }) {
     }
   }, [user, isLoadingAuth]);
 
+  // Record the user's IP and last_seen so admins can see it in user lookup
+  useEffect(() => {
+    if (isLoadingAuth || !user) return;
+    (async () => {
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json').then((r) => r.json());
+        await base44.auth.updateMe({
+          last_ip: ipRes.ip,
+          last_seen: new Date().toISOString(),
+        });
+      } catch {
+        // Non-critical — fail silently
+      }
+    })();
+  }, [user, isLoadingAuth]);
+
   if (status === 'banned') {
     return (
       <div className="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-6 overflow-hidden">
