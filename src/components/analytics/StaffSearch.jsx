@@ -90,8 +90,49 @@ export default function StaffSearch({ moderations, appeals, logs }) {
     const bans = (modByType['Temporary Ban'] || 0) + (modByType['Permanent Ban'] || 0);
     const banRate = staffMods.length > 0 ? Math.round((bans / staffMods.length) * 100) : 0;
 
-    return { staffMods, staffLogs, appealDecisions, modByType, modByStatus, topPlayers, actionCount, decisions, firstAction, lastAction, daysActive, recent, bans, banRate };
-  }, [selected, moderations, logs]);
+    // Most common reasons used by this staff member
+    const reasonCount = {};
+    staffMods.forEach((m) => {
+      const r = (m.reason || '').trim() || '(no reason)';
+      reasonCount[r] = (reasonCount[r] || 0) + 1;
+    });
+    const topReasons = Object.entries(reasonCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Appeal rate — how many of their moderations were appealed
+    const modIds = new Set(staffMods.map((m) => m.id));
+    const appealedMods = appeals.filter((a) => modIds.has(a.moderation_id));
+    const appealRate = staffMods.length > 0 ? Math.round((appealedMods.length / staffMods.length) * 100) : 0;
+
+    // Recent moderations issued
+    const recentMods = [...staffMods]
+      .sort((a, b) => new Date(b.moderation_date || b.created_date) - new Date(a.moderation_date || a.created_date))
+      .slice(0, 6);
+
+    // Day-of-week activity pattern
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayCount = [0, 0, 0, 0, 0, 0, 0];
+    staffLogs.forEach((l) => {
+      if (l.created_date) dayCount[new Date(l.created_date).getDay()]++;
+    });
+    const maxDay = Math.max(1, ...dayCount);
+
+    // Average appeal response time (hours from appeal submission to decision)
+    const responseTimes = [];
+    appealDecisions.forEach((l) => {
+      if (!l.target || !l.created_date) return;
+      // Find the appeal referenced — match by target containing the player name
+      const matchedAppeal = appeals.find((a) => l.detail && l.detail.includes(a.roblox_username));
+      if (matchedAppeal && matchedAppeal.created_date) {
+        const diffH = (new Date(l.created_date) - new Date(matchedAppeal.created_date)) / 3600000;
+        if (diffH >= 0 && diffH < 720) responseTimes.push(diffH);
+      }
+    });
+    const avgResponseHours = responseTimes.length > 0
+      ? Math.round((responseTimes.reduce((s, v) => s + v, 0) / responseTimes.length) * 10) / 10
+      : null;
+
+    return { staffMods, staffLogs, appealDecisions, modByType, modByStatus, topPlayers, actionCount, decisions, firstAction, lastAction, daysActive, recent, bans, banRate, topReasons, appealRate, recentMods, dayNames, dayCount, maxDay, avgResponseHours };
+  }, [selected, moderations, logs, appeals]);
 
   return (
     <div className="mt-8 rounded-2xl bg-white/[0.03] border border-white/10 p-6">
@@ -236,6 +277,98 @@ export default function StaffSearch({ moderations, appeals, logs }) {
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* Extra stats row */}
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3">
+              <div className="text-lg font-bold text-violet-300">{data.appealRate}%</div>
+              <div className="text-[11px] text-slate-500 uppercase tracking-wide">Appeal rate</div>
+              <div className="text-[10px] text-slate-600 mt-0.5">of their moderations appealed</div>
+            </div>
+            <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3">
+              <div className="text-lg font-bold text-cyan-300">{data.avgResponseHours !== null ? `${data.avgResponseHours}h` : '—'}</div>
+              <div className="text-[11px] text-slate-500 uppercase tracking-wide">Avg response</div>
+              <div className="text-[10px] text-slate-600 mt-0.5">appeal decision time</div>
+            </div>
+            <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3">
+              <div className="text-lg font-bold text-emerald-300">
+                {data.staffMods.length > 0 ? Math.round((data.staffMods.length / Math.max(1, data.daysActive)) * 10) / 10 : 0}
+              </div>
+              <div className="text-[11px] text-slate-500 uppercase tracking-wide">Mods / day</div>
+              <div className="text-[10px] text-slate-600 mt-0.5">average daily output</div>
+            </div>
+          </div>
+
+          {/* Common reasons + Day pattern */}
+          <div className="mt-6 grid sm:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-3">Most common reasons</h4>
+              {data.topReasons.length === 0 ? (
+                <p className="text-sm text-slate-500">No reasons recorded.</p>
+              ) : (
+                <div className="space-y-2">
+                  {data.topReasons.map(([reason, count], i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm">
+                      <span className="text-xs font-bold text-slate-500 w-4">{i + 1}</span>
+                      <span className="text-slate-300 truncate flex-1">{reason}</span>
+                      <span className="font-semibold text-white shrink-0">{count}×</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-3">Activity by day</h4>
+              <div className="space-y-1.5">
+                {data.dayNames.map((day, i) => (
+                  <div key={day} className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 w-7 shrink-0">{day}</span>
+                    <div className="flex-1 h-4 rounded bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full rounded bg-gradient-to-r from-cyan-500 to-blue-600"
+                        style={{ width: `${(data.dayCount[i] / data.maxDay) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-400 w-6 text-right shrink-0">{data.dayCount[i]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent moderations issued */}
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <Gavel className="h-4 w-4 text-cyan-400" /> Recent moderations issued
+            </h4>
+            {data.recentMods.length === 0 ? (
+              <p className="text-sm text-slate-500">No moderations issued yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {data.recentMods.map((m) => (
+                  <div key={m.id} className="flex items-start gap-3 rounded-lg bg-white/[0.02] border border-white/5 p-2.5">
+                    <ChevronRight className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm text-cyan-300 font-medium">{m.roblox_username}</span>
+                        <span className="text-xs text-slate-500">· {m.moderation_type}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
+                          m.status === 'Active' ? 'text-amber-300 bg-amber-500/10 border-amber-500/20' :
+                          m.status === 'Repealed' ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20' :
+                          'text-slate-400 bg-slate-500/10 border-slate-500/20'
+                        }`}>{m.status}</span>
+                      </div>
+                      <div className="text-sm text-slate-300 mt-0.5 truncate">{m.reason}</div>
+                      <div className="text-xs text-slate-600 mt-0.5">
+                        {m.moderation_date ? new Date(m.moderation_date).toLocaleDateString() : '—'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent activity */}

@@ -9,6 +9,10 @@ import ModerationAnalytics from '@/components/analytics/ModerationAnalytics';
 import AppealAnalytics from '@/components/analytics/AppealAnalytics';
 import StaffActivity from '@/components/analytics/StaffActivity';
 import StaffSearch from '@/components/analytics/StaffSearch';
+import TrendChart from '@/components/analytics/TrendChart';
+import ReasonBreakdown from '@/components/analytics/ReasonBreakdown';
+import RepeatOffenders from '@/components/analytics/RepeatOffenders';
+import ActivityHeatmap from '@/components/analytics/ActivityHeatmap';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -73,7 +77,13 @@ export default function Analytics() {
         <p className="mt-2 text-slate-400">Track moderations, appeals, and staff activity across the portal.</p>
 
         <AnalyticsStats moderations={moderations} appeals={appeals} logs={logs} />
+        <TrendChart moderations={moderations} appeals={appeals} />
         <StaffSearch moderations={moderations} appeals={appeals} logs={logs} />
+        <div className="mt-8 grid sm:grid-cols-2 gap-6">
+          <ReasonBreakdown moderations={moderations} />
+          <RepeatOffenders moderations={moderations} />
+        </div>
+        <ActivityHeatmap moderations={moderations} appeals={appeals} />
         <ModerationAnalytics moderations={moderations} />
         <AppealAnalytics appeals={appeals} logs={logs} />
         <StaffActivity logs={logs} />

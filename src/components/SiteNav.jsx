@@ -75,10 +75,7 @@ export default function SiteNav() {
                 {l.icon && <l.icon className="h-3.5 w-3.5" />}
                 {l.label}
                 {l.showDot && (
-                  <span className="relative flex h-2 w-2 ml-0.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-                  </span>
+                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-0.5" />
                 )}
               </Link>
             );
@@ -116,10 +113,7 @@ export default function SiteNav() {
               {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
               {l.label}
               {l.showDot && (
-                <span className="relative flex h-2 w-2 ml-auto">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-                </span>
+                <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
               )}
             </Link>
           ))}
