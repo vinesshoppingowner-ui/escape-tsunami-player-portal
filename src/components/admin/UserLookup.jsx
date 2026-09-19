@@ -417,18 +417,18 @@ function RobloxResult({ profile, onReload }) {
               <span className="text-slate-500">Email:</span>
               <span className="text-white">{profile.websiteAccount.email}</span>
             </div>
-            {profile.websiteAccount.data?.last_ip && (
+            {(profile.websiteAccount.last_ip || profile.websiteAccount.data?.last_ip) && (
               <div className="flex items-center gap-2 text-sm">
                 <Globe className="h-4 w-4 text-slate-400 shrink-0" />
                 <span className="text-slate-500">Last IP:</span>
-                <span className="text-white font-mono">{profile.websiteAccount.data.last_ip}</span>
+                <span className="text-white font-mono">{profile.websiteAccount.last_ip || profile.websiteAccount.data?.last_ip}</span>
               </div>
             )}
-            {profile.websiteAccount.data?.last_seen && (
+            {(profile.websiteAccount.last_seen || profile.websiteAccount.data?.last_seen) && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-slate-400 shrink-0" />
                 <span className="text-slate-500">Last seen:</span>
-                <span className="text-white">{new Date(profile.websiteAccount.data.last_seen).toLocaleString()}</span>
+                <span className="text-white">{new Date(profile.websiteAccount.last_seen || profile.websiteAccount.data?.last_seen).toLocaleString()}</span>
               </div>
             )}
             <div className="flex items-center gap-2 text-sm">
@@ -436,14 +436,14 @@ function RobloxResult({ profile, onReload }) {
               <span className="text-slate-500">Role:</span>
               <span className="text-white">{profile.websiteAccount.role || 'user'}</span>
             </div>
-            {profile.websiteAccount.data?.last_ip && (
+            {(profile.websiteAccount.last_ip || profile.websiteAccount.data?.last_ip) && (
               <Button
                 size="sm"
                 onClick={async () => {
                   setBanningIp(true);
                   try {
                     await base44.entities.IpBan.create({
-                      ip_address: profile.websiteAccount.data.last_ip,
+                      ip_address: profile.websiteAccount.last_ip || profile.websiteAccount.data?.last_ip,
                       reason: `Banned via user lookup — ${username}`,
                       banned_by: currentUser?.email || 'Unknown',
                     });

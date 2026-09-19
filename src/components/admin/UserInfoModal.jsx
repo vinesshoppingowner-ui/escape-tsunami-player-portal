@@ -31,7 +31,7 @@ export default function UserInfoModal({ robloxUsername, open, onClose }) {
   }, [open, robloxUsername]);
 
   const banIp = async () => {
-    const ip = account?.data?.last_ip;
+    const ip = account?.last_ip || account?.data?.last_ip;
     if (!ip) return;
     setBanning(true);
     try {
@@ -64,11 +64,11 @@ export default function UserInfoModal({ robloxUsername, open, onClose }) {
         ) : account ? (
           <div className="space-y-3">
             <InfoRow icon={Mail} label="Email" value={account.email || '—'} />
-            <InfoRow icon={Globe} label="IP Address" value={account.data?.last_ip || 'Not recorded'} />
-            <InfoRow icon={Clock} label="Last Seen" value={account.data?.last_seen ? new Date(account.data.last_seen).toLocaleString() : '—'} />
+            <InfoRow icon={Globe} label="IP Address" value={account.last_ip || account.data?.last_ip || 'Not recorded'} />
+            <InfoRow icon={Clock} label="Last Seen" value={(account.last_seen || account.data?.last_seen) ? new Date(account.last_seen || account.data.last_seen).toLocaleString() : '—'} />
             <InfoRow icon={Shield} label="Role" value={account.role || 'user'} />
 
-            {account.data?.last_ip && (
+            {(account.last_ip || account.data?.last_ip) && (
               <Button onClick={banIp} disabled={banning} className="w-full bg-rose-600 hover:bg-rose-500 text-white border-0 mt-2">
                 {banning ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <ShieldBan className="h-4 w-4 mr-1.5" />}
                 Ban IP Address

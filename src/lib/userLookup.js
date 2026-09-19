@@ -16,13 +16,17 @@ export async function findUserByRobloxUsername(username) {
   } catch {}
 
   // 2. Case-insensitive fallback (the user may have registered with different casing)
+  // Check both top-level roblox_username and data.roblox_username since updateMe
+  // may store the field in either location depending on the schema.
   try {
-    const allUsers = await base44.entities.User.list('-created_date', 500);
+    const allUsers = await base44.entities.User.list('-created_date', 1000);
+    const lower = username.toLowerCase();
     return (
       allUsers.find(
-        (u) =>
-          (u.data?.roblox_username || '').toLowerCase() ===
-          username.toLowerCase()
+        (u) => {
+          const saved = u.roblox_username || u.data?.roblox_username || '';
+          return saved.toLowerCase() === lower;
+        }
       ) || null
     );
   } catch {}
