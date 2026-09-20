@@ -59,7 +59,7 @@ export default function SiteNav() {
   const desktopLinks = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
@@ -67,7 +67,7 @@ export default function SiteNav() {
     { label: 'Home', to: '/', icon: Home },
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-    ...((isOwner(user) || user?.role === 'staff') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
