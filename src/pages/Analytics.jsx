@@ -13,6 +13,7 @@ import TrendChart from '@/components/analytics/TrendChart';
 import ReasonBreakdown from '@/components/analytics/ReasonBreakdown';
 import RepeatOffenders from '@/components/analytics/RepeatOffenders';
 import ActivityHeatmap from '@/components/analytics/ActivityHeatmap';
+import StaffAudit from '@/components/analytics/StaffAudit';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -86,6 +87,7 @@ export default function Analytics() {
         <ActivityHeatmap moderations={moderations} appeals={appeals} />
         <ModerationAnalytics moderations={moderations} />
         <AppealAnalytics appeals={appeals} logs={logs} />
+        <StaffAudit moderations={moderations} appeals={appeals} logs={logs} />
         <StaffActivity logs={logs} />
       </main>
     </div>

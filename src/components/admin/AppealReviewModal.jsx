@@ -10,14 +10,10 @@ import { pushUnban, fetchChatLogs, fetchExploitLogs } from '@/lib/renderBridge';
 import { emailPlayer } from '@/lib/userEmails';
 import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
 import CustomDropdown from '@/components/ui/custom-dropdown';
+import AppealAISummary from '@/components/admin/AppealAISummary';
+import { RESPONSE_TEMPLATES, fillTemplate, buildTemplateVars } from '@/lib/responseTemplates';
 
 const STATUSES = ['Pending', 'Under Review', 'Approved', 'Denied'];
-
-const TEMPLATES = [
-  { label: 'Standard Reject', text: 'Your appeal has been denied. After reviewing the case, the moderation stands. Please respect the decision.' },
-  { label: 'Standard Lift', text: 'Your appeal has been approved and the moderation has been lifted. Welcome back — please follow the rules going forward.' },
-  { label: 'Evidence Required', text: 'We need more information to review your appeal. Please reply with any screenshots or context that support your case.' },
-];
 
 const STATUS_STYLES = {
   'Pending': { cls: 'bg-amber-500/10 text-amber-300 border-amber-500/20', icon: Clock },
@@ -206,6 +202,16 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             )}
           </div>
 
+          {/* AI Context Summarizer */}
+          {!logsLoading && (chatLogs.length > 0 || exploitLogs.length > 0) && (
+            <AppealAISummary
+              chatLogs={chatLogs}
+              exploitLogs={exploitLogs}
+              moderation={moderation}
+              appeal={appeal}
+            />
+          )}
+
           {/* Exploit logs */}
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
@@ -265,10 +271,13 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
                   <CustomDropdown
                     value=""
                     onChange={(v) => {
-                      const t = TEMPLATES.find((x) => x.label === v);
-                      if (t) setDraft({ ...draft, staff_response: t.text });
+                      const t = RESPONSE_TEMPLATES.find((x) => x.label === v);
+                      if (t) {
+                        const vars = buildTemplateVars({ appeal, moderation, user });
+                        setDraft({ ...draft, staff_response: fillTemplate(t.text, vars) });
+                      }
                     }}
-                    options={TEMPLATES.map((t) => ({ value: t.label, label: t.label }))}
+                    options={RESPONSE_TEMPLATES.map((t) => ({ value: t.label, label: t.label }))}
                     placeholder="Templates…"
                     buttonClassName="h-7 text-xs"
                   />
