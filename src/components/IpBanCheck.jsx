@@ -9,7 +9,6 @@ import {
   clearBanToken,
   addBannedFingerprint,
   isFingerprintBanned,
-  checkRateLimit,
   validateClient,
   checkIpIntelligence,
   solveChallenge,
@@ -75,13 +74,7 @@ export default function IpBanCheck({ children }) {
         }
       }
 
-      // 5. Rate limiting — stop automated ban evasion / brute-force
-      if (!checkRateLimit()) {
-        if (!cancelled) setStatus('banned');
-        return;
-      }
-
-      // 6. IP intelligence — VPN / proxy / hosting / known ASN
+      // 5. IP intelligence — VPN / proxy / hosting / known ASN
       if (serverChecked && ip) {
         try {
           const intel = await checkIpIntelligence(ip);
