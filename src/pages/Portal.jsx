@@ -16,6 +16,7 @@ import AccountStanding from '@/components/moderations/AccountStanding';
 import SupportCard from '@/components/portal/SupportCard';
 import GoodStandingTips from '@/components/portal/GoodStandingTips';
 import QuickLinks from '@/components/portal/QuickLinks';
+import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
@@ -258,6 +259,9 @@ export default function Portal() {
 
             {/* Quick Links */}
             <QuickLinks />
+
+            {/* 7-Day Streak Quest */}
+            <DailyStreakQuest robloxUsername={savedUsername} />
 
             {/* Last updated */}
             {lastUpdated && (
