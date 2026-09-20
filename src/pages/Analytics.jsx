@@ -14,6 +14,7 @@ import ReasonBreakdown from '@/components/analytics/ReasonBreakdown';
 import RepeatOffenders from '@/components/analytics/RepeatOffenders';
 import ActivityHeatmap from '@/components/analytics/ActivityHeatmap';
 import StaffAudit from '@/components/analytics/StaffAudit';
+import GameAnalytics from '@/components/analytics/GameAnalytics';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -77,6 +78,7 @@ export default function Analytics() {
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation insights</h1>
         <p className="mt-2 text-slate-400">Track moderations, appeals, and staff activity across the portal.</p>
 
+        <GameAnalytics />
         <AnalyticsStats moderations={moderations} appeals={appeals} logs={logs} />
         <TrendChart moderations={moderations} appeals={appeals} />
         <StaffSearch moderations={moderations} appeals={appeals} logs={logs} />
