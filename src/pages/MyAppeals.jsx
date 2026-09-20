@@ -80,12 +80,13 @@ export default function MyAppeals() {
         {/* Summary stats */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {[
-            { label: 'Total', value: appeals.length, cls: 'text-white' },
-            { label: 'Pending', value: appeals.filter(a => a.status === 'Pending').length, cls: 'text-amber-300' },
-            { label: 'Approved', value: appeals.filter(a => a.status === 'Approved').length, cls: 'text-emerald-300' },
-            { label: 'Denied', value: appeals.filter(a => a.status === 'Denied').length, cls: 'text-rose-300' },
+            { label: 'Total', value: appeals.length, icon: Gavel, cls: 'text-white', accent: 'text-cyan-400' },
+            { label: 'Pending', value: appeals.filter(a => a.status === 'Pending').length, icon: Clock, cls: 'text-amber-300', accent: 'text-amber-400' },
+            { label: 'Approved', value: appeals.filter(a => a.status === 'Approved').length, icon: CheckCircle2, cls: 'text-emerald-300', accent: 'text-emerald-400' },
+            { label: 'Denied', value: appeals.filter(a => a.status === 'Denied').length, icon: XCircle, cls: 'text-rose-300', accent: 'text-rose-400' },
           ].map((s) => (
-            <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 sm:p-4 text-center">
+            <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 sm:p-4 text-center hover:border-cyan-500/20 transition-colors">
+              <s.icon className={`h-4 w-4 mx-auto mb-1.5 ${s.accent}`} />
               <div className={`text-xl sm:text-2xl font-bold ${s.cls}`}>{s.value}</div>
               <div className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{s.label}</div>
             </div>

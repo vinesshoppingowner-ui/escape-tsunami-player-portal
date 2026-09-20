@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy, ArrowRight } from 'lucide-react';
+import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy, ArrowRight, Zap, Gavel, LifeBuoy, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
@@ -257,6 +257,15 @@ export default function Portal() {
               </div>
             </div>
 
+            {/* Quick Actions */}
+            <div className="mt-8 mb-3 flex items-center gap-2">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-cyan-300">
+                <Zap className="h-3.5 w-3.5" /> Quick Actions
+              </span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
             {/* Quick Links */}
             <QuickLinks />
 
@@ -270,8 +279,16 @@ export default function Portal() {
               </div>
             )}
 
-            {/* Moderations */}
-            <div ref={moderationsRef} className="mt-6 scroll-mt-24">
+            {/* Your Moderations */}
+            <div className="mt-8 mb-3 flex items-center gap-2">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-rose-300">
+                <ShieldCheck className="h-3.5 w-3.5" /> Your Moderations
+              </span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <div ref={moderationsRef} className="scroll-mt-24">
               {loading ? (
                 <div className="flex items-center justify-center py-24 text-slate-400">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading your moderations…
@@ -306,12 +323,30 @@ export default function Portal() {
               )}
             </div>
 
+            {/* Appeals & Support */}
+            <div className="mt-8 mb-3 flex items-center gap-2">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-amber-300">
+                <LifeBuoy className="h-3.5 w-3.5" /> Appeals & Support
+              </span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
             <GoodStandingTips />
 
             <SupportCard />
 
             <div ref={appealsRef} className="scroll-mt-24">
               <AppealHistory appeals={appeals} moderations={moderations} />
+            </div>
+
+            {/* Account Security */}
+            <div className="mt-8 mb-3 flex items-center gap-2">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-violet-300">
+                <Lock className="h-3.5 w-3.5" /> Account Security
+              </span>
+              <div className="h-px flex-1 bg-white/10" />
             </div>
 
             <SecurityCard user={user} robloxUsername={savedUsername} />

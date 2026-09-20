@@ -2,7 +2,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard } from 'lucide-react';
 import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
 import UsersTab from '@/components/admin/UsersTab';
@@ -42,14 +42,14 @@ export default function Admin() {
         <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
 
         <Tabs defaultValue="appeals" className="mt-8">
-          <TabsList className="flex w-full overflow-x-auto bg-white/5 border border-white/10 h-10">
-            <TabsTrigger value="appeals" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Appeals</TabsTrigger>
-            <TabsTrigger value="moderations" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Moderations</TabsTrigger>
-            {isAdmin && <TabsTrigger value="users" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Users</TabsTrigger>}
-            <TabsTrigger value="lookup" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">User Lookup</TabsTrigger>
-            {isAdmin && <TabsTrigger value="bans" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Website Bans</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="logs" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Staff Logs</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="dashboard" className="shrink-0 data-[state=active]:bg-white/10 data-[state=active]:text-white">Dashboard</TabsTrigger>}
+          <TabsList className="flex w-full overflow-x-auto bg-white/5 border border-white/10 h-11 rounded-xl">
+            <TabsTrigger value="appeals" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
+            <TabsTrigger value="moderations" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
+            {isAdmin && <TabsTrigger value="users" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>}
+            <TabsTrigger value="lookup" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
+            {isAdmin && <TabsTrigger value="bans" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Ban className="h-3.5 w-3.5" /> Website Bans</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="logs" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><ScrollText className="h-3.5 w-3.5" /> Staff Logs</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="dashboard" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><LayoutDashboard className="h-3.5 w-3.5" /> Dashboard</TabsTrigger>}
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>

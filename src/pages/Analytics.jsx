@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
-import { ShieldAlert, Loader2, BarChart3 } from 'lucide-react';
+import { ShieldAlert, Loader2, BarChart3, Users, Shield, Gavel } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 import AnalyticsStats from '@/components/analytics/AnalyticsStats';
 import ModerationAnalytics from '@/components/analytics/ModerationAnalytics';
@@ -78,19 +78,56 @@ export default function Analytics() {
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation insights</h1>
         <p className="mt-2 text-slate-400">Track moderations, appeals, and staff activity across the portal.</p>
 
+        {/* Game Performance */}
         <GameAnalytics />
+
+        {/* Overview */}
+        <div className="mt-10 mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-violet-300">
+            <BarChart3 className="h-3.5 w-3.5" /> Overview
+          </span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
         <AnalyticsStats moderations={moderations} appeals={appeals} logs={logs} />
         <TrendChart moderations={moderations} appeals={appeals} />
+
+        {/* Staff Analytics */}
+        <div className="mt-10 mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-cyan-300">
+            <Users className="h-3.5 w-3.5" /> Staff Analytics
+          </span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
         <StaffSearch moderations={moderations} appeals={appeals} logs={logs} />
-        <div className="mt-8 grid sm:grid-cols-2 gap-6">
+        <StaffAudit moderations={moderations} appeals={appeals} logs={logs} />
+        <StaffActivity logs={logs} />
+
+        {/* Moderation Analytics */}
+        <div className="mt-10 mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-rose-300">
+            <Shield className="h-3.5 w-3.5" /> Moderation Analytics
+          </span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-6">
           <ReasonBreakdown moderations={moderations} />
           <RepeatOffenders moderations={moderations} />
         </div>
         <ActivityHeatmap moderations={moderations} appeals={appeals} />
         <ModerationAnalytics moderations={moderations} />
+
+        {/* Appeal Analytics */}
+        <div className="mt-10 mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-amber-300">
+            <Gavel className="h-3.5 w-3.5" /> Appeal Analytics
+          </span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
         <AppealAnalytics appeals={appeals} logs={logs} />
-        <StaffAudit moderations={moderations} appeals={appeals} logs={logs} />
-        <StaffActivity logs={logs} />
       </main>
     </div>
   );
