@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Users, Eye, Heart, ThumbsUp, Server, TrendingUp, Activity, Gamepad2, AlertCircle, Crown, Zap, Gauge } from 'lucide-react';
+import { Loader2, Users, Eye, Heart, ThumbsUp, Server, TrendingUp, Activity, Gamepad2, AlertCircle, Crown, Zap, Gauge, Shield, LogIn, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const PLACE_ID = '103398581793479';
@@ -46,6 +47,15 @@ async function fetchServers(universeId) {
   } catch { return []; }
 }
 
+async function fetchThumbnail(universeId) {
+  try {
+    const res = await fetch(`https://thumbnails.roproxy.com/v1/games/thumbnails?universeIds=${universeId}&size=768x432&format=Png`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.data?.[0]?.imageUrl || null;
+  } catch { return null; }
+}
+
 function loadSnapshots() {
   try { return JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]'); } catch { return []; }
 }
@@ -54,21 +64,20 @@ function saveSnapshots(snaps) {
   try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snaps.slice(-MAX_SNAPSHOTS))); } catch {}
 }
 
-function StatCard({ icon: Icon, label, value, accent, live }) {
+function LiveStatCard({ icon: Icon, label, value, accent }) {
   const colors = {
-    emerald: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20',
-    cyan: 'text-cyan-300 bg-cyan-500/10 border-cyan-500/20',
-    rose: 'text-rose-300 bg-rose-500/10 border-rose-500/20',
-    amber: 'text-amber-300 bg-amber-500/10 border-amber-500/20',
+    cyan: 'text-cyan-300',
+    rose: 'text-rose-300',
+    emerald: 'text-emerald-300',
+    blue: 'text-blue-300',
   };
   return (
-    <div className={`rounded-2xl border p-4 ${colors[accent] || colors.cyan}`}>
-      <div className="flex items-center justify-between">
-        <Icon className="h-4 w-4 opacity-80" />
-        {live && <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />}
+    <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3 aspect-square flex flex-col justify-between">
+      <Icon className={`h-4 w-4 ${colors[accent] || colors.cyan}`} />
+      <div>
+        <div className="text-xl font-bold text-white leading-tight">{value}</div>
+        <div className="text-[10px] text-slate-500 uppercase tracking-wide mt-0.5">{label}</div>
       </div>
-      <div className="mt-2 text-2xl font-bold text-white">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-0.5">{label}</div>
     </div>
   );
 }
@@ -133,13 +142,18 @@ export default function GameAnalytics() {
   const [votes, setVotes] = useState(null);
   const [servers, setServers] = useState([]);
   const [snapshots, setSnapshots] = useState([]);
+  const [thumbnail, setThumbnail] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [error, setError] = useState(false);
   const universeIdRef = useRef(null);
 
   const poll = async () => {
     try {
-      if (!universeIdRef.current) universeIdRef.current = await fetchUniverseId(PLACE_ID);
+      if (!universeIdRef.current) {
+        universeIdRef.current = await fetchUniverseId(PLACE_ID);
+        const thumb = await fetchThumbnail(universeIdRef.current);
+        if (thumb) setThumbnail(thumb);
+      }
       const [gameData, voteData, serverData] = await Promise.all([
         fetchGameStats(universeIdRef.current),
         fetchVotes(universeIdRef.current),
@@ -188,156 +202,191 @@ export default function GameAnalytics() {
   const avgPerServer = servers.length ? Math.round(totalServerPlayers / servers.length) : 0;
   const maxServerPlayers = servers.length ? Math.max(...servers.map(s => s.playing || 0)) : 0;
   const sortedServers = [...servers].sort((a, b) => (b.playing || 0) - (a.playing || 0)).slice(0, 8);
+  const serverFill = servers.length && game?.maxPlayers ? Math.round((totalServerPlayers / (servers.length * game.maxPlayers)) * 100) + '%' : '—';
+
+  if (loading) {
+    return (
+      <div className="mt-10 flex items-center justify-center py-16 text-slate-400">
+        <Loader2 className="h-6 w-6 animate-spin text-cyan-400 mr-2" /> Loading game data…
+      </div>
+    );
+  }
+
+  if (error && !game) {
+    return (
+      <div className="mt-10 rounded-2xl bg-rose-500/5 border border-rose-500/20 p-6 text-center text-rose-300 text-sm flex items-center justify-center gap-2">
+        <AlertCircle className="h-5 w-5" /> Failed to load game data. Retrying automatically…
+      </div>
+    );
+  }
+
+  if (!game) return null;
 
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Gamepad2 className="h-5 w-5 text-cyan-400" />
-          <h2 className="font-display text-xl font-bold">Game Analytics</h2>
-          {game && (
-            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live
-            </span>
-          )}
-        </div>
-        {lastUpdated && <span className="text-xs text-slate-500">Updated {lastUpdated.toLocaleTimeString()}</span>}
-      </div>
+      {/* ===== Hero Section ===== */}
+      <div className="grid lg:grid-cols-5 gap-5">
+        {/* Left: Info + Stats */}
+        <div className="lg:col-span-3 flex flex-col">
+          <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 w-fit mb-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live on Roblox
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">{game.name || 'Escape Tsunami'}</h2>
+          <p className="mt-2 text-sm text-slate-400 leading-relaxed line-clamp-3">{game.description || 'Sprint through the chaos, outrun towering tsunamis, and climb the leaderboards.'}</p>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-16 text-slate-400">
-          <Loader2 className="h-6 w-6 animate-spin text-cyan-400 mr-2" /> Loading game data…
-        </div>
-      ) : error && !game ? (
-        <div className="rounded-2xl bg-rose-500/5 border border-rose-500/20 p-6 text-center text-rose-300 text-sm flex items-center justify-center gap-2">
-          <AlertCircle className="h-5 w-5" /> Failed to load game data. Retrying automatically…
-        </div>
-      ) : game ? (
-        <>
-          {/* Game name banner */}
-          <div className="rounded-2xl bg-gradient-to-br from-cyan-500/[0.06] to-blue-600/[0.06] border border-cyan-500/20 p-4 mb-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <h3 className="font-semibold text-white">{game.name || 'Escape Tsunami'}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">by {game.creator?.name || 'Unknown'}</p>
-              </div>
-              <a href={`https://www.roblox.com/games/${PLACE_ID}`} target="_blank" rel="noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300">
-                View on Roblox ↗
-              </a>
-            </div>
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            <a href={`https://www.roblox.com/games/${PLACE_ID}`} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-400 text-white text-sm font-medium hover:from-blue-500 hover:to-blue-300 shadow-lg shadow-blue-500/20 transition-all">
+              <Play className="h-4 w-4" /> Play on Roblox
+            </a>
+            <Link to="/portal"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white text-sm font-medium hover:bg-white/10 transition-all">
+              <LogIn className="h-4 w-4" /> Member Portal
+            </Link>
           </div>
 
-          {/* Stat cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <StatCard icon={Users} label="Playing Now" value={formatNum(game.playing || 0)} accent="emerald" live />
-            <StatCard icon={Eye} label="Total Visits" value={formatNum(game.visits || 0)} accent="cyan" />
-            <StatCard icon={Heart} label="Favorites" value={formatNum(game.favoritedCount || 0)} accent="rose" />
-            <StatCard icon={ThumbsUp} label="Like Ratio" value={likeRatioStr} accent="amber" />
+          {/* Live stats panel */}
+          <div className="mt-6">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 uppercase tracking-wider mb-2.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Synced live from Roblox
+              {lastUpdated && <span className="ml-auto normal-case tracking-normal text-slate-600">· {lastUpdated.toLocaleTimeString()}</span>}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <LiveStatCard icon={Eye} label="Total Visits" value={formatNum(game.visits || 0)} accent="cyan" />
+              <LiveStatCard icon={Heart} label="Favorites" value={formatNum(game.favoritedCount || 0)} accent="rose" />
+              <LiveStatCard icon={Gamepad2} label="Playing Now" value={formatNum(game.playing || 0)} accent="emerald" />
+              <LiveStatCard icon={Shield} label="Status" value="Live" accent="blue" />
+            </div>
           </div>
+        </div>
 
-          {/* Charts */}
-          <div className="mt-4 grid lg:grid-cols-2 gap-4">
-            <ChartCard title="Live Player Count" subtitle="Real-time players online (session history)">
-              {chartData.length > 1 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="gPlaying" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={30} />
-                    <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="playing" stroke="#10b981" strokeWidth={2} fill="url(#gPlaying)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : <EmptyChart />}
-            </ChartCard>
-            <ChartCard title="Visit Growth" subtitle="Total visits accumulated over time">
-              {chartData.length > 1 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={30} />
-                    <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={formatNum} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Line type="monotone" dataKey="visits" stroke="#06b6d4" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : <EmptyChart />}
-            </ChartCard>
-          </div>
-
-          {/* Community rating bar */}
-          {votes && totalVotes > 0 && (
-            <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-white">Community Rating</span>
-                <span className="text-sm text-slate-400">
-                  <span className="text-emerald-400">{votes.upVotes || 0}</span> 👍 · <span className="text-rose-400">{votes.downVotes || 0}</span> 👎
-                </span>
-              </div>
-              <div className="flex h-3 rounded-full overflow-hidden bg-rose-500/20">
-                <div className="bg-emerald-500 h-full transition-all" style={{ width: `${likePct}%` }} />
-              </div>
-              <div className="mt-1.5 text-xs text-slate-500">{likePct.toFixed(1)}% positive · {formatNum(totalVotes)} total ratings</div>
-            </div>
-          )}
-
-          {/* Server overview */}
-          <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Server className="h-4 w-4 text-cyan-400" />
-              <h3 className="text-sm font-semibold text-white">Live Servers</h3>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-              <MiniStat label="Active Servers" value={servers.length} />
-              <MiniStat label="Players Online" value={formatNum(totalServerPlayers)} />
-              <MiniStat label="Avg / Server" value={avgPerServer} />
-              <MiniStat label="Max Server" value={maxServerPlayers} />
-            </div>
-            {sortedServers.length > 0 && (
-              <div className="space-y-1.5">
-                {sortedServers.map((sv, i) => {
-                  const pct = sv.maxPlayers ? ((sv.playing || 0) / sv.maxPlayers) * 100 : 0;
-                  return (
-                    <div key={sv.id} className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 w-6 shrink-0">#{i + 1}</span>
-                      <div className="flex-1 h-6 rounded-md bg-white/[0.03] border border-white/5 overflow-hidden relative">
-                        <div className="h-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 transition-all" style={{ width: `${pct}%` }} />
-                        <div className="absolute inset-0 flex items-center px-2 text-xs text-slate-300">
-                          {sv.playing || 0} / {sv.maxPlayers || 0} players
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+        {/* Right: Game preview card */}
+        <div className="lg:col-span-2">
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-slate-900 aspect-[4/3] group">
+            {thumbnail ? (
+              <img src={thumbnail} alt={game.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-500/10 to-blue-600/10">
+                <Gamepad2 className="h-12 w-12 text-slate-600" />
               </div>
             )}
-          </div>
-
-          {/* Extended metrics */}
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            <MetricCard icon={Crown} label="Peak Players" value={formatNum(peakPlayers)} />
-            <MetricCard icon={Activity} label="Min Players" value={formatNum(minPlayers)} />
-            <MetricCard icon={TrendingUp} label="Avg Players" value={formatNum(avgPlayers)} />
-            <MetricCard icon={Zap} label="Visit Growth" value={`+${formatNum(visitGrowth)}`} />
-            <MetricCard icon={Heart} label="Fav / Visit" value={favRatio} />
-            <MetricCard icon={Users} label="Max / Server" value={game.maxPlayers || 0} />
-            <MetricCard icon={Gauge} label="Server Fill" value={servers.length ? `${Math.round((totalServerPlayers / (servers.length * (game.maxPlayers || 1))) * 100)}%` : '—'} />
-            <MetricCard icon={Gamepad2} label="Creator" value={game.creator?.name || '—'} small />
-          </div>
-
-          {snapshots.length < 2 && (
-            <div className="mt-4 text-xs text-slate-500 text-center">
-              Collecting trend data — keep this page open or revisit regularly to build growth history.
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+            <div className="absolute bottom-0 inset-x-0 p-4 flex items-end justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-sm text-white font-medium">
+                  <Users className="h-4 w-4 text-emerald-400" /> {formatNum(game.playing || 0)} playing now
+                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-1">Join the community</div>
+              </div>
+              <div className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-200 backdrop-blur-sm">
+                <Heart className="h-3 w-3 fill-rose-400 text-rose-400" /> {formatNum(game.favoritedCount || 0)} favorites
+              </div>
             </div>
-          )}
-        </>
-      ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Charts ===== */}
+      <div className="mt-5 grid lg:grid-cols-2 gap-4">
+        <ChartCard title="Live Player Count" subtitle="Real-time players online (session history)">
+          {chartData.length > 1 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="gPlaying" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={30} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="playing" stroke="#10b981" strokeWidth={2} fill="url(#gPlaying)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : <EmptyChart />}
+        </ChartCard>
+        <ChartCard title="Visit Growth" subtitle="Total visits accumulated over time">
+          {chartData.length > 1 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={30} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={formatNum} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line type="monotone" dataKey="visits" stroke="#06b6d4" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : <EmptyChart />}
+        </ChartCard>
+      </div>
+
+      {/* ===== Community Rating ===== */}
+      {votes && totalVotes > 0 && (
+        <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white">Community Rating</span>
+            <span className="text-sm text-slate-400">
+              <span className="text-emerald-400">{votes.upVotes || 0}</span> 👍 · <span className="text-rose-400">{votes.downVotes || 0}</span> 👎
+            </span>
+          </div>
+          <div className="flex h-3 rounded-full overflow-hidden bg-rose-500/20">
+            <div className="bg-emerald-500 h-full transition-all" style={{ width: `${likePct}%` }} />
+          </div>
+          <div className="mt-1.5 text-xs text-slate-500">{likePct.toFixed(1)}% positive · {formatNum(totalVotes)} total ratings</div>
+        </div>
+      )}
+
+      {/* ===== Live Servers ===== */}
+      <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Server className="h-4 w-4 text-cyan-400" />
+          <h3 className="text-sm font-semibold text-white">Live Servers</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <MiniStat label="Active Servers" value={servers.length} />
+          <MiniStat label="Players Online" value={formatNum(totalServerPlayers)} />
+          <MiniStat label="Avg / Server" value={avgPerServer} />
+          <MiniStat label="Max Server" value={maxServerPlayers} />
+        </div>
+        {sortedServers.length > 0 && (
+          <div className="space-y-1.5">
+            {sortedServers.map((sv, i) => {
+              const pct = sv.maxPlayers ? ((sv.playing || 0) / sv.maxPlayers) * 100 : 0;
+              return (
+                <div key={sv.id} className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 w-6 shrink-0">#{i + 1}</span>
+                  <div className="flex-1 h-6 rounded-md bg-white/[0.03] border border-white/5 overflow-hidden relative">
+                    <div className="h-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 transition-all" style={{ width: `${pct}%` }} />
+                    <div className="absolute inset-0 flex items-center px-2 text-xs text-slate-300">
+                      {sv.playing || 0} / {sv.maxPlayers || 0} players
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ===== Extended Metrics ===== */}
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <MetricCard icon={Crown} label="Peak Players" value={formatNum(peakPlayers)} />
+        <MetricCard icon={Activity} label="Min Players" value={formatNum(minPlayers)} />
+        <MetricCard icon={TrendingUp} label="Avg Players" value={formatNum(avgPlayers)} />
+        <MetricCard icon={Zap} label="Visit Growth" value={`+${formatNum(visitGrowth)}`} />
+        <MetricCard icon={Heart} label="Fav / Visit" value={favRatio} />
+        <MetricCard icon={Users} label="Max / Server" value={game.maxPlayers || 0} />
+        <MetricCard icon={Gauge} label="Server Fill" value={serverFill} />
+        <MetricCard icon={ThumbsUp} label="Like Ratio" value={likeRatioStr} />
+      </div>
+
+      {snapshots.length < 2 && (
+        <div className="mt-4 text-xs text-slate-500 text-center">
+          Collecting trend data — keep this page open or revisit regularly to build growth history.
+        </div>
+      )}
     </div>
   );
 }
