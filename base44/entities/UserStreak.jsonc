@@ -6,6 +6,10 @@
       "type": "string",
       "description": "The verified Roblox username this streak belongs to"
     },
+    "discord_id": {
+      "type": "string",
+      "description": "The member's Discord user ID, required to participate in the 7-Day Devoted Quest and receive the Devoted role"
+    },
     "current_streak": {
       "type": "number",
       "description": "Current consecutive days claimed",
@@ -18,7 +22,7 @@
     },
     "tag_unlocked": {
       "type": "boolean",
-      "description": "Whether the player reached a 7-day streak and unlocked the in-game Devoted tag",
+      "description": "Whether the player reached a 7-day streak and the Discord bot assigned the Devoted role",
       "default": false
     },
     "total_days_claimed": {
