@@ -29,7 +29,21 @@ export default function LiveChatTab() {
       if (event.type !== 'create') return;
       setMessages((prev) => (prev.some((m) => m.id === event.data.id) ? prev : [...prev, event.data].slice(-500)));
     });
-    return unsubscribe;
+    // Safety net: poll every 4s in case a realtime event is missed
+    const merge = (rows) =>
+      setMessages((prev) => {
+        const seen = new Set(prev.map((m) => m.id));
+        const fresh = [...rows].reverse().filter((r) => !seen.has(r.id));
+        return fresh.length ? [...prev, ...fresh].slice(-500) : prev;
+      });
+    const interval = setInterval(() => {
+      base44.entities.ChatLog.list('-created_date', 50).then(merge).catch(() => {});
+    }, 4000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {

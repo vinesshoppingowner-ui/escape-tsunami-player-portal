@@ -17,14 +17,18 @@ export default async function(req: Request): Promise<Response> {
     let chatCreated = 0;
     let exploitCreated = 0;
 
+    // Created one-by-one (not bulkCreate) so each record fires a realtime
+    // event — that's what pushes messages instantly to the staff Live Chat.
     if (chatLogs.length > 0) {
-      await base44.asServiceRole.entities.ChatLog.bulkCreate(
-        chatLogs.map((log) => ({
-          roblox_username: log.roblox_username,
-          message: log.message,
-          server_name: log.server_name || '',
-          timestamp: log.timestamp || new Date().toISOString(),
-        }))
+      await Promise.all(
+        chatLogs.map((log) =>
+          base44.asServiceRole.entities.ChatLog.create({
+            roblox_username: log.roblox_username,
+            message: log.message,
+            server_name: log.server_name || '',
+            timestamp: log.timestamp || new Date().toISOString(),
+          })
+        )
       );
       chatCreated = chatLogs.length;
     }
