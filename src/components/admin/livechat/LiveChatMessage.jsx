@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
-import { screenMessage, SEVERITY_STYLES } from '@/lib/profanity';
+import { screenChat, SEVERITY_STYLES } from '@/lib/profanity';
 
 const COLORS = [
   'text-cyan-300', 'text-emerald-300', 'text-amber-300', 'text-violet-300',
@@ -19,7 +19,7 @@ export default function LiveChatMessage({ msg, grouped, onOpenPlayer }) {
   const idx = hash(msg.roblox_username) % COLORS.length;
   const server = msg.server_name || '';
   const shortServer = server.length > 8 ? `${server.slice(0, 4)}…${server.slice(-4)}` : server;
-  const { severity, matches } = screenMessage(msg.message);
+  const { severity, matches, robloxFlagged, filtered } = screenChat(msg);
   const flag = severity ? SEVERITY_STYLES[severity] : null;
 
   return (
@@ -64,9 +64,17 @@ export default function LiveChatMessage({ msg, grouped, onOpenPlayer }) {
                 {shortServer}
               </span>
             )}
+            {robloxFlagged && (
+              <span
+                title="Roblox's text filter changed this message"
+                className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border bg-rose-500/20 text-rose-300 border-rose-500/40"
+              >
+                <ShieldAlert className="h-2.5 w-2.5" /> Roblox filtered
+              </span>
+            )}
             {flag && (
               <span
-                title={`Flagged words: ${matches.join(', ')}`}
+                title={matches.length ? `Flagged words: ${matches.join(', ')}` : 'Flagged'}
                 className={`inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border ${flag.badge}`}
               >
                 <AlertTriangle className="h-2.5 w-2.5" /> {flag.label}
@@ -82,6 +90,14 @@ export default function LiveChatMessage({ msg, grouped, onOpenPlayer }) {
             </span>
           )}
         </p>
+        {filtered && (
+          <p className="mt-1 text-[12px] text-rose-200/80 break-words whitespace-pre-wrap leading-relaxed">
+            <span className="text-[9px] uppercase tracking-wider font-semibold text-rose-400/80 mr-1.5">
+              Roblox showed
+            </span>
+            {filtered}
+          </p>
+        )}
       </div>
     </div>
   );

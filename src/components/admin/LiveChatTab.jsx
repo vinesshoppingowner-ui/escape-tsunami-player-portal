@@ -4,7 +4,7 @@ import { MessageSquare, Search, Pause, Play, X, ArrowDown, AlertTriangle } from 
 import LiveChatMessage from '@/components/admin/livechat/LiveChatMessage';
 import LiveChatStats from '@/components/admin/livechat/LiveChatStats';
 import PlayerChatModal from '@/components/admin/livechat/PlayerChatModal';
-import { screenMessage } from '@/lib/profanity';
+import { screenChat } from '@/lib/profanity';
 import useLiveChatLogs from '@/hooks/useLiveChatLogs';
 import { format } from 'date-fns';
 
@@ -41,7 +41,7 @@ export default function LiveChatTab() {
           m.server_name?.toLowerCase().includes(q)
       )
     : messages;
-  if (flaggedOnly) visible = visible.filter((m) => screenMessage(m.message).severity);
+  if (flaggedOnly) visible = visible.filter((m) => screenChat(m).severity);
 
   return (
     <>

@@ -25,6 +25,9 @@ export default async function(req: Request): Promise<Response> {
           base44.asServiceRole.entities.ChatLog.create({
             roblox_username: log.roblox_username,
             message: log.message,
+            filtered_message: log.filtered_message || '',
+            roblox_flagged:
+              !!log.filtered_message && log.filtered_message !== log.message,
             server_name: log.server_name || '',
             timestamp: log.timestamp || new Date().toISOString(),
           })

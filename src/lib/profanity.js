@@ -1,21 +1,23 @@
 // Chat language screening for the staff Live Chat feed.
-// Severity tiers: mild (rude), medium (profanity), extreme (slurs / threats / bypass-worthy).
+// Severity tiers: mild (rude), medium (profanity), extreme (slurs / threats).
+// Roblox's own filter is the strongest signal — when it censors or rephrases a
+// message we always treat it as flagged (see screenChat).
 
 const LISTS = {
   extreme: [
-    'nigger', 'nigga', 'niger', 'faggot', 'fagot', 'fag', 'tranny', 'retard', 'retarded',
+    'nigger', 'nigga', 'niger', 'nig', 'faggot', 'fagot', 'fag', 'tranny', 'retard', 'retarded',
     'kys', 'kill yourself', 'killurself', 'kill urself', 'neck yourself', 'rape', 'rapist',
     'pedo', 'pedophile', 'chink', 'spic', 'kike', 'coon', 'nazi', 'hitler',
   ],
   medium: [
-    'fuck', 'fucking', 'fucker', 'fuk', 'fck', 'motherfucker', 'shit', 'shitty', 'bullshit',
-    'bitch', 'bitches', 'cunt', 'whore', 'slut', 'dick', 'cock', 'pussy', 'asshole',
-    'bastard', 'wanker', 'twat', 'dickhead', 'jerkoff', 'cum', 'porn', 'sex', 'horny',
+    'fuck', 'fuk', 'fuc', 'fck', 'fcku', 'phuck', 'wtf', 'stfu', 'shit', 'sht', 'shyt',
+    'bitch', 'btch', 'biatch', 'cunt', 'whore', 'hoe', 'slut', 'dick', 'cock', 'pussy',
+    'asshole', 'bastard', 'wanker', 'twat', 'cum', 'porn', 'sex', 'horny', 'balls',
   ],
   mild: [
-    'crap', 'damn', 'damnit', 'hell', 'ass', 'arse', 'piss', 'pissed', 'idiot', 'stupid',
-    'dumb', 'dumbass', 'moron', 'loser', 'suck', 'sucks', 'noob', 'trash', 'garbage',
-    'shut up', 'shutup', 'freak', 'jerk',
+    'crap', 'damn', 'hell', 'ass', 'arse', 'piss', 'idiot', 'stupid', 'dumb', 'moron',
+    'loser', 'suck', 'noob', 'trash', 'garbage', 'shut up', 'shutup', 'shuttup', 'freak',
+    'jerk', 'fat', 'fatass', 'ugly', 'cringe', 'weirdo', 'bruh',
   ],
 };
 
@@ -25,12 +27,23 @@ const SUBS = {
   '|': 'i', '0': 'o', '5': 's', '$': 's', '7': 't', '+': 't', '2': 'z',
 };
 
-function normalize(text = '') {
+function deLeet(text = '') {
   return text
     .toLowerCase()
     .split('')
     .map((c) => SUBS[c] ?? c)
-    .join('')
+    .join('');
+}
+
+// Spaced-out text: "f u c k" / "s-h-i-t" → "fuck" / "shit"
+function collapse(text = '') {
+  return deLeet(text)
+    .replace(/[^a-z]/g, '')
+    .replace(/(.)\1{2,}/g, '$1$1'); // "fuuuuck" → "fuuck"
+}
+
+function normalize(text = '') {
+  return deLeet(text)
     .replace(/[^a-z\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -39,21 +52,23 @@ function normalize(text = '') {
 const SEVERITY_ORDER = ['mild', 'medium', 'extreme'];
 
 /**
- * Screens a chat message for inappropriate language.
+ * Screens a chat message for inappropriate language, catching common bypasses
+ * (l33t speak, spaced letters, repeated characters, words inside other words).
  * Returns { severity: 'mild'|'medium'|'extreme'|null, matches: string[] }
  */
 export function screenMessage(message) {
   if (!message) return { severity: null, matches: [] };
-  const clean = normalize(message);
-  const padded = ` ${clean} `;
+  const words = normalize(message);
+  const squished = collapse(message);
   const matches = [];
   let severity = null;
 
   for (const tier of SEVERITY_ORDER) {
     for (const word of LISTS[tier]) {
-      const hit = word.includes(' ')
-        ? padded.includes(` ${word} `) || clean.includes(word)
-        : padded.includes(` ${word} `);
+      const key = word.replace(/\s/g, '');
+      const hit = key.length <= 3
+        ? ` ${words} `.includes(` ${word} `)
+        : squished.includes(key) || words.includes(word);
       if (hit) {
         matches.push(word);
         severity = tier; // later tiers override — extreme wins
@@ -62,6 +77,23 @@ export function screenMessage(message) {
   }
 
   return { severity, matches: [...new Set(matches)] };
+}
+
+/**
+ * Screens a whole ChatLog record. Roblox's filter takes priority: if Roblox
+ * censored or rephrased the message, it's flagged regardless of our word lists.
+ * Returns { severity, matches, robloxFlagged, filtered }
+ */
+export function screenChat(record = {}) {
+  const { severity, matches } = screenMessage(record.message);
+  const filtered = record.filtered_message || '';
+  const robloxFlagged = !!record.roblox_flagged || (!!filtered && filtered !== record.message);
+  return {
+    severity: robloxFlagged ? severity || 'medium' : severity,
+    matches,
+    robloxFlagged,
+    filtered: robloxFlagged ? filtered : '',
+  };
 }
 
 export const SEVERITY_STYLES = {

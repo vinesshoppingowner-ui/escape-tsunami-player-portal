@@ -8,7 +8,16 @@
     },
     "message": {
       "type": "string",
-      "description": "The chat message content"
+      "description": "The chat message content as the player typed it"
+    },
+    "filtered_message": {
+      "type": "string",
+      "description": "The message after Roblox's own text filter ran on it \u2014 censored or rephrased text"
+    },
+    "roblox_flagged": {
+      "type": "boolean",
+      "description": "True when Roblox's text filter changed the message, meaning Roblox considered it inappropriate",
+      "default": false
     },
     "server_name": {
       "type": "string",

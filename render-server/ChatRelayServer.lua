@@ -4,6 +4,7 @@
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local TextService = game:GetService("TextService")
 
 local ENDPOINT = "https://tsunami-shield-portal.base44.app/functions/submit-game-logs"
 local API_KEY = "PASTE_YOUR_GAME_LOG_API_KEY_HERE" -- must match the GAME_LOG_API_KEY secret in the portal
@@ -31,10 +32,24 @@ local function flush()
 	end
 end
 
+-- Run Roblox's own text filter. If Roblox censors or rephrases anything, the
+-- result differs from what the player typed and the portal marks it flagged.
+local function robloxFiltered(player, message)
+	local ok, result = pcall(function()
+		return TextService:FilterStringAsync(message, player.UserId)
+			:GetNonChatStringForBroadcastAsync()
+	end)
+	if ok and type(result) == "string" then
+		return result
+	end
+	return nil
+end
+
 local function onChatted(player, message)
 	table.insert(queue, {
 		roblox_username = player.Name,
 		message = message,
+		filtered_message = robloxFiltered(player, message),
 		server_name = SERVER_NAME,
 		timestamp = DateTime.now():ToIsoDate(),
 	})
@@ -42,13 +57,13 @@ end
 
 Players.PlayerAdded:Connect(function(player)
 	player.Chatted:Connect(function(message)
-		onChatted(player, message)
+		task.spawn(onChatted, player, message)
 	end)
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
 	player.Chatted:Connect(function(message)
-		onChatted(player, message)
+		task.spawn(onChatted, player, message)
 	end)
 end
 
