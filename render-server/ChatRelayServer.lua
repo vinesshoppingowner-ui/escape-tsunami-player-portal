@@ -36,11 +36,21 @@ end
 -- result differs from what the player typed and the portal marks it flagged.
 local function robloxFiltered(player, message)
 	local ok, result = pcall(function()
-		return TextService:FilterStringAsync(message, player.UserId)
-			:GetNonChatStringForBroadcastAsync()
+		local filterResult = TextService:FilterStringAsync(message, player.UserId)
+		local okText, text = pcall(function()
+			return filterResult:GetNonChatStringForBroadcastAsync()
+		end)
+		if not okText then
+			-- Fall back to the per-user chat version if the broadcast call fails
+			text = filterResult:GetChatForUserAsync(player.UserId)
+		end
+		return text
 	end)
-	if ok and type(result) == "string" then
+	if ok and type(result) == "string" and result ~= message then
 		return result
+	end
+	if not ok then
+		warn("[ChatRelay] filter failed:", result)
 	end
 	return nil
 end
