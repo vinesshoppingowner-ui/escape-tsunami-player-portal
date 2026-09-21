@@ -1,0 +1,118 @@
+{
+  "name": "Application",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the application form"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description shown to applicants"
+    },
+    "status": {
+      "type": "string",
+      "description": "Whether the form is accepting responses",
+      "enum": [
+        "draft",
+        "open",
+        "closed"
+      ],
+      "default": "draft"
+    },
+    "questions": {
+      "type": "string",
+      "description": "JSON array of question objects"
+    },
+    "settings": {
+      "type": "string",
+      "description": "JSON object of form settings"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category tag for grouping",
+      "default": "General"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon for the form",
+      "default": "\ud83d\udccb"
+    },
+    "success_message": {
+      "type": "string",
+      "description": "Message shown after successful submission"
+    },
+    "response_count": {
+      "type": "number",
+      "description": "Cached count of responses",
+      "default": 0
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the admin who created this form"
+    },
+    "auto_close_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the form auto-closes"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}
