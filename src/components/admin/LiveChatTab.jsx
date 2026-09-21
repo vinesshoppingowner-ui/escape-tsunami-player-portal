@@ -48,7 +48,7 @@ export default function LiveChatTab() {
       <LiveChatStats messages={messages} />
 
       <div className="mt-4 rounded-2xl bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 overflow-hidden shadow-xl shadow-slate-950/40">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
+        <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2.5 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <span className="relative flex h-2 w-2">
               <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
@@ -63,7 +63,7 @@ export default function LiveChatTab() {
             )}
           </div>
           <div className="flex-1" />
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
             <Input
               value={search}
@@ -104,7 +104,7 @@ export default function LiveChatTab() {
         </div>
 
         <div className="relative">
-          <div ref={scrollRef} className="h-[60vh] overflow-y-auto px-3 py-3">
+          <div ref={scrollRef} className="h-[65vh] overflow-y-auto px-3 py-3">
             {loading && (
               <div className="space-y-3">
                 {[0, 1, 2, 3].map((i) => (
