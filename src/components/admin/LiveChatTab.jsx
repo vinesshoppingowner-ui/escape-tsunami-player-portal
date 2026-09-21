@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { MessageSquare, Search, Pause, Play, X, ArrowDown, AlertTriangle } from 'lucide-react';
 import LiveChatMessage from '@/components/admin/livechat/LiveChatMessage';
 import LiveChatStats from '@/components/admin/livechat/LiveChatStats';
 import PlayerChatModal from '@/components/admin/livechat/PlayerChatModal';
 import { screenMessage } from '@/lib/profanity';
+import useLiveChatLogs from '@/hooks/useLiveChatLogs';
+import { format } from 'date-fns';
 
 const GROUP_WINDOW_MS = 60 * 1000;
 
 export default function LiveChatTab() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { messages, loading, lastSync } = useLiveChatLogs();
   const [search, setSearch] = useState('');
   const [paused, setPaused] = useState(false);
   const [unseen, setUnseen] = useState(0);
@@ -19,32 +19,6 @@ export default function LiveChatTab() {
   const [selected, setSelected] = useState(null);
   const bottomRef = useRef(null);
   const scrollRef = useRef(null);
-
-  useEffect(() => {
-    base44.entities.ChatLog.list('-created_date', 200).then((rows) => {
-      setMessages([...rows].reverse());
-      setLoading(false);
-    });
-    const unsubscribe = base44.entities.ChatLog.subscribe((event) => {
-      if (event.type !== 'create') return;
-      setMessages((prev) => (prev.some((m) => m.id === event.data.id) ? prev : [...prev, event.data].slice(-500)));
-    });
-    // Safety net: poll every 4s in case a realtime event is missed
-    const merge = (rows) =>
-      setMessages((prev) => {
-        const seen = new Set(prev.map((m) => m.id));
-        const fresh = [...rows].reverse().filter((r) => !seen.has(r.id));
-        return fresh.length ? [...prev, ...fresh].slice(-500) : prev;
-      });
-    const interval = setInterval(() => {
-      base44.entities.ChatLog.list('-created_date', 50).then(merge).catch(() => {});
-    }, 4000);
-
-    return () => {
-      unsubscribe();
-      clearInterval(interval);
-    };
-  }, []);
 
   useEffect(() => {
     if (paused) {
@@ -91,6 +65,11 @@ export default function LiveChatTab() {
             </span>
             <MessageSquare className="h-4 w-4 text-cyan-400" /> Live Chat
             {q && <span className="text-slate-400 font-normal text-xs">· {visible.length} matching</span>}
+            {lastSync && (
+              <span className="text-slate-500 font-normal text-[11px]">
+                · synced {format(lastSync, 'h:mm:ss a')}
+              </span>
+            )}
           </div>
           <div className="flex-1" />
           <div className="relative w-full sm:w-72">
