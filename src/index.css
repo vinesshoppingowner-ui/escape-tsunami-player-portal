@@ -404,6 +404,34 @@ a.bg-white\/5:hover {
   transform: translateY(-1px);
 }
 
+/* ===== Dark scrollbars everywhere ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(34, 211, 238, 0.45);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);
