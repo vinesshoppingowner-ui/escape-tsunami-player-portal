@@ -17,12 +17,6 @@ import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
 import ApplicationSubmit from './pages/ApplicationSubmit';
 import ModerationPopOut from './pages/ModerationPopOut';
-import Game from './pages/Game';
-import Developers from './pages/Developers';
-import Leaderboards from './pages/Leaderboards';
-import Updates from './pages/Updates';
-import Rules from './pages/Rules';
-import FAQ from './pages/FAQ';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -66,13 +60,6 @@ const AuthenticatedApp = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
         <Route path="/portal" element={<Portal />} />
-        <Route path="/game" element={<Game />} />
-        <Route path="/developers" element={<Developers />} />
-        <Route path="/leaderboards" element={<Leaderboards />} />
-        <Route path="/updates" element={<Updates />} />
-        <Route path="/changelog" element={<Updates />} />
-        <Route path="/rules" element={<Rules />} />
-        <Route path="/faq" element={<FAQ />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/admin" element={<Admin />} />
