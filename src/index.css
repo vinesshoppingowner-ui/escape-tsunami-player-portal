@@ -341,26 +341,51 @@
 /* Primary cyan-blue gradient CTA buttons — liquid glass */
 .bg-gradient-to-r.from-cyan-500.to-blue-600,
 .bg-gradient-to-r.from-cyan-400.to-blue-500 {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.72), rgba(37, 99, 235, 0.72)) !important;
-  backdrop-filter: blur(10px) saturate(1.6);
-  -webkit-backdrop-filter: blur(10px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  position: relative;
+  border-radius: 9999px !important;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(125, 211, 252, 0.18) 38%,
+    rgba(37, 99, 235, 0.26) 100%
+  ) !important;
+  backdrop-filter: blur(16px) saturate(1.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow:
-    0 0 20px rgba(34, 211, 238, 0.28),
-    0 4px 16px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+    0 6px 22px rgba(8, 20, 45, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -8px 14px -8px rgba(255, 255, 255, 0.28),
+    inset 0 0 22px rgba(125, 211, 252, 0.14) !important;
   transition: box-shadow 0.3s ease, transform 0.2s ease, background 0.3s ease !important;
+}
+
+/* Top-edge specular highlight, like glass catching light */
+.bg-gradient-to-r.from-cyan-500.to-blue-600::after,
+.bg-gradient-to-r.from-cyan-400.to-blue-500::after {
+  content: '';
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 45%;
+  border-radius: 9999px 9999px 60% 60% / 9999px 9999px 100% 100%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  pointer-events: none;
 }
 
 .bg-gradient-to-r.from-cyan-500.to-blue-600:hover,
 .bg-gradient-to-r.from-cyan-400.to-blue-500:hover {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.85), rgba(37, 99, 235, 0.85)) !important;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(125, 211, 252, 0.26) 38%,
+    rgba(37, 99, 235, 0.36) 100%
+  ) !important;
   box-shadow:
-    0 0 38px rgba(34, 211, 238, 0.48),
-    0 8px 28px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.48),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+    0 10px 30px rgba(8, 20, 45, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -8px 16px -8px rgba(255, 255, 255, 0.35),
+    inset 0 0 28px rgba(125, 211, 252, 0.22),
+    0 0 26px rgba(56, 189, 248, 0.25) !important;
   transform: translateY(-1px);
 }
 
@@ -392,15 +417,21 @@
 /* Frosted glass outline / secondary buttons */
 button.bg-white\/5,
 a.bg-white\/5 {
-  backdrop-filter: blur(10px) saturate(1.4);
-  -webkit-backdrop-filter: blur(10px) saturate(1.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 12px rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -6px 12px -8px rgba(255, 255, 255, 0.2),
+    0 4px 16px rgba(8, 20, 45, 0.25) !important;
   transition: box-shadow 0.3s ease, transform 0.2s ease !important;
 }
 
 button.bg-white\/5:hover,
 a.bg-white\/5:hover {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 22px rgba(34, 211, 238, 0.12) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 12px -8px rgba(255, 255, 255, 0.28),
+    0 6px 20px rgba(8, 20, 45, 0.3) !important;
   transform: translateY(-1px);
 }
 
