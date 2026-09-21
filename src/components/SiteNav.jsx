@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
+import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown, Gamepad2, Code2, Trophy, ScrollText, HelpCircle, History, MessageCircle, ExternalLink } from 'lucide-react';
+import { DISCORD_URL } from '@/lib/siteLinks';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -57,24 +58,29 @@ export default function SiteNav() {
     })();
   }, [location.pathname]);
 
+  const isStaff = isOwner(user) || user?.role === 'staff' || user?.role === 'admin';
   const directLinks = [
     { label: 'Home', to: '/', icon: Home },
+    { label: 'Game', to: '/game', icon: Gamepad2 },
+    { label: 'Developers', to: '/developers', icon: Code2 },
+    { label: 'Leaderboards', to: '/leaderboards', icon: Trophy },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
   ];
   const dropdownLinks = [
+    { label: 'Updates', to: '/updates', icon: Megaphone },
+    { label: 'Rules', to: '/rules', icon: ScrollText },
+    { label: 'FAQ', to: '/faq', icon: HelpCircle },
     { label: 'Applications', to: '/applications', icon: FileText },
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    ...(isStaff ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
+    { label: 'Changelog', to: '/changelog', icon: History },
+    { label: 'Discord', href: DISCORD_URL, icon: MessageCircle },
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
   const mobileLinks = [
-    { label: 'Home', to: '/', icon: Home },
+    ...directLinks,
     { label: 'Member Portal', to: '/portal', icon: LogIn },
-    { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-    { label: 'Applications', to: '/applications', icon: FileText },
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
-    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
-    ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
+    ...dropdownLinks,
   ];
 
   const BANNER_COLORS = {
@@ -131,7 +137,7 @@ export default function SiteNav() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-0.5">
           {directLinks.map((l) => {
             const active = location.pathname === l.to;
             return (
@@ -151,8 +157,7 @@ export default function SiteNav() {
           {dropdownLinks.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors rounded-lg hover:bg-white/5">
-                <Menu className="h-4 w-4" />
+              <button className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors rounded-lg hover:bg-white/5">
                 More
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
@@ -160,20 +165,26 @@ export default function SiteNav() {
             <DropdownMenuContent align="start" className="w-52 bg-slate-900/95 backdrop-blur-xl border-white/10 text-white">
               {dropdownLinks.map((l) => {
                 const active = location.pathname === l.to;
+                const cls = `flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md ${
+                  active ? 'text-cyan-300 bg-cyan-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`;
                 return (
-                  <DropdownMenuItem key={l.to} asChild>
-                    <Link
-                      to={l.to}
-                      className={`flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md ${
-                        active ? 'text-cyan-300 bg-cyan-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {l.icon && <l.icon className="h-4 w-4" />}
-                      {l.label}
-                      {l.showDot && (
-                        <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
-                      )}
-                    </Link>
+                  <DropdownMenuItem key={l.label} asChild>
+                    {l.href ? (
+                      <a href={l.href} target="_blank" rel="noreferrer" className={cls}>
+                        {l.icon && <l.icon className="h-4 w-4" />}
+                        {l.label}
+                        <ExternalLink className="h-3 w-3 ml-auto opacity-60" />
+                      </a>
+                    ) : (
+                      <Link to={l.to} className={cls}>
+                        {l.icon && <l.icon className="h-4 w-4" />}
+                        {l.label}
+                        {l.showDot && (
+                          <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
+                        )}
+                      </Link>
+                    )}
                   </DropdownMenuItem>
                 );
               })}
@@ -182,7 +193,7 @@ export default function SiteNav() {
           )}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <Link to="/portal">
             <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               <LogIn className="h-4 w-4 mr-1.5" /> Member Portal
@@ -193,7 +204,7 @@ export default function SiteNav() {
         {isDesktopLayout && <div className="flex-1" />}
 
         <button
-          className="md:hidden text-white p-2"
+          className="lg:hidden text-white p-2"
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
         >
@@ -202,10 +213,21 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-white/10 bg-slate-950/95 px-5 py-4 space-y-1">
-          {mobileLinks.map((l) => (
+        <div className="lg:hidden border-t border-white/10 bg-slate-950/95 px-5 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {mobileLinks.map((l) => l.href ? (
+            <a
+              key={l.label}
+              href={l.href}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/5 text-sm"
+            >
+              {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
+              {l.label} ↗
+            </a>
+          ) : (
             <Link
-              key={l.to}
+              key={l.label}
               to={l.to}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/5 text-sm"

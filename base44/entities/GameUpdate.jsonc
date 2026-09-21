@@ -1,0 +1,77 @@
+{
+  "name": "GameUpdate",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Version label, e.g. 1.4.0"
+    },
+    "title": {
+      "type": "string",
+      "description": "Headline for the update"
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Release date"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Change notes, one bullet per line"
+    },
+    "published": {
+      "type": "boolean",
+      "description": "Whether the update is visible publicly",
+      "default": true
+    }
+  },
+  "required": [
+    "version",
+    "title"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}

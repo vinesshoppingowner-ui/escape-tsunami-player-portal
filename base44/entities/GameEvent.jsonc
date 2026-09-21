@@ -1,0 +1,86 @@
+{
+  "name": "GameEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event name, e.g. Tsunami Week"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of the event bonus"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji shown next to the title",
+      "default": "\ud83c\udf0a"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether the event is currently shown on the homepage",
+      "default": true
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event ends"
+    },
+    "cta_label": {
+      "type": "string",
+      "description": "Button label",
+      "default": "View Event"
+    },
+    "cta_url": {
+      "type": "string",
+      "description": "Where the button links to"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}

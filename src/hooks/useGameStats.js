@@ -17,6 +17,17 @@ async function fetchGameStats(universeId) {
   return data?.data?.[0] || null;
 }
 
+async function fetchServerCount() {
+  try {
+    const res = await fetch(`https://games.roproxy.com/v1/games/${PLACE_ID}/servers/Public?limit=100`);
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data?.data?.length || 0;
+  } catch {
+    return 0;
+  }
+}
+
 export function useGameStats() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,14 +41,17 @@ export function useGameStats() {
         if (!universeIdRef.current) {
           universeIdRef.current = await fetchUniverseId(PLACE_ID);
         }
-        const data = await fetchGameStats(universeIdRef.current);
+        const [data, servers] = await Promise.all([fetchGameStats(universeIdRef.current), fetchServerCount()]);
         if (active && data) {
           setStats({
             visits: data.visits || 0,
             favorites: data.favoritedCount ?? data.likes ?? 0,
             playing: data.playing || 0,
             maxPlayers: data.maxPlayers || 0,
+            servers,
             name: data.name,
+            updated: data.updated,
+            lastSynced: new Date(),
           });
         }
       } catch {
