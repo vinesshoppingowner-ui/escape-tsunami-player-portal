@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, Search, Bot, Clock, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Search, Bot, Clock, CheckCircle2, XCircle, ShieldAlert, ExternalLink } from 'lucide-react';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { pushUnban } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
@@ -145,13 +145,23 @@ export default function ModerationsTab() {
             {filtered.length}{hasFilters ? ` of ${list.length}` : ''}
           </span>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setShowForm(true)}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
-        >
-          <Plus className="h-4 w-4 mr-1.5" /> New moderation
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.open('/moderation-popout', '_blank', 'noopener,noreferrer,width=1200,height=800')}
+            className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+          >
+            <ExternalLink className="h-4 w-4 mr-1.5" /> Open Pop Out
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowForm(true)}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
+          >
+            <Plus className="h-4 w-4 mr-1.5" /> New moderation
+          </Button>
+        </div>
       </div>
 
       {/* Search + filters */}
