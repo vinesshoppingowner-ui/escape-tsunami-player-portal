@@ -86,9 +86,19 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-body;
+    overflow-x: hidden;
   }
+}
+
+/* Hide the floating Winter Edition badge on phones so it doesn't overlap the hero */
+@media (max-width: 639px) {
+  [data-season="winter"] .winter-only.winter-badge { display: none; }
 }
 
 /* ===== Seasonal Themes ===== */

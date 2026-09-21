@@ -87,7 +87,7 @@ export default function ModerationTable({ items, onDelete }) {
                     size="icon"
                     variant="ghost"
                     onClick={() => onDelete(m)}
-                    className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

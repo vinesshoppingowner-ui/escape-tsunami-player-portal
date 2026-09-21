@@ -43,7 +43,7 @@ export default function Admin() {
         <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
 
         <Tabs defaultValue="appeals" className="mt-8">
-          <TabsList className="flex w-full overflow-x-auto bg-white/5 border border-white/10 h-11 rounded-xl">
+          <TabsList className="flex w-full justify-start overflow-x-auto bg-white/5 border border-white/10 h-11 rounded-xl">
             <TabsTrigger value="appeals" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             {isAdmin && <TabsTrigger value="users" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>}
