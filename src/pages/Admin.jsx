@@ -2,7 +2,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare } from 'lucide-react';
+import LiveChatTab from '@/components/admin/LiveChatTab';
 import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
 import UsersTab from '@/components/admin/UsersTab';
@@ -48,6 +49,7 @@ export default function Admin() {
             <TabsTrigger value="moderations" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             {isAdmin && <TabsTrigger value="users" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>}
             <TabsTrigger value="lookup" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
+            <TabsTrigger value="livechat" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
             {isAdmin && <TabsTrigger value="bans" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Ban className="h-3.5 w-3.5" /> Website Bans</TabsTrigger>}
             {isAdmin && <TabsTrigger value="logs" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><ScrollText className="h-3.5 w-3.5" /> Staff Logs</TabsTrigger>}
             {isAdmin && <TabsTrigger value="applications" className="shrink-0 gap-1.5 data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><FileText className="h-3.5 w-3.5" /> Applications</TabsTrigger>}
@@ -57,6 +59,7 @@ export default function Admin() {
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           {isAdmin && <TabsContent value="users"><UsersTab /></TabsContent>}
           <TabsContent value="lookup"><UserLookup /></TabsContent>
+          <TabsContent value="livechat"><LiveChatTab /></TabsContent>
           {isAdmin && <TabsContent value="bans"><WebsiteBansTab /></TabsContent>}
           {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
           {isAdmin && <TabsContent value="applications"><ApplicationsTab /></TabsContent>}
