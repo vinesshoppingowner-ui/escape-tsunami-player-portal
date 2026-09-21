@@ -8,8 +8,6 @@ import { screenMessage } from '@/lib/profanity';
 import useLiveChatLogs from '@/hooks/useLiveChatLogs';
 import { format } from 'date-fns';
 
-const GROUP_WINDOW_MS = 60 * 1000;
-
 export default function LiveChatTab() {
   const { messages, loading, lastSync } = useLiveChatLogs();
   const [search, setSearch] = useState('');
@@ -44,13 +42,6 @@ export default function LiveChatTab() {
       )
     : messages;
   if (flaggedOnly) visible = visible.filter((m) => screenMessage(m.message).severity);
-
-  const isGrouped = (msg, prev) => {
-    if (!prev || prev.roblox_username !== msg.roblox_username) return false;
-    const a = new Date(prev.timestamp || prev.created_date).getTime();
-    const b = new Date(msg.timestamp || msg.created_date).getTime();
-    return Number.isFinite(a) && Number.isFinite(b) && b - a < GROUP_WINDOW_MS;
-  };
 
   return (
     <>
@@ -140,11 +131,11 @@ export default function LiveChatTab() {
               </div>
             )}
 
-            {visible.map((m, i) => (
+            {visible.map((m) => (
               <LiveChatMessage
                 key={m.id}
                 msg={m}
-                grouped={isGrouped(m, visible[i - 1])}
+                grouped={false}
                 onOpenPlayer={(name) => setSelected({ username: name, evidence: m.message })}
               />
             ))}

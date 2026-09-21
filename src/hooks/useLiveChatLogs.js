@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-const POLL_MS = 3000;
+const POLL_MS = 1000;
 
 /**
  * Keeps a live list of ChatLog records: realtime subscription + a steady poll
