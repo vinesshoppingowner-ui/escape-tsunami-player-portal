@@ -7,6 +7,7 @@ import DashboardBanner from '@/components/admin/dashboard/DashboardBanner';
 import DashboardAnnouncements from '@/components/admin/dashboard/DashboardAnnouncements';
 import DashboardPortalControls from '@/components/admin/dashboard/DashboardPortalControls';
 import DashboardLockdown from '@/components/admin/dashboard/DashboardLockdown';
+import DashboardQuestGrants from '@/components/admin/dashboard/DashboardQuestGrants';
 
 const DEFAULT_SETTINGS = {
   maintenance_mode: false,
@@ -135,6 +136,7 @@ export default function DashboardTab() {
       <DashboardBanner settings={settings} update={update} />
       <DashboardAnnouncements user={user} onAnnouncementsChange={load} />
       <DashboardPortalControls settings={settings} update={update} />
+      <DashboardQuestGrants />
     </div>
   );
 }
