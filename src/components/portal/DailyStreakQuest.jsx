@@ -112,7 +112,7 @@ export default function DailyStreakQuest({ robloxUsername }) {
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Log in and claim your streak daily for 7 days to unlock the in-game <span className="text-amber-300 font-medium">Devoted</span> tag.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Log in and claim your streak daily for 7 days to unlock the <span className="text-amber-300 font-medium">Devoted</span> Discord role.</p>
           </div>
         </div>
         <div className="text-right shrink-0">
