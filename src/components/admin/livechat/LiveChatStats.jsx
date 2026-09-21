@@ -1,17 +1,18 @@
-import { MessageSquare, Users, Server, Clock } from 'lucide-react';
+import { MessageSquare, Users, AlertTriangle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { screenMessage } from '@/lib/profanity';
 
 export default function LiveChatStats({ messages }) {
   const players = new Set(messages.map((m) => m.roblox_username).filter(Boolean)).size;
-  const servers = new Set(messages.map((m) => m.server_name).filter(Boolean)).size;
+  const flagged = messages.filter((m) => screenMessage(m.message).severity).length;
   const last = messages[messages.length - 1];
   const lastTime = last?.timestamp || last?.created_date;
 
   const items = [
     { icon: MessageSquare, label: 'Messages', value: messages.length },
     { icon: Users, label: 'Players', value: players },
-    { icon: Server, label: 'Servers', value: servers },
-    { icon: Clock, label: 'Last message', value: lastTime ? format(new Date(lastTime), 'HH:mm:ss') : '—' },
+    { icon: AlertTriangle, label: 'Flagged', value: flagged },
+    { icon: Clock, label: 'Last message', value: lastTime ? format(new Date(lastTime), 'h:mm:ss a') : '—' },
   ];
 
   return (

@@ -1,14 +1,11 @@
 import { format } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
+import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import { screenMessage, SEVERITY_STYLES } from '@/lib/profanity';
 
 const COLORS = [
   'text-cyan-300', 'text-emerald-300', 'text-amber-300', 'text-violet-300',
   'text-rose-300', 'text-sky-300', 'text-lime-300', 'text-fuchsia-300',
-];
-
-const RING = [
-  'from-cyan-500 to-blue-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600',
-  'from-violet-500 to-purple-600', 'from-rose-500 to-pink-600', 'from-sky-500 to-indigo-600',
-  'from-lime-500 to-green-600', 'from-fuchsia-500 to-purple-600',
 ];
 
 function hash(name = '') {
@@ -17,33 +14,47 @@ function hash(name = '') {
   return h;
 }
 
-export default function LiveChatMessage({ msg, grouped }) {
+export default function LiveChatMessage({ msg, grouped, onOpenPlayer }) {
   const time = msg.timestamp || msg.created_date;
   const idx = hash(msg.roblox_username) % COLORS.length;
-  const initial = (msg.roblox_username || '?').charAt(0).toUpperCase();
   const server = msg.server_name || '';
   const shortServer = server.length > 8 ? `${server.slice(0, 4)}…${server.slice(-4)}` : server;
+  const { severity, matches } = screenMessage(msg.message);
+  const flag = severity ? SEVERITY_STYLES[severity] : null;
 
   return (
-    <div className={`group flex items-start gap-3 px-2.5 rounded-lg hover:bg-white/[0.05] transition-colors ${grouped ? 'py-0.5' : 'py-1.5 mt-1.5'}`}>
-      <div className="w-8 shrink-0 flex justify-center pt-0.5">
+    <div
+      className={`group flex items-start gap-3 pl-2 pr-2.5 rounded-lg hover:bg-white/[0.05] transition-colors ${
+        grouped ? 'py-0.5' : 'py-1.5 mt-1.5'
+      } ${flag ? flag.row : ''}`}
+    >
+      <button
+        onClick={() => onOpenPlayer?.(msg.roblox_username)}
+        className="w-8 shrink-0 flex justify-center pt-0.5"
+        title={`View ${msg.roblox_username}`}
+      >
         {grouped ? (
           <span className="text-[10px] text-slate-600 opacity-0 group-hover:opacity-100 tabular-nums font-mono">
-            {time ? format(new Date(time), 'HH:mm') : ''}
+            {time ? format(new Date(time), 'h:mm') : ''}
           </span>
         ) : (
-          <span className={`h-8 w-8 rounded-full bg-gradient-to-br ${RING[idx]} flex items-center justify-center text-[12px] font-bold text-white shadow-sm`}>
-            {initial}
+          <span className="hover:ring-2 hover:ring-cyan-400/50 rounded-full transition-all">
+            <RobloxAvatar username={msg.roblox_username} size={32} />
           </span>
         )}
-      </div>
+      </button>
 
       <div className="min-w-0 flex-1">
         {!grouped && (
           <div className="flex items-center gap-2 flex-wrap leading-none mb-1">
-            <span className={`font-semibold text-[13px] ${COLORS[idx]}`}>{msg.roblox_username}</span>
+            <button
+              onClick={() => onOpenPlayer?.(msg.roblox_username)}
+              className={`font-semibold text-[13px] hover:underline ${COLORS[idx]}`}
+            >
+              {msg.roblox_username}
+            </button>
             <span className="text-[11px] text-slate-500 tabular-nums font-mono">
-              {time ? format(new Date(time), 'HH:mm:ss') : '--:--:--'}
+              {time ? format(new Date(time), 'h:mm:ss a') : '--:--:--'}
             </span>
             {server && (
               <span
@@ -53,9 +64,24 @@ export default function LiveChatMessage({ msg, grouped }) {
                 {shortServer}
               </span>
             )}
+            {flag && (
+              <span
+                title={`Flagged words: ${matches.join(', ')}`}
+                className={`inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border ${flag.badge}`}
+              >
+                <AlertTriangle className="h-2.5 w-2.5" /> {flag.label}
+              </span>
+            )}
           </div>
         )}
-        <p className="text-[13.5px] text-slate-200 break-words whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+        <p className="text-[13.5px] text-slate-200 break-words whitespace-pre-wrap leading-relaxed">
+          {msg.message}
+          {grouped && flag && (
+            <span className={`ml-2 inline-flex items-center gap-1 align-middle text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded border ${flag.badge}`}>
+              <AlertTriangle className="h-2.5 w-2.5" /> {flag.label}
+            </span>
+          )}
+        </p>
       </div>
     </div>
   );

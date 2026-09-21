@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
-import { MessageSquare, Search, Pause, Play, X, ArrowDown } from 'lucide-react';
+import { MessageSquare, Search, Pause, Play, X, ArrowDown, AlertTriangle } from 'lucide-react';
 import LiveChatMessage from '@/components/admin/livechat/LiveChatMessage';
 import LiveChatStats from '@/components/admin/livechat/LiveChatStats';
+import PlayerChatModal from '@/components/admin/livechat/PlayerChatModal';
+import { screenMessage } from '@/lib/profanity';
 
 const GROUP_WINDOW_MS = 60 * 1000;
 
@@ -13,6 +15,8 @@ export default function LiveChatTab() {
   const [search, setSearch] = useState('');
   const [paused, setPaused] = useState(false);
   const [unseen, setUnseen] = useState(0);
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const [selected, setSelected] = useState(null);
   const bottomRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -43,7 +47,7 @@ export default function LiveChatTab() {
   };
 
   const q = search.trim().toLowerCase();
-  const visible = q
+  let visible = q
     ? messages.filter(
         (m) =>
           m.roblox_username?.toLowerCase().includes(q) ||
@@ -51,6 +55,7 @@ export default function LiveChatTab() {
           m.server_name?.toLowerCase().includes(q)
       )
     : messages;
+  if (flaggedOnly) visible = visible.filter((m) => screenMessage(m.message).severity);
 
   const isGrouped = (msg, prev) => {
     if (!prev || prev.roblox_username !== msg.roblox_username) return false;
@@ -91,6 +96,16 @@ export default function LiveChatTab() {
               </button>
             )}
           </div>
+          <button
+            onClick={() => setFlaggedOnly((f) => !f)}
+            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-colors ${
+              flaggedOnly
+                ? 'bg-rose-500/15 border-rose-500/30 text-rose-200 hover:bg-rose-500/25'
+                : 'bg-white/5 border-white/10 text-slate-200 hover:bg-white/10'
+            }`}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" /> Flagged
+          </button>
           <button
             onClick={() => setPaused((p) => !p)}
             className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-colors ${
@@ -133,7 +148,12 @@ export default function LiveChatTab() {
             )}
 
             {visible.map((m, i) => (
-              <LiveChatMessage key={m.id} msg={m} grouped={isGrouped(m, visible[i - 1])} />
+              <LiveChatMessage
+                key={m.id}
+                msg={m}
+                grouped={isGrouped(m, visible[i - 1])}
+                onOpenPlayer={(name) => setSelected({ username: name, evidence: m.message })}
+              />
             ))}
             <div ref={bottomRef} />
           </div>
@@ -149,6 +169,15 @@ export default function LiveChatTab() {
           )}
         </div>
       </div>
+
+      {selected && (
+        <PlayerChatModal
+          open={!!selected}
+          username={selected.username}
+          evidence={selected.evidence}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </>
   );
 }
