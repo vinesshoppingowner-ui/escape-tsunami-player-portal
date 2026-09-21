@@ -325,3 +325,79 @@
 [data-season="winter"] .snowflake-spin {
   animation: snowflake-spin 8s linear infinite;
 }
+
+/* ===== Liquid Glass Buttons ===== */
+
+/* Primary cyan-blue gradient CTA buttons — liquid glass */
+.bg-gradient-to-r.from-cyan-500.to-blue-600,
+.bg-gradient-to-r.from-cyan-400.to-blue-500 {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.72), rgba(37, 99, 235, 0.72)) !important;
+  backdrop-filter: blur(10px) saturate(1.6);
+  -webkit-backdrop-filter: blur(10px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    0 0 20px rgba(34, 211, 238, 0.28),
+    0 4px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease, background 0.3s ease !important;
+}
+
+.bg-gradient-to-r.from-cyan-500.to-blue-600:hover,
+.bg-gradient-to-r.from-cyan-400.to-blue-500:hover {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.85), rgba(37, 99, 235, 0.85)) !important;
+  box-shadow:
+    0 0 38px rgba(34, 211, 238, 0.48),
+    0 8px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+/* Amber-orange gradient buttons — liquid glass */
+.bg-gradient-to-r.from-amber-500.to-orange-600,
+.bg-gradient-to-r.from-amber-400.to-orange-500 {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.72), rgba(234, 88, 12, 0.72)) !important;
+  backdrop-filter: blur(10px) saturate(1.6);
+  -webkit-backdrop-filter: blur(10px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    0 0 20px rgba(245, 158, 11, 0.28),
+    0 4px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+.bg-gradient-to-r.from-amber-500.to-orange-600:hover,
+.bg-gradient-to-r.from-amber-400.to-orange-500:hover {
+  box-shadow:
+    0 0 38px rgba(245, 158, 11, 0.48),
+    0 8px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+/* Frosted glass outline / secondary buttons */
+button.bg-white\/5,
+a.bg-white\/5 {
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 12px rgba(255, 255, 255, 0.04) !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+button.bg-white\/5:hover,
+a.bg-white\/5:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 22px rgba(34, 211, 238, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+/* Reusable liquid glass utility */
+.liquid-glass {
+  backdrop-filter: blur(12px) saturate(1.6);
+  -webkit-backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.05);
+}
