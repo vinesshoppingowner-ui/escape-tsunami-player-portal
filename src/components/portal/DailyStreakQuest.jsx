@@ -168,7 +168,7 @@ export default function DailyStreakQuest({ robloxUsername }) {
       <div className="mt-4 flex items-center justify-between gap-3">
         {tagUnlocked ? (
           <div className="flex items-center gap-2 text-sm text-emerald-300">
-            <Gift className="h-4 w-4" /> You've unlocked the Devoted tag! It will be awarded in-game soon.
+            <Gift className="h-4 w-4" /> You've unlocked the Devoted role! It will be awarded in Discord soon.
           </div>
         ) : alreadyClaimedToday ? (
           <div className="flex items-center gap-2 text-sm text-slate-400">

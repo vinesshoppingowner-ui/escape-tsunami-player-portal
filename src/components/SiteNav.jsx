@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText } from 'lucide-react';
+import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -128,26 +129,36 @@ export default function SiteNav() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
-          {desktopLinks.map((l) => {
-            const active = location.pathname === l.to;
-            return (
-              <Link
-                key={l.to}
-                to={l.to}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 inline-flex items-center gap-1.5 ${
-                  active ? 'text-white border-cyan-400' : 'text-slate-300 hover:text-white border-transparent'
-                }`}
-              >
-                {l.icon && <l.icon className="h-3.5 w-3.5" />}
-                {l.label}
-                {l.showDot && (
-                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-0.5" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <Menu className="h-4 w-4" />
+              Navigate
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52 bg-slate-900/95 backdrop-blur-xl border-white/10 text-white">
+            {desktopLinks.map((l) => {
+              const active = location.pathname === l.to;
+              return (
+                <DropdownMenuItem key={l.to} asChild>
+                  <Link
+                    to={l.to}
+                    className={`flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md ${
+                      active ? 'text-cyan-300 bg-cyan-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {l.icon && <l.icon className="h-4 w-4" />}
+                    {l.label}
+                    {l.showDot && (
+                      <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
+                    )}
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="hidden md:flex items-center gap-2">
           <Link to="/portal">
