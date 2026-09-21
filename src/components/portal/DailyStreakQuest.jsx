@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Flame, Trophy, Loader2, Check, Gift, CalendarCheck } from 'lucide-react';
+import { Flame, Trophy, Loader2, Check, Gift, CalendarCheck, MessageCircle } from 'lucide-react';
+import DiscordConnect from './DiscordConnect';
 
 const STREAK_GOAL = 7;
 
@@ -60,7 +61,7 @@ export default function DailyStreakQuest({ robloxUsername }) {
   const alreadyClaimedToday = lastClaim === todayStr();
   const streakWillReset = !alreadyClaimedToday && gap > 1;
   const effectiveStreak = streakWillReset ? 0 : streak.current_streak;
-  const canClaim = !alreadyClaimedToday;
+  const canClaim = !alreadyClaimedToday && !!streak.discord_id;
 
   const claim = async () => {
     if (!canClaim || claiming) return;
@@ -146,6 +147,22 @@ export default function DailyStreakQuest({ robloxUsername }) {
           );
         })}
       </div>
+
+      {/* Discord gate */}
+      {!streak.discord_id && !tagUnlocked && (
+        <div className="mt-4 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-[#5865F2]/20 flex items-center justify-center shrink-0">
+              <MessageCircle className="h-4 w-4 text-[#5865F2]" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-white">Connect Discord to start</div>
+              <div className="text-xs text-slate-400">Link your Discord to track the quest and earn the Devoted role.</div>
+            </div>
+          </div>
+          <DiscordConnect streak={streak} onLinked={() => loadStreak()} />
+        </div>
+      )}
 
       {/* Status / claim button */}
       <div className="mt-4 flex items-center justify-between gap-3">
