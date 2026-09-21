@@ -1,3 +1,5 @@
+import { base44 } from '@/api/base44Client';
+
 // Replace with your Render server URL after deploying
 const RENDER_SERVER_URL = "https://escape-tsunami-bans.onrender.com";
 
@@ -44,15 +46,27 @@ export async function syncAllBans(moderations) {
 }
 
 export async function fetchChatLogs(username) {
-  const res = await fetch(`${RENDER_SERVER_URL}/api/logs/chat/${encodeURIComponent(username)}`);
-  if (!res.ok) throw new Error(`Failed to fetch chat logs: ${res.status}`);
-  const data = await res.json();
-  return data.logs || [];
+  const logs = await base44.entities.ChatLog.filter(
+    { roblox_username: username },
+    '-timestamp',
+    200
+  );
+  return (logs || []).map((log) => ({
+    time: log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : '',
+    msg: log.message,
+    timestamp: log.timestamp,
+  }));
 }
 
 export async function fetchExploitLogs(username) {
-  const res = await fetch(`${RENDER_SERVER_URL}/api/logs/exploits/${encodeURIComponent(username)}`);
-  if (!res.ok) throw new Error(`Failed to fetch exploit logs: ${res.status}`);
-  const data = await res.json();
-  return data.logs || [];
+  const logs = await base44.entities.ExploitLog.filter(
+    { roblox_username: username },
+    '-timestamp',
+    100
+  );
+  return (logs || []).map((log) => ({
+    exploitType: log.exploit_type,
+    details: log.details,
+    timestamp: log.timestamp,
+  }));
 }
