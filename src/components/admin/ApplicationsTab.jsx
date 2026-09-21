@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft } from 'lucide-react';
+import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponseViewer from './applications/ResponseViewer';
@@ -176,6 +176,7 @@ export default function ApplicationsTab() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/apply/${app.id}`); toast({ title: 'Application link copied' }); }} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Copy application link"><Link2 className="h-4 w-4" /></button>
                 <button onClick={() => openResponses(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="View responses"><Users className="h-4 w-4" /></button>
                 <button onClick={() => openEditor(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Edit"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => setConfirmDelete(app)} className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400" title="Delete"><Trash2 className="h-4 w-4" /></button>

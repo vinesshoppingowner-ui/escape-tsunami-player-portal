@@ -83,7 +83,7 @@ export default function Applications() {
               {applications.map((app) => {
                 const applied = hasApplied(app.id);
                 return (
-                  <Link key={app.id} to={`/applications/${app.id}`} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 p-4 transition-colors">
+                  <Link key={app.id} to={`/apply/${app.id}`} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 p-4 transition-colors">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{app.icon}</span>
                       <div className="flex-1 min-w-0">

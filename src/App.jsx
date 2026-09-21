@@ -15,7 +15,7 @@ import Admin from './pages/Admin';
 import Analytics from './pages/Analytics';
 import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
-import ApplicationSubmit from './pages/ApplicationSubmit';
+import Apply from './pages/Apply';
 import ModerationPopOut from './pages/ModerationPopOut';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -66,7 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
-          <Route path="/applications/:id" element={<ApplicationSubmit />} />
+          <Route path="/apply/:id" element={<Apply />} />
           <Route path="/moderation-popout" element={<ModerationPopOut />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
