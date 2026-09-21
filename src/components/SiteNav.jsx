@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Waves, LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
+import SiteBrand from '@/components/SiteBrand';
+import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -121,15 +122,7 @@ export default function SiteNav() {
         </div>
       )}
       <div className={`max-w-6xl mx-auto px-5 h-16 flex items-center ${isDesktopLayout ? 'gap-6' : 'justify-between'}`}>
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/30">
-            <Waves className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </span>
-          <span className="font-display font-semibold text-white tracking-tight text-[15px] leading-tight">
-            Escape Tsunami
-            <span className="block text-[10px] font-normal text-cyan-300/80 tracking-[0.18em] uppercase">For Developers</span>
-          </span>
-        </Link>
+        <SiteBrand />
 
         <nav className="hidden md:flex items-center gap-1">
           {directLinks.map((l) => {
