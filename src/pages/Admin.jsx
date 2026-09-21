@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -15,6 +17,7 @@ import ApplicationsTab from '@/components/admin/ApplicationsTab';
 
 export default function Admin() {
   const { user } = useAuth();
+  const [tab, setTab] = useState('appeals');
 
   if (!isOwner(user) && user?.role !== 'staff') {
     return (
@@ -33,6 +36,16 @@ export default function Admin() {
 
   const isAdmin = isOwner(user);
 
+  const moreItems = isAdmin
+    ? [
+        { value: 'users', label: 'Users', icon: Users },
+        { value: 'bans', label: 'Website Bans', icon: Ban },
+        { value: 'logs', label: 'Staff Logs', icon: ScrollText },
+        { value: 'applications', label: 'Applications', icon: FileText },
+        { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      ]
+    : [];
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteNav />
@@ -43,17 +56,13 @@ export default function Admin() {
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation console</h1>
         <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
 
-        <Tabs defaultValue="appeals" className="mt-8">
-          <TabsList className="flex flex-wrap w-full justify-start gap-1.5 p-1.5 bg-white/5 border border-white/10 h-auto rounded-xl">
+        <Tabs value={tab} onValueChange={setTab} className="mt-8">
+          <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/5 border border-white/10 h-auto rounded-xl">
             <TabsTrigger value="appeals" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
-            {isAdmin && <TabsTrigger value="users" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>}
             <TabsTrigger value="lookup" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
             <TabsTrigger value="livechat" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
-            {isAdmin && <TabsTrigger value="bans" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Ban className="h-3.5 w-3.5" /> Website Bans</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="logs" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><ScrollText className="h-3.5 w-3.5" /> Staff Logs</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="applications" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><FileText className="h-3.5 w-3.5" /> Applications</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="dashboard" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><LayoutDashboard className="h-3.5 w-3.5" /> Dashboard</TabsTrigger>}
+            <AdminMoreMenu items={moreItems} value={tab} onSelect={setTab} />
           </TabsList>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
