@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink, BookOpen, Trophy, ArrowRight, Zap, Gavel, LifeBuoy, Lock } from 'lucide-react';
+import { Loader2, ShieldCheck, LogOut, RefreshCw, ExternalLink, BookOpen, Trophy, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
@@ -19,6 +19,7 @@ import QuickLinks from '@/components/portal/QuickLinks';
 import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
+import SectionHeading from '@/components/portal/SectionHeading';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
 
@@ -145,15 +146,14 @@ export default function Portal() {
 
       <main className="max-w-4xl mx-auto px-5 pt-28 pb-20">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-4">
-            <ShieldCheck className="h-3.5 w-3.5" /> Member Portal
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Welcome back 👋
+        <div>
+          <h1 className="font-display text-3xl sm:text-[2.6rem] font-extrabold tracking-[-0.03em] leading-[1.05]">
+            Your record
           </h1>
-          <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
-        </motion.div>
+          <p className="mt-2 text-slate-400 max-w-lg">
+            Everything staff has logged against your account, and where your appeals stand.
+          </p>
+        </div>
 
         {/* Guest sign-in banner */}
         {!user && (
@@ -161,19 +161,16 @@ export default function Portal() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="mt-6 rounded-2xl bg-gradient-to-br from-cyan-500/[0.08] to-blue-600/[0.08] border border-cyan-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-lg shadow-cyan-950/20"
+            className="mt-6 rounded-lg bg-white/[0.03] border-l-2 border-l-cyan-500 border-y border-r border-white/10 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
-              <Sparkles className="h-5 w-5 text-cyan-300" />
-            </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white text-sm">Browsing as guest</h3>
+              <h3 className="font-semibold text-white text-sm">You're not signed in</h3>
               <p className="mt-1 text-sm text-slate-400 leading-relaxed">
-                You can verify your Roblox account and view your moderations without signing in. Sign in to save your profile, get notifications when your appeals are answered, and unlock more.
+                You can still verify your Roblox name and read your record. Signing in saves it and tells you when an appeal gets answered.
               </p>
             </div>
             <Link to="/login" className="shrink-0">
-              <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
+              <Button size="sm" className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold border-0">
                 Sign in <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
@@ -212,19 +209,11 @@ export default function Portal() {
             )}
 
             {/* Stats — clickable */}
-            <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="mt-5 flex flex-wrap items-baseline gap-x-10 gap-y-4 border-t border-white/10 pt-4">
               {stats.map((s) => (
-                <button
-                  key={s.label}
-                  onClick={s.onClick}
-                  className={`rounded-2xl border p-3 sm:p-4 text-left transition-all cursor-pointer ${
-                    s.healthy
-                      ? 'bg-emerald-500/[0.06] border-emerald-500/20 hover:bg-emerald-500/[0.1] hover:border-emerald-500/30'
-                      : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-cyan-500/30'
-                  }`}
-                >
-                  <div className={`text-xl sm:text-2xl font-bold ${s.healthy ? 'text-emerald-300' : 'text-white'}`}>{s.value}</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{s.label}</div>
+                <button key={s.label} onClick={s.onClick} className="text-left group">
+                  <div className={`font-display text-2xl font-bold tabular-nums ${s.healthy ? 'text-emerald-300' : 'text-white'}`}>{s.value}</div>
+                  <div className="text-[13px] text-slate-500 mt-0.5 group-hover:text-slate-300 transition-colors">{s.label}</div>
                 </button>
               ))}
             </div>
@@ -258,13 +247,7 @@ export default function Portal() {
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-cyan-300">
-                <Zap className="h-3.5 w-3.5" /> Quick Actions
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Shortcuts" />
 
             {/* Quick Links */}
             <QuickLinks />
@@ -280,13 +263,7 @@ export default function Portal() {
             )}
 
             {/* Your Moderations */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-rose-300">
-                <ShieldCheck className="h-3.5 w-3.5" /> Your Moderations
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Moderations" note={moderations.length ? `${moderations.length} on file` : null} />
 
             <div ref={moderationsRef} className="scroll-mt-24">
               {loading ? (
@@ -324,13 +301,7 @@ export default function Portal() {
             </div>
 
             {/* Appeals & Support */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-amber-300">
-                <LifeBuoy className="h-3.5 w-3.5" /> Appeals & Support
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Appeals & support" />
 
             <GoodStandingTips />
 
@@ -341,13 +312,7 @@ export default function Portal() {
             </div>
 
             {/* Account Security */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-violet-300">
-                <Lock className="h-3.5 w-3.5" /> Account Security
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Account security" />
 
             <SecurityCard user={user} robloxUsername={savedUsername} />
           </>
