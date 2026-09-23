@@ -1,0 +1,42 @@
+import { base44 } from '@/api/base44Client';
+import { logStaffAction } from '@/lib/staffLog';
+import { pushUnban } from '@/lib/renderBridge';
+import { emailPlayer } from '@/lib/userEmails';
+import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
+
+// Saves an appeal decision and runs every side effect (unban, notification, log, email, webhook).
+export async function applyAppealDecision({
+  appeal,
+  moderation,
+  user,
+  status,
+  staff_response = appeal.staff_response || '',
+  internal_notes = appeal.internal_notes || '',
+  can_reappeal = appeal.can_reappeal !== false,
+}) {
+  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal });
+  if (status === 'Approved' && moderation && moderation.status !== 'Repealed') {
+    await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
+    await pushUnban(appeal.roblox_username);
+  }
+  await base44.entities.Notification.create({
+    roblox_username: appeal.roblox_username,
+    title: `Appeal ${status.toLowerCase()}`,
+    body: staff_response || `Your appeal for ${moderation?.moderation_type || 'your moderation'} has been ${status.toLowerCase()}.`,
+    type: 'appeal_decision',
+    read: false,
+  });
+  await logStaffAction(user, 'appeal_decision', appeal.roblox_username, `Set appeal to ${status}${moderation ? ` (${moderation.moderation_type})` : ''}`);
+  await emailPlayer({
+    robloxUsername: appeal.roblox_username,
+    subject: `Your appeal has been ${status.toLowerCase()}`,
+    body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${moderation?.moderation_type || 'your moderation'}" has been ${status.toLowerCase()}.\n\n${staff_response ? staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+  });
+  await sendAppealDecisionWebhook({
+    username: appeal.roblox_username,
+    moderationType: moderation?.moderation_type,
+    decision: status,
+    staffName: user?.full_name || user?.email || 'Unknown staff',
+    appealId: appeal.id,
+  });
+}

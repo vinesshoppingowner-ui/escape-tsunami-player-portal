@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { logStaffAction } from '@/lib/staffLog';
+import { applyAppealDecision } from '@/lib/appealDecision';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, X, MessageSquare, Zap, Clock, CheckCircle2, XCircle } from 'lucide-react';
-import { pushUnban, fetchChatLogs, fetchExploitLogs } from '@/lib/renderBridge';
-import { emailPlayer } from '@/lib/userEmails';
-import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
+import { fetchChatLogs, fetchExploitLogs } from '@/lib/renderBridge';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import AppealAISummary from '@/components/admin/AppealAISummary';
 import { RESPONSE_TEMPLATES, fillTemplate, buildTemplateVars } from '@/lib/responseTemplates';
@@ -72,36 +69,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
   const save = async () => {
     setSaving(true);
     try {
-      await base44.entities.Appeal.update(appeal.id, {
-        status: draft.status,
-        staff_response: draft.staff_response,
-        internal_notes: draft.internal_notes,
-        can_reappeal: draft.can_reappeal,
-      });
-      if (draft.status === 'Approved' && moderation && moderation.status !== 'Repealed') {
-        await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
-        await pushUnban(appeal.roblox_username);
-      }
-      await base44.entities.Notification.create({
-        roblox_username: appeal.roblox_username,
-        title: `Appeal ${draft.status.toLowerCase()}`,
-        body: draft.staff_response || `Your appeal for ${moderation?.moderation_type || 'your moderation'} has been ${draft.status.toLowerCase()}.`,
-        type: 'appeal_decision',
-        read: false,
-      });
-      await logStaffAction(user, 'appeal_decision', appeal.roblox_username, `Set appeal to ${draft.status}${moderation ? ` (${moderation.moderation_type})` : ''}`);
-      await emailPlayer({
-        robloxUsername: appeal.roblox_username,
-        subject: `Your appeal has been ${draft.status.toLowerCase()}`,
-        body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${moderation?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
-      });
-      await sendAppealDecisionWebhook({
-        username: appeal.roblox_username,
-        moderationType: moderation?.moderation_type,
-        decision: draft.status,
-        staffName: user?.full_name || user?.email || 'Unknown staff',
-        appealId: appeal.id,
-      });
+      await applyAppealDecision({ appeal, moderation, user, ...draft });
       onSaved?.();
       onClose();
     } finally {
