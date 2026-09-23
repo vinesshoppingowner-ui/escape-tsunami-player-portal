@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldAlert, Calendar, Clock, UserCog } from 'lucide-react';
+import { Loader2, ShieldAlert, Calendar, Clock, UserCog, X } from 'lucide-react';
 
 const MIN_CHARS = 20;
 const MAX_CHARS = 500;
@@ -63,8 +63,13 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-lg p-0 flex flex-col gap-0 max-h-[90vh] overflow-y-auto">
         <div className="p-6 pb-4 border-b border-white/10">
-          <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
-            <ShieldAlert className="h-6 w-6 text-rose-400" />
+          <div className="flex items-start justify-between gap-4">
+            <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+              <ShieldAlert className="h-6 w-6 text-rose-400" />
+            </div>
+            <button onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 transition-colors">
+              <X className="h-5 w-5" />
+            </button>
           </div>
           <DialogTitle className="text-xl font-semibold mt-4">Appeal your moderation</DialogTitle>
           <DialogDescription className="text-slate-400 mt-1.5 leading-relaxed">
