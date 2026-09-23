@@ -10,6 +10,7 @@ import AppealsFilters from '@/components/admin/appeals/AppealsFilters';
 import AppealsBulkBar from '@/components/admin/appeals/AppealsBulkBar';
 import { PRIORITY_RANK, priorityFor } from '@/components/admin/appeals/appealMeta';
 import { applyAppealDecision } from '@/lib/appealDecision';
+import { isOwner } from '@/lib/isOwner';
 
 export default function AppealsTab() {
   const { user } = useAuth();
@@ -17,7 +18,9 @@ export default function AppealsTab() {
   const [appeals, setAppeals] = useState([]);
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const isAdmin = isOwner(user);
+  const lockedForMe = (a) => !!a.admin_locked && !isAdmin;
   const [filters, setFilters] = useState({ search: '', status: 'all', priority: 'all', type: 'all' });
   const [checked, setChecked] = useState(new Set());
   const [busyIds, setBusyIds] = useState(new Set());
@@ -35,6 +38,7 @@ export default function AppealsTab() {
   useEffect(() => { load(); }, []);
 
   const modFor = (id) => moderations.find((m) => m.id === id);
+  const selected = appeals.find((a) => a.id === selectedId) || null;
 
   const q = filters.search.trim().toLowerCase();
   const visible = appeals
@@ -68,7 +72,7 @@ export default function AppealsTab() {
   };
 
   const bulkAction = async (status) => {
-    const targets = appeals.filter((a) => checked.has(a.id) && a.status !== status);
+    const targets = appeals.filter((a) => checked.has(a.id) && a.status !== status && !lockedForMe(a));
     if (!targets.length) return;
     if (!window.confirm(`Set ${targets.length} appeal(s) to "${status}"? Players will be notified.`)) return;
     setBulkRunning(true);
@@ -127,7 +131,8 @@ export default function AppealsTab() {
           moderation={modFor(a.moderation_id)}
           checked={checked.has(a.id)}
           onToggle={() => toggle(a.id)}
-          onOpen={() => setSelected(a)}
+          onOpen={() => setSelectedId(a.id)}
+          locked={lockedForMe(a)}
           busy={busyIds.has(a.id) || bulkRunning}
           onAction={(status) => quickAction(a, status)}
         />
@@ -135,7 +140,7 @@ export default function AppealsTab() {
 
       <AppealReviewModal
         open={!!selected}
-        onClose={() => setSelected(null)}
+        onClose={() => setSelectedId(null)}
         appeal={selected}
         moderation={selected ? modFor(selected.moderation_id) : null}
         onSaved={load}

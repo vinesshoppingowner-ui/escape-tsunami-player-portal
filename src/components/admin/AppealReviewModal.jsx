@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
 import { applyAppealDecision } from '@/lib/appealDecision';
+import { isOwner } from '@/lib/isOwner';
 import ReviewQuickDecision from '@/components/admin/appeals/ReviewQuickDecision';
 import ReviewModerationAdjust from '@/components/admin/appeals/ReviewModerationAdjust';
 import ReviewAppealManage from '@/components/admin/appeals/ReviewAppealManage';
@@ -46,7 +47,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
         can_reappeal: appeal.can_reappeal !== false,
       });
     }
-  }, [appeal]);
+  }, [appeal?.id]);
 
   useEffect(() => {
     if (!open || !appeal?.roblox_username) return;
@@ -66,6 +67,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
 
   if (!appeal || !draft) return null;
 
+  const isAdmin = isOwner(user);
+  const lockedForMe = !!appeal.admin_locked && !isAdmin;
   const st = STATUS_STYLES[appeal.status] || STATUS_STYLES['Pending'];
   const StatusIcon = st.icon;
 
@@ -113,7 +116,16 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
         </div>
 
         <div className="p-6 space-y-5">
-          <ReviewQuickDecision current={appeal.status} onDecide={decide} />
+          {appeal.admin_locked && (
+            <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-3 text-sm text-violet-200 flex items-center gap-2">
+              <Lock className="h-4 w-4 shrink-0" />
+              {lockedForMe
+                ? `Locked by ${appeal.locked_by || 'an admin'} — only admins can act on this appeal.`
+                : `Locked to admins only${appeal.locked_by ? ` by ${appeal.locked_by}` : ''}. Staff can view but not act.`}
+            </div>
+          )}
+
+          {!lockedForMe && <ReviewQuickDecision current={appeal.status} onDecide={decide} />}
 
           {/* Moderation context */}
           {moderation && (
@@ -132,7 +144,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           )}
 
-          {moderation && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
+          {moderation && !lockedForMe && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
 
           {/* Appeal answers */}
           <div className="space-y-3">
@@ -286,12 +298,17 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           </div>
 
-          <ReviewAppealManage
-            appeal={appeal}
-            canReappeal={draft.can_reappeal}
-            onReappealChange={(v) => setDraft({ ...draft, can_reappeal: v })}
-            onDeleted={() => { onSaved?.(); onClose(); }}
-          />
+          {!lockedForMe && (
+            <ReviewAppealManage
+              appeal={appeal}
+              canReappeal={draft.can_reappeal}
+              onReappealChange={(v) => setDraft({ ...draft, can_reappeal: v })}
+              onDeleted={() => { onSaved?.(); onClose(); }}
+              isAdmin={isAdmin}
+              user={user}
+              onChanged={() => onSaved?.()}
+            />
+          )}
 
           {/* Save */}
           <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
@@ -300,7 +317,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </Button>
             <Button
               onClick={save}
-              disabled={saving}
+              disabled={saving || lockedForMe}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
             >
               {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Saving</> : <><Gavel className="h-4 w-4 mr-1.5" /> Save decision</>}

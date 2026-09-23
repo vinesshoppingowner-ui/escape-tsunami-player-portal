@@ -1,8 +1,9 @@
 import { Checkbox } from '@/components/ui/checkbox';
+import { Lock } from 'lucide-react';
 import AppealQuickActions from '@/components/admin/appeals/AppealQuickActions';
 import { STATUS_STYLES, priorityFor } from '@/components/admin/appeals/appealMeta';
 
-export default function AppealRow({ appeal, moderation, checked, onToggle, onOpen, busy, onAction }) {
+export default function AppealRow({ appeal, moderation, checked, onToggle, onOpen, busy, onAction, locked }) {
   const priority = priorityFor(moderation);
   const st = STATUS_STYLES[appeal.status] || STATUS_STYLES['Pending'];
   return (
@@ -21,6 +22,7 @@ export default function AppealRow({ appeal, moderation, checked, onToggle, onOpe
             <span className="text-cyan-300 font-medium">{appeal.roblox_username}</span>
             <span className="text-slate-500 text-sm">· {moderation?.moderation_type || 'Moderation'}</span>
             <span className={`text-xs px-2.5 py-0.5 rounded-full border ${st}`}>{appeal.status}</span>
+            {appeal.admin_locked && <Lock className="h-3.5 w-3.5 text-violet-300" />}
           </div>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
             <span className="text-xs text-slate-500">{new Date(appeal.created_date).toLocaleString()}</span>
@@ -30,7 +32,13 @@ export default function AppealRow({ appeal, moderation, checked, onToggle, onOpe
           {moderation?.reason && <p className="mt-1 text-xs text-slate-500 truncate">Moderation reason: {moderation.reason}</p>}
         </div>
         <div className="shrink-0">
-          <AppealQuickActions current={appeal.status} busy={busy} onAction={onAction} />
+          {locked ? (
+            <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg border border-violet-500/30 bg-violet-500/10 text-violet-300">
+              <Lock className="h-3 w-3" /> Admin only
+            </span>
+          ) : (
+            <AppealQuickActions current={appeal.status} busy={busy} onAction={onAction} />
+          )}
         </div>
       </div>
     </div>

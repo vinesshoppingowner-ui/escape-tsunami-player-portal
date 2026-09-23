@@ -45,6 +45,15 @@
       "type": "boolean",
       "description": "Whether the player may submit a new appeal after this one is denied",
       "default": true
+    },
+    "admin_locked": {
+      "type": "boolean",
+      "description": "When true, only admins can act on this appeal",
+      "default": false
+    },
+    "locked_by": {
+      "type": "string",
+      "description": "Name of the admin who locked the appeal"
     }
   },
   "required": [

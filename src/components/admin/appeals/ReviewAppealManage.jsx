@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import AdminLockButton from '@/components/admin/appeals/AdminLockButton';
 import { Copy, ExternalLink, Lock, Unlock, Trash2, Loader2, Check } from 'lucide-react';
 
-export default function ReviewAppealManage({ appeal, canReappeal, onReappealChange, onDeleted }) {
+export default function ReviewAppealManage({ appeal, canReappeal, onReappealChange, onDeleted, isAdmin, user, onChanged }) {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(null);
   const btn = 'inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs font-medium transition-colors disabled:opacity-40';
@@ -46,6 +47,7 @@ export default function ReviewAppealManage({ appeal, canReappeal, onReappealChan
           {busy === 'lock' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : canReappeal ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
           {canReappeal ? 'Lock re-appeals' : 'Allow re-appeals'}
         </button>
+        {isAdmin && <AdminLockButton appeal={appeal} user={user} onChanged={onChanged} />}
         <button disabled={!!busy} onClick={remove} className={`${btn} border-rose-500/30 text-rose-300 hover:bg-rose-500/15 ml-auto`}>
           {busy === 'delete' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Delete appeal
         </button>
