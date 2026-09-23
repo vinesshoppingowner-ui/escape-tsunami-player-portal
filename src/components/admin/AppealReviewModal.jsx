@@ -29,7 +29,7 @@ const EXPLOIT_STYLES = {
   'Noclip': 'bg-purple-500/10 text-purple-300 border-purple-500/20',
 };
 
-export default function AppealReviewModal({ open, onClose, appeal, moderation, onSaved }) {
+export default function AppealReviewModal({ open, onClose, appeal, moderation, onSaved, playerLocked }) {
   const { user } = useAuth();
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -68,7 +68,6 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
   if (!appeal || !draft) return null;
 
   const isAdmin = isOwner(user);
-  const lockedForMe = !!appeal.admin_locked && !isAdmin;
   const st = STATUS_STYLES[appeal.status] || STATUS_STYLES['Pending'];
   const StatusIcon = st.icon;
 
@@ -116,16 +115,14 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
         </div>
 
         <div className="p-6 space-y-5">
-          {appeal.admin_locked && (
+          {playerLocked && (
             <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-3 text-sm text-violet-200 flex items-center gap-2">
               <Lock className="h-4 w-4 shrink-0" />
-              {lockedForMe
-                ? `Locked by ${appeal.locked_by || 'an admin'} — only admins can act on this appeal.`
-                : `Locked to admins only${appeal.locked_by ? ` by ${appeal.locked_by}` : ''}. Staff can view but not act.`}
+              This player is locked from submitting any appeals.
             </div>
           )}
 
-          {!lockedForMe && <ReviewQuickDecision current={appeal.status} onDecide={decide} />}
+          <ReviewQuickDecision current={appeal.status} onDecide={decide} />
 
           {/* Moderation context */}
           {moderation && (
@@ -144,7 +141,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           )}
 
-          {moderation && !lockedForMe && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
+          {moderation && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
 
           {/* Appeal answers */}
           <div className="space-y-3">
@@ -298,17 +295,16 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           </div>
 
-          {!lockedForMe && (
-            <ReviewAppealManage
-              appeal={appeal}
-              canReappeal={draft.can_reappeal}
-              onReappealChange={(v) => setDraft({ ...draft, can_reappeal: v })}
-              onDeleted={() => { onSaved?.(); onClose(); }}
-              isAdmin={isAdmin}
-              user={user}
-              onChanged={() => onSaved?.()}
-            />
-          )}
+          <ReviewAppealManage
+            appeal={appeal}
+            canReappeal={draft.can_reappeal}
+            onReappealChange={(v) => setDraft({ ...draft, can_reappeal: v })}
+            onDeleted={() => { onSaved?.(); onClose(); }}
+            isAdmin={isAdmin}
+            user={user}
+            playerLocked={playerLocked}
+            onChanged={() => onSaved?.()}
+          />
 
           {/* Save */}
           <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
@@ -317,7 +313,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </Button>
             <Button
               onClick={save}
-              disabled={saving || lockedForMe}
+              disabled={saving}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
             >
               {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Saving</> : <><Gavel className="h-4 w-4 mr-1.5" /> Save decision</>}

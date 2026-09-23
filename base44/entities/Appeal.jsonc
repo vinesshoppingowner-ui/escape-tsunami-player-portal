@@ -48,12 +48,12 @@
     },
     "admin_locked": {
       "type": "boolean",
-      "description": "When true, only admins can act on this appeal",
+      "description": "When true, an admin has locked this player from submitting any appeals",
       "default": false
     },
     "locked_by": {
       "type": "string",
-      "description": "Name of the admin who locked the appeal"
+      "description": "Name of the admin who locked the player's appeals"
     }
   },
   "required": [

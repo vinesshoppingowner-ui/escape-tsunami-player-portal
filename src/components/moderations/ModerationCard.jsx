@@ -25,7 +25,7 @@ const appealBadge = {
   Denied: { label: 'Appeal Denied', icon: XCircle, cls: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
 };
 
-export default function ModerationCard({ moderation, appeal, onAppeal }) {
+export default function ModerationCard({ moderation, appeal, onAppeal, appealsLocked }) {
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const hasEvidence =
     (moderation.evidence_type === 'chat_log' && moderation.evidence_text) ||
@@ -96,17 +96,20 @@ export default function ModerationCard({ moderation, appeal, onAppeal }) {
             <span className="text-xs text-slate-500">No appeal submitted yet</span>
           )}
 
-          {!appeal && (
+          {appealsLocked && (!appeal || isDenied) && (
+            <span className="text-xs text-violet-300/90">Appeals locked by staff</span>
+          )}
+          {!appealsLocked && !appeal && (
             <Button size="sm" onClick={onAppeal} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               Appeal this
             </Button>
           )}
-          {isDenied && canReappeal && (
+          {!appealsLocked && isDenied && canReappeal && (
             <Button size="sm" onClick={onAppeal} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               Appeal again
             </Button>
           )}
-          {isDenied && !canReappeal && (
+          {!appealsLocked && isDenied && !canReappeal && (
             <span className="text-xs text-rose-400/80">Not eligible for re-appeal</span>
           )}
         </div>

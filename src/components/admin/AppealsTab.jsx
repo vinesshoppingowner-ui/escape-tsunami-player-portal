@@ -10,7 +10,6 @@ import AppealsFilters from '@/components/admin/appeals/AppealsFilters';
 import AppealsBulkBar from '@/components/admin/appeals/AppealsBulkBar';
 import { PRIORITY_RANK, priorityFor } from '@/components/admin/appeals/appealMeta';
 import { applyAppealDecision } from '@/lib/appealDecision';
-import { isOwner } from '@/lib/isOwner';
 
 export default function AppealsTab() {
   const { user } = useAuth();
@@ -19,8 +18,7 @@ export default function AppealsTab() {
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
-  const isAdmin = isOwner(user);
-  const lockedForMe = (a) => !!a.admin_locked && !isAdmin;
+  const isPlayerLocked = (username) => appeals.some((x) => x.roblox_username === username && x.admin_locked);
   const [filters, setFilters] = useState({ search: '', status: 'all', priority: 'all', type: 'all' });
   const [checked, setChecked] = useState(new Set());
   const [busyIds, setBusyIds] = useState(new Set());
@@ -72,7 +70,7 @@ export default function AppealsTab() {
   };
 
   const bulkAction = async (status) => {
-    const targets = appeals.filter((a) => checked.has(a.id) && a.status !== status && !lockedForMe(a));
+    const targets = appeals.filter((a) => checked.has(a.id) && a.status !== status);
     if (!targets.length) return;
     if (!window.confirm(`Set ${targets.length} appeal(s) to "${status}"? Players will be notified.`)) return;
     setBulkRunning(true);
@@ -132,7 +130,7 @@ export default function AppealsTab() {
           checked={checked.has(a.id)}
           onToggle={() => toggle(a.id)}
           onOpen={() => setSelectedId(a.id)}
-          locked={lockedForMe(a)}
+          playerLocked={isPlayerLocked(a.roblox_username)}
           busy={busyIds.has(a.id) || bulkRunning}
           onAction={(status) => quickAction(a, status)}
         />
@@ -141,6 +139,7 @@ export default function AppealsTab() {
       <AppealReviewModal
         open={!!selected}
         onClose={() => setSelectedId(null)}
+        playerLocked={selected ? isPlayerLocked(selected.roblox_username) : false}
         appeal={selected}
         moderation={selected ? modFor(selected.moderation_id) : null}
         onSaved={load}

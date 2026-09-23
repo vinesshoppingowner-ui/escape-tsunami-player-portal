@@ -316,6 +316,7 @@ export default function Portal() {
                         moderation={m}
                         appeal={appealFor(m.id)}
                         onAppeal={() => openAppeal(m)}
+                        appealsLocked={appeals.some((a) => a.admin_locked)}
                       />
                     </motion.div>
                   ))}
