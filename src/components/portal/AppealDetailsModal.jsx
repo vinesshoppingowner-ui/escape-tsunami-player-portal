@@ -1,3 +1,4 @@
+import AppealChat from '@/components/appeals/AppealChat';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollText, Calendar, Clock, UserCog, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -75,6 +76,8 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
                   ) : (
                     <p className="mt-3 text-xs text-slate-500">No decision yet \u2014 your appeal is awaiting review.</p>
                   )}
+
+                  <div className="mt-4"><AppealChat appeal={a} /></div>
                 </div>
               );
             })}

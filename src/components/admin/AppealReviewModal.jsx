@@ -1,3 +1,4 @@
+import AppealChat from '@/components/appeals/AppealChat';
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
@@ -167,6 +168,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
               </div>
             )}
           </div>
+
+          <AppealChat appeal={appeal} />
 
           {/* Chat logs */}
           <div className="space-y-2">
