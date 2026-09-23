@@ -30,7 +30,16 @@ export async function applyAppealDecision({
   await emailPlayer({
     robloxUsername: appeal.roblox_username,
     subject: `Your appeal has been ${status.toLowerCase()}`,
-    body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${moderation?.moderation_type || 'your moderation'}" has been ${status.toLowerCase()}.\n\n${staff_response ? staff_response + '\n\n' : ''}View details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+    title: { Approved: '✅ Appeal approved', Denied: '❌ Appeal denied', 'Under Review': '🔍 Appeal under review', Pending: '⏳ Appeal pending' }[status] || `Appeal ${status}`,
+    accent: { Approved: '#22c55e', Denied: '#ef4444', 'Under Review': '#8b5cf6', Pending: '#f59e0b' }[status],
+    body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${moderation?.moderation_type || 'your moderation'}" has been ${status.toLowerCase()}.${status === 'Approved' ? ' Your moderation has been lifted.' : ''}`,
+    fields: [
+      { name: 'Decision', value: status },
+      { name: 'Moderation', value: moderation?.moderation_type },
+      { name: 'Original reason', value: moderation?.reason },
+      ...(staff_response ? [{ name: 'Staff response', value: staff_response }] : []),
+    ],
+    ctaLabel: 'View appeal details',
   });
   await sendAppealDecisionWebhook({
     username: appeal.roblox_username,
