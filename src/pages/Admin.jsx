@@ -50,8 +50,11 @@ export default function Admin() {
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteNav />
       <main className="max-w-5xl mx-auto px-5 pt-28 pb-20">
-        <h1 className="font-display text-3xl sm:text-[2.6rem] font-extrabold tracking-[-0.03em] leading-[1.05]">Moderation console</h1>
-        <p className="mt-2 text-slate-400">Appeals, warnings, bans, and who did what.</p>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-medium text-rose-300 mb-4">
+          <ShieldAlert className="h-3.5 w-3.5" /> Staff Dashboard
+        </div>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation console</h1>
+        <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
 
         <Tabs value={tab} onValueChange={setTab} className="mt-8">
           <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/5 border border-white/10 h-auto rounded-xl">
