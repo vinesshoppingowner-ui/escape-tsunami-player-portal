@@ -19,6 +19,7 @@ import QuickLinks from '@/components/portal/QuickLinks';
 import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
+import SectionHeading from '@/components/portal/SectionHeading';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
 
@@ -146,13 +147,10 @@ export default function Portal() {
       <main className="max-w-4xl mx-auto px-5 pt-28 pb-20">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-4">
-            <ShieldCheck className="h-3.5 w-3.5" /> Member Portal
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Welcome back 👋
+          <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] leading-[1]">
+            {savedUsername ? `Hey, ${savedUsername}.` : 'Your record.'}
           </h1>
-          <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
+          <p className="mt-3 text-slate-400 max-w-lg">Every warning, mute and ban on your account, and who issued it. Think one was wrong? Appeal it here.</p>
         </motion.div>
 
         {/* Guest sign-in banner */}
@@ -161,15 +159,12 @@ export default function Portal() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="mt-6 rounded-2xl bg-gradient-to-br from-cyan-500/[0.08] to-blue-600/[0.08] border border-cyan-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-lg shadow-cyan-950/20"
+            className="mt-6 border-l-2 border-cyan-500 pl-4 py-1 flex flex-col sm:flex-row items-start sm:items-center gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
-              <Sparkles className="h-5 w-5 text-cyan-300" />
-            </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white text-sm">Browsing as guest</h3>
+              <h3 className="font-semibold text-white text-sm">You're not signed in</h3>
               <p className="mt-1 text-sm text-slate-400 leading-relaxed">
-                You can verify your Roblox account and view your moderations without signing in. Sign in to save your profile, get notifications when your appeals are answered, and unlock more.
+                You can still check your record. Sign in if you want us to remember your username and email you when staff answer an appeal.
               </p>
             </div>
             <Link to="/login" className="shrink-0">
@@ -205,7 +200,7 @@ export default function Portal() {
                       <span className="font-semibold text-emerald-300">{daysSinceLast} day{daysSinceLast !== 1 ? 's' : ''}</span> without a warning — keep it up! Next milestone: <span className="text-emerald-300">6 months = Veteran status</span>
                     </span>
                   ) : (
-                    <span className="text-slate-300">Clean slate — stay warning-free for <span className="text-emerald-300">6 months</span> to earn Veteran status 🏆</span>
+                    <span className="text-slate-300">Clean slate. Go <span className="text-emerald-300">6 months</span> without a warning and you get Veteran status.</span>
                   )}
                 </div>
               </div>
@@ -258,13 +253,7 @@ export default function Portal() {
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-cyan-300">
-                <Zap className="h-3.5 w-3.5" /> Quick Actions
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Shortcuts" />
 
             {/* Quick Links */}
             <QuickLinks />
@@ -280,13 +269,7 @@ export default function Portal() {
             )}
 
             {/* Your Moderations */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-rose-300">
-                <ShieldCheck className="h-3.5 w-3.5" /> Your Moderations
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="What's on your record" note={`${moderations.length} total`} />
 
             <div ref={moderationsRef} className="scroll-mt-24">
               {loading ? (
@@ -300,7 +283,7 @@ export default function Portal() {
                   </div>
                   <h3 className="font-semibold text-lg text-white">Clean record</h3>
                   <p className="mt-1.5 text-sm text-slate-400 max-w-sm mx-auto">
-                    No moderations found for <span className="text-cyan-300">{savedUsername}</span>. Keep surviving those tsunamis! 🌊
+                    Nothing on file for <span className="text-white">{savedUsername}</span>. Nice.
                   </p>
                 </div>
               ) : (
@@ -324,13 +307,7 @@ export default function Portal() {
             </div>
 
             {/* Appeals & Support */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-amber-300">
-                <LifeBuoy className="h-3.5 w-3.5" /> Appeals & Support
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Appeals and help" />
 
             <GoodStandingTips />
 
@@ -341,13 +318,7 @@ export default function Portal() {
             </div>
 
             {/* Account Security */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-violet-300">
-                <Lock className="h-3.5 w-3.5" /> Account Security
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionHeading title="Your account" />
 
             <SecurityCard user={user} robloxUsername={savedUsername} />
           </>

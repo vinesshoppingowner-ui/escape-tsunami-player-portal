@@ -467,6 +467,65 @@ a.bg-white\/5:hover {
   background: transparent;
 }
 
+/* ===== Flat overrides — kill template tells site-wide ===== */
+
+/* Gradient CTA buttons → solid, square-ish, no glass or glow */
+.bg-gradient-to-r.from-cyan-500.to-blue-600,
+.bg-gradient-to-r.from-cyan-400.to-blue-500,
+[data-season="winter"] .from-cyan-500.to-blue-600,
+[data-season="winter"] .from-cyan-400.to-blue-500 {
+  background: #06b6d4 !important;
+  color: #020617 !important;
+  font-weight: 600;
+  border: 0 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+.bg-gradient-to-r.from-cyan-500.to-blue-600:hover,
+.bg-gradient-to-r.from-cyan-400.to-blue-500:hover {
+  background: #22d3ee !important;
+}
+.bg-gradient-to-r.from-cyan-500.to-blue-600::after,
+.bg-gradient-to-r.from-cyan-400.to-blue-500::after { display: none !important; }
+
+.bg-gradient-to-r.from-amber-500.to-orange-600,
+.bg-gradient-to-r.from-amber-400.to-orange-500 {
+  background: #f59e0b !important;
+  color: #1c1003 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+}
+
+button.bg-white\/5,
+a.bg-white\/5,
+[data-season="winter"] .bg-white\/5.border-white\/15 {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  transform: none !important;
+}
+
+/* Gradient text → plain colour */
+.bg-clip-text.text-transparent {
+  background: none !important;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* Floating blurred colour blobs → gone */
+.rounded-full.blur-3xl,
+.rounded-full[class*="blur-["],
+[class*="rounded-["][class*="blur-3xl"] { display: none !important; }
+
+/* Coloured drop-glows under cards/buttons → gone */
+[class*="shadow-cyan-"], [class*="shadow-blue-"] { --tw-shadow-color: transparent !important; }
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);
