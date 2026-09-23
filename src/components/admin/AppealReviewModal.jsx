@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
 import { applyAppealDecision } from '@/lib/appealDecision';
+import ReviewQuickDecision from '@/components/admin/appeals/ReviewQuickDecision';
+import ReviewModerationAdjust from '@/components/admin/appeals/ReviewModerationAdjust';
+import ReviewAppealManage from '@/components/admin/appeals/ReviewAppealManage';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Gavel, Lock, X, MessageSquare, Zap, Clock, CheckCircle2, XCircle } from 'lucide-react';
@@ -66,6 +69,12 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
   const st = STATUS_STYLES[appeal.status] || STATUS_STYLES['Pending'];
   const StatusIcon = st.icon;
 
+  const decide = async (status) => {
+    await applyAppealDecision({ appeal, moderation, user, ...draft, status });
+    onSaved?.();
+    onClose();
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -104,6 +113,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
         </div>
 
         <div className="p-6 space-y-5">
+          <ReviewQuickDecision current={appeal.status} onDecide={decide} />
+
           {/* Moderation context */}
           {moderation && (
             <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
@@ -120,6 +131,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
               </div>
             </div>
           )}
+
+          {moderation && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
 
           {/* Appeal answers */}
           <div className="space-y-3">
@@ -272,6 +285,13 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
               />
             </div>
           </div>
+
+          <ReviewAppealManage
+            appeal={appeal}
+            canReappeal={draft.can_reappeal}
+            onReappealChange={(v) => setDraft({ ...draft, can_reappeal: v })}
+            onDeleted={() => { onSaved?.(); onClose(); }}
+          />
 
           {/* Save */}
           <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
