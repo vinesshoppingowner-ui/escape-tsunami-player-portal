@@ -68,6 +68,19 @@
       "type": "string",
       "format": "date-time",
       "description": "When the appeal was removed"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Name of the staff member handling this appeal"
+    },
+    "assigned_to_email": {
+      "type": "string",
+      "description": "Email of the staff member handling this appeal"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the appeal was assigned"
     }
   },
   "required": [

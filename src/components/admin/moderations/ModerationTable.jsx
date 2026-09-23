@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Trash2, ChevronLeft, ChevronRight, Loader2, Pencil } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { StatusBadge, TypeBadge } from '@/components/admin/moderations/ModerationBadges';
 import UserInfoModal from '@/components/admin/UserInfoModal';
@@ -13,7 +14,7 @@ function formatDate(d) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function ModerationTable({ items, onDelete }) {
+export default function ModerationTable({ items, onDelete, isAdmin, selected = new Set(), onToggle, onToggleAll, onEdit }) {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -32,6 +33,15 @@ export default function ModerationTable({ items, onDelete }) {
       <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="bg-white/[0.04] text-slate-400 text-xs uppercase tracking-wide border-b border-white/10">
+            {isAdmin && (
+              <th className="pl-4 py-3.5 w-8">
+                <Checkbox
+                  checked={items.length > 0 && items.every((m) => selected.has(m.id))}
+                  onCheckedChange={(on) => onToggleAll(items.map((m) => m.id), !!on)}
+                  className="border-white/30"
+                />
+              </th>
+            )}
             <th className="text-left font-semibold px-4 py-3.5">User</th>
             <th className="text-left font-semibold px-4 py-3.5">Type</th>
             <th className="text-left font-semibold px-4 py-3.5 min-w-[180px] max-w-[240px]">Reason</th>
@@ -46,7 +56,12 @@ export default function ModerationTable({ items, onDelete }) {
             const isLong = (m.reason || '').length > 60;
             const isExpanded = expanded === m.id;
             return (
-              <tr key={m.id} className="border-t border-white/5 hover:bg-white/[0.03] transition-colors group">
+              <tr key={m.id} className={`border-t border-white/5 hover:bg-white/[0.03] transition-colors group ${selected.has(m.id) ? 'bg-cyan-500/[0.05]' : ''}`}>
+                {isAdmin && (
+                  <td className="pl-4 py-3">
+                    <Checkbox checked={selected.has(m.id)} onCheckedChange={() => onToggle(m.id)} className="border-white/30" />
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <RobloxAvatar username={m.roblox_username} size={32} />
@@ -82,7 +97,17 @@ export default function ModerationTable({ items, onDelete }) {
                 <td className="px-4 py-3">
                   <StatusBadge status={m.status} />
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  {isAdmin && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => onEdit(m)}
+                      className="text-slate-500 hover:text-cyan-300 hover:bg-cyan-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     size="icon"
                     variant="ghost"

@@ -22,12 +22,15 @@
     "message": {
       "type": "string",
       "description": "The chat message text"
+    },
+    "image_uri": {
+      "type": "string",
+      "description": "Private file URI of an attached image"
     }
   },
   "required": [
     "appeal_id",
-    "roblox_username",
-    "message"
+    "roblox_username"
   ],
   "rls": {
     "read": {

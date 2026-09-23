@@ -1,8 +1,9 @@
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Check, CheckCheck } from 'lucide-react';
+import ChatImage from '@/components/appeals/ChatImage';
 
-export default function AppealChatMessage({ msg, mine }) {
+export default function AppealChatMessage({ msg, mine, receipt }) {
   return (
-    <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-3 py-2 border ${
         mine ? 'bg-cyan-500/15 border-cyan-500/30 rounded-br-sm' : 'bg-white/[0.05] border-white/10 rounded-bl-sm'
       }`}>
@@ -15,8 +16,14 @@ export default function AppealChatMessage({ msg, mine }) {
             {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
-        <p className="text-sm text-slate-100 whitespace-pre-wrap break-words">{msg.message}</p>
+        {msg.message && <p className="text-sm text-slate-100 whitespace-pre-wrap break-words">{msg.message}</p>}
+        {msg.image_uri && <ChatImage uri={msg.image_uri} />}
       </div>
+      {receipt && (
+        <span className={`mt-0.5 flex items-center gap-1 text-[10px] ${receipt === 'Seen' ? 'text-cyan-300' : 'text-slate-500'}`}>
+          {receipt === 'Seen' ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />} {receipt}
+        </span>
+      )}
     </div>
   );
 }

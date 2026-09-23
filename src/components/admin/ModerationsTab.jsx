@@ -13,6 +13,23 @@ import QuickStats from '@/components/admin/moderations/QuickStats';
 import ModerationForm from '@/components/admin/moderations/ModerationForm';
 import ModerationTable from '@/components/admin/moderations/ModerationTable';
 import DeleteConfirmDialog from '@/components/admin/moderations/DeleteConfirmDialog';
+import ModerationBulkBar from '@/components/admin/moderations/ModerationBulkBar';
+import ModerationEditDialog from '@/components/admin/moderations/ModerationEditDialog';
+import { bulkModerationAction } from '@/lib/moderationBulk';
+import { downloadCsv } from '@/lib/csv';
+import { isOwner } from '@/lib/isOwner';
+import { Download } from 'lucide-react';
+
+const CSV_COLUMNS = [
+  { key: 'roblox_username', label: 'Username' },
+  { key: 'moderation_type', label: 'Type' },
+  { key: 'reason', label: 'Reason' },
+  { key: 'details', label: 'Details' },
+  { key: 'duration', label: 'Duration' },
+  { key: 'status', label: 'Status' },
+  { key: 'staff_member', label: 'Staff member' },
+  { key: 'moderation_date', label: 'Date' },
+];
 
 const DISCORD_STATUS_STYLES = {
   pending: { cls: 'bg-amber-500/10 text-amber-300 border-amber-500/20', icon: Clock, label: 'Pending' },
@@ -54,6 +71,24 @@ export default function ModerationsTab() {
   const [dateFilter, setDateFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const isAdmin = isOwner(user);
+  const [selected, setSelected] = useState(new Set());
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+
+  const toggleSelect = (id) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  const runBulk = async (action) => {
+    const items = list.filter((m) => selected.has(m.id));
+    const label = action === 'delete' ? 'Delete' : `Set to ${action}`;
+    if (!items.length || !window.confirm(`${label} ${items.length} moderation(s)?`)) return;
+    setBulkRunning(true);
+    await bulkModerationAction(items, action, user);
+    setSelected(new Set());
+    setBulkRunning(false);
+    toast({ title: `${items.length} moderation(s) updated` });
+    await load();
+  };
 
   const load = async () => {
     setLoading(true);
@@ -146,6 +181,16 @@ export default function ModerationsTab() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => downloadCsv(`moderations-${new Date().toISOString().slice(0, 10)}.csv`, filtered, CSV_COLUMNS)}
+              className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+            >
+              <Download className="h-4 w-4 mr-1.5" /> Export CSV
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -220,8 +265,20 @@ export default function ModerationsTab() {
           {hasFilters ? 'No moderations match your filters.' : 'No moderations issued yet.'}
         </div>
       ) : (
-        <ModerationTable items={filtered} onDelete={setDeleteTarget} />
+        <>
+          {isAdmin && <ModerationBulkBar count={selected.size} running={bulkRunning} onAction={runBulk} onClear={() => setSelected(new Set())} />}
+          <ModerationTable
+            items={filtered}
+            onDelete={setDeleteTarget}
+            isAdmin={isAdmin}
+            selected={selected}
+            onToggle={toggleSelect}
+            onToggleAll={(ids, on) => setSelected(on ? new Set(ids) : new Set())}
+            onEdit={setEditTarget}
+          />
+        </>
       )}
+      {editTarget && <ModerationEditDialog moderation={editTarget} user={user} onClose={() => setEditTarget(null)} onSaved={load} />}
 
       {/* Discord actions section */}
       {discordList.length > 0 && (

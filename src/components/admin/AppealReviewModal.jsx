@@ -1,4 +1,7 @@
 import AppealChat from '@/components/appeals/AppealChat';
+import AppealAssign from '@/components/admin/appeals/AppealAssign';
+import AppealTimeline from '@/components/admin/appeals/AppealTimeline';
+import PlayerHistoryPanel from '@/components/admin/appeals/PlayerHistoryPanel';
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
@@ -125,6 +128,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
 
           <ReviewQuickDecision current={appeal.status} onDecide={decide} />
 
+          {isAdmin && <AppealAssign appeal={appeal} user={user} onChanged={() => onSaved?.()} />}
+
           {/* Moderation context */}
           {moderation && (
             <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
@@ -143,6 +148,9 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
           )}
 
           {moderation && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
+
+          {isAdmin && <PlayerHistoryPanel username={appeal.roblox_username} currentAppealId={appeal.id} />}
+          {isAdmin && <AppealTimeline appeal={appeal} />}
 
           {/* Appeal answers */}
           <div className="space-y-3">

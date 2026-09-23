@@ -1,0 +1,132 @@
+{
+  "name": "AppealPresence",
+  "type": "object",
+  "properties": {
+    "appeal_id": {
+      "type": "string",
+      "description": "The appeal chat this presence belongs to"
+    },
+    "roblox_username": {
+      "type": "string",
+      "description": "Roblox username of the player who owns the appeal"
+    },
+    "is_staff": {
+      "type": "boolean",
+      "description": "True for the staff side of the chat, false for the player side",
+      "default": false
+    },
+    "typing_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this side was typing"
+    },
+    "last_seen_message_id": {
+      "type": "string",
+      "description": "ID of the newest message this side has seen"
+    }
+  },
+  "required": [
+    "appeal_id",
+    "roblox_username"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.roblox_username": "{{user.data.roblox_username}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.roblox_username": "{{user.data.roblox_username}}"
+            },
+            {
+              "data.is_staff": {
+                "$ne": true
+              }
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.roblox_username": "{{user.data.roblox_username}}"
+            },
+            {
+              "data.is_staff": {
+                "$ne": true
+              }
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}

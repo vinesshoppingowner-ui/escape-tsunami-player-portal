@@ -11,7 +11,9 @@
       "description": "What kind of staff action was performed",
       "enum": [
         "appeal_decision",
+        "appeal_assigned",
         "moderation_issued",
+        "moderation_edited",
         "moderation_deleted",
         "user_role_changed"
       ]
