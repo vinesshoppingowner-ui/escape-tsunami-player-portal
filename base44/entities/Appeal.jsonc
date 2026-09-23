@@ -54,6 +54,20 @@
     "locked_by": {
       "type": "string",
       "description": "Name of the admin who locked the player's appeals"
+    },
+    "removed": {
+      "type": "boolean",
+      "description": "When true, staff removed this appeal; it is hidden from the queue and the player",
+      "default": false
+    },
+    "removed_by": {
+      "type": "string",
+      "description": "Name of the staff member who removed the appeal"
+    },
+    "removed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the appeal was removed"
     }
   },
   "required": [

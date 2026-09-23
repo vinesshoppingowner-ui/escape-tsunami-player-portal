@@ -29,7 +29,7 @@ export default function AppealsTab() {
       base44.entities.Appeal.list('-created_date', 100),
       base44.entities.Moderation.list('-moderation_date', 100),
     ]);
-    setAppeals(apps || []);
+    setAppeals((apps || []).filter((a) => !a.removed));
     setModerations(mods || []);
     setLoading(false);
   };

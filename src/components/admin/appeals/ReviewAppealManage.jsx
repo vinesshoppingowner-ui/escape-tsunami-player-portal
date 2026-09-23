@@ -22,9 +22,14 @@ export default function ReviewAppealManage({ appeal, canReappeal, onReappealChan
   };
 
   const remove = async () => {
-    if (!window.confirm(`Delete this appeal from ${appeal.roblox_username}? This can't be undone.`)) return;
+    if (!window.confirm(`Remove this appeal from ${appeal.roblox_username}? You can restore it from the Dashboard.`)) return;
     setBusy('delete');
-    await base44.entities.Appeal.delete(appeal.id);
+    await base44.entities.Appeal.update(appeal.id, {
+      removed: true,
+      removed_by: user?.full_name || user?.email || 'Staff',
+      removed_at: new Date().toISOString(),
+      admin_locked: false,
+    });
     onDeleted();
   };
 

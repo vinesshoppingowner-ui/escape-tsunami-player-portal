@@ -56,7 +56,7 @@ export default function Portal() {
         base44.entities.Notification.filter({ roblox_username: username }, '-created_date', 20),
       ]);
       setModerations(mods || []);
-      setAppeals(apps || []);
+      setAppeals((apps || []).filter((a) => !a.removed));
       setNotifications(notes || []);
       setLastUpdated(new Date());
     } finally {

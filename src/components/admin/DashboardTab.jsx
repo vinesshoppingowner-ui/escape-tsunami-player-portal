@@ -8,6 +8,7 @@ import DashboardAnnouncements from '@/components/admin/dashboard/DashboardAnnoun
 import DashboardPortalControls from '@/components/admin/dashboard/DashboardPortalControls';
 import DashboardLockdown from '@/components/admin/dashboard/DashboardLockdown';
 import DashboardQuestGrants from '@/components/admin/dashboard/DashboardQuestGrants';
+import DashboardClosedAppeals from '@/components/admin/dashboard/DashboardClosedAppeals';
 
 const DEFAULT_SETTINGS = {
   maintenance_mode: false,
@@ -137,6 +138,7 @@ export default function DashboardTab() {
       <DashboardAnnouncements user={user} onAnnouncementsChange={load} />
       <DashboardPortalControls settings={settings} update={update} />
       <DashboardQuestGrants />
+      <DashboardClosedAppeals />
     </div>
   );
 }
