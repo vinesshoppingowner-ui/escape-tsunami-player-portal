@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 
 const ACCENTS = [
-  { value: 'cyan', label: 'Ocean', cls: 'bg-cyan-400' },
+  { value: 'cyan', label: 'Ocean', cls: 'bg-[#22d3ee]' },
   { value: 'violet', label: 'Violet', cls: 'bg-violet-400' },
   { value: 'emerald', label: 'Emerald', cls: 'bg-emerald-400' },
   { value: 'rose', label: 'Rose', cls: 'bg-rose-400' },

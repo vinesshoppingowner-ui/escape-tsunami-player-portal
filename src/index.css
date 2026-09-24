@@ -466,28 +466,32 @@ a.bg-white\/5:hover {
 }
 
 /* ===== User theme color (accent) overrides ===== */
-[data-accent="violet"] { --acc-200: 221 214 254; --acc-300: 196 181 253; --acc-400: 167 139 250; --acc-500: 139 92 246; }
-[data-accent="emerald"] { --acc-200: 167 243 208; --acc-300: 110 231 183; --acc-400: 52 211 153; --acc-500: 16 185 129; }
-[data-accent="rose"] { --acc-200: 254 205 211; --acc-300: 253 164 175; --acc-400: 251 113 133; --acc-500: 244 63 94; }
-[data-accent="amber"] { --acc-200: 253 230 138; --acc-300: 252 211 77; --acc-400: 251 191 36; --acc-500: 245 158 11; }
-
-[data-accent] .text-cyan-200 { color: rgb(var(--acc-200)); }
-[data-accent] .text-cyan-300 { color: rgb(var(--acc-300)); }
-[data-accent] .text-cyan-300\/80 { color: rgb(var(--acc-300) / 0.8); }
-[data-accent] .text-cyan-400 { color: rgb(var(--acc-400)); }
-[data-accent] .text-cyan-400\/70 { color: rgb(var(--acc-400) / 0.7); }
-[data-accent] .hover\:text-cyan-300:hover { color: rgb(var(--acc-300)); }
-[data-accent] .bg-cyan-500\/10 { background-color: rgb(var(--acc-500) / 0.1); }
-[data-accent] .bg-cyan-500\/15 { background-color: rgb(var(--acc-500) / 0.15); }
-[data-accent] .bg-cyan-500\/20 { background-color: rgb(var(--acc-500) / 0.2); }
-[data-accent] .border-cyan-500\/20 { border-color: rgb(var(--acc-500) / 0.2); }
-[data-accent] .border-cyan-500\/30 { border-color: rgb(var(--acc-500) / 0.3); }
-[data-accent] .border-cyan-400\/60 { border-color: rgb(var(--acc-400) / 0.6); }
-[data-accent] .hover\:border-cyan-500\/30:hover { border-color: rgb(var(--acc-500) / 0.3); }
-[data-accent] .from-cyan-400 { --tw-gradient-from: rgb(var(--acc-400)) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-[data-accent] .from-cyan-300 { --tw-gradient-from: rgb(var(--acc-300)) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-[data-accent] .from-cyan-500\/20 { --tw-gradient-from: rgb(var(--acc-500) / 0.2) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-[data-accent] .shadow-cyan-500\/30 { --tw-shadow-color: rgb(var(--acc-500) / 0.3); }
+/* Every "cyan" Tailwind class reads these channels, so switching them recolors the whole site. */
+:root {
+  --acc-50: 236 254 255; --acc-100: 207 250 254; --acc-200: 165 243 252; --acc-300: 103 232 249;
+  --acc-400: 34 211 238; --acc-500: 6 182 212; --acc-600: 8 145 178; --acc-700: 14 116 144;
+  --acc-800: 21 94 117; --acc-900: 22 78 99; --acc-950: 8 51 68;
+}
+[data-accent="violet"] {
+  --acc-50: 245 243 255; --acc-100: 237 233 254; --acc-200: 221 214 254; --acc-300: 196 181 253;
+  --acc-400: 167 139 250; --acc-500: 139 92 246; --acc-600: 124 58 237; --acc-700: 109 40 217;
+  --acc-800: 91 33 182; --acc-900: 76 29 149; --acc-950: 46 16 101;
+}
+[data-accent="emerald"] {
+  --acc-50: 236 253 245; --acc-100: 209 250 229; --acc-200: 167 243 208; --acc-300: 110 231 183;
+  --acc-400: 52 211 153; --acc-500: 16 185 129; --acc-600: 5 150 105; --acc-700: 4 120 87;
+  --acc-800: 6 95 70; --acc-900: 6 78 59; --acc-950: 2 44 34;
+}
+[data-accent="rose"] {
+  --acc-50: 255 241 242; --acc-100: 255 228 230; --acc-200: 254 205 211; --acc-300: 253 164 175;
+  --acc-400: 251 113 133; --acc-500: 244 63 94; --acc-600: 225 29 72; --acc-700: 190 18 60;
+  --acc-800: 159 18 57; --acc-900: 136 19 55; --acc-950: 76 5 25;
+}
+[data-accent="amber"] {
+  --acc-50: 255 251 235; --acc-100: 254 243 199; --acc-200: 253 230 138; --acc-300: 252 211 77;
+  --acc-400: 251 191 36; --acc-500: 245 158 11; --acc-600: 217 119 6; --acc-700: 180 83 9;
+  --acc-800: 146 64 14; --acc-900: 120 53 15; --acc-950: 69 26 3;
+}
 
 /* Reusable liquid glass utility */
 .liquid-glass {
