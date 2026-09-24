@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
+import ProfileMenu from '@/components/profile/ProfileMenu';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
@@ -181,17 +182,21 @@ export default function SiteNav() {
               <LogIn className="h-4 w-4 mr-1.5" /> Member Portal
             </Button>
           </Link>
+          <ProfileMenu />
         </div>
 
         {isDesktopLayout && <div className="flex-1" />}
 
-        <button
-          className="md:hidden text-white p-2"
-          onClick={() => setOpen((o) => !o)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <ProfileMenu />
+          <button
+            className="text-white p-2"
+            onClick={() => setOpen((o) => !o)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (

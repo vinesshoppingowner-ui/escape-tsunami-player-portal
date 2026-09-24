@@ -29,11 +29,15 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import SeasonalEffects from '@/components/SeasonalEffects';
 import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
+import AccentApplier from '@/components/AccentApplier';
+import WelcomeModal from '@/components/WelcomeModal';
+import { useUserPrefs } from '@/lib/userPrefs';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const isDesktopApp = useDesktopApp();
   const season = useSeasonalTheme();
+  const prefs = useUserPrefs();
 
   const isLoading = isLoadingPublicSettings || isLoadingAuth;
   const showSplash = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
@@ -77,7 +81,9 @@ const AuthenticatedApp = () => {
   return (
     <IpBanCheck>
       <MaintenanceGuard>
-        <SeasonalEffects season={season} />
+        <AccentApplier />
+        {prefs.seasonal_effects && <SeasonalEffects season={season} />}
+        {!isLoading && <WelcomeModal />}
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />
         {content}

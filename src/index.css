@@ -465,6 +465,30 @@ a.bg-white\/5:hover {
   background: transparent;
 }
 
+/* ===== User theme color (accent) overrides ===== */
+[data-accent="violet"] { --acc-200: 221 214 254; --acc-300: 196 181 253; --acc-400: 167 139 250; --acc-500: 139 92 246; }
+[data-accent="emerald"] { --acc-200: 167 243 208; --acc-300: 110 231 183; --acc-400: 52 211 153; --acc-500: 16 185 129; }
+[data-accent="rose"] { --acc-200: 254 205 211; --acc-300: 253 164 175; --acc-400: 251 113 133; --acc-500: 244 63 94; }
+[data-accent="amber"] { --acc-200: 253 230 138; --acc-300: 252 211 77; --acc-400: 251 191 36; --acc-500: 245 158 11; }
+
+[data-accent] .text-cyan-200 { color: rgb(var(--acc-200)); }
+[data-accent] .text-cyan-300 { color: rgb(var(--acc-300)); }
+[data-accent] .text-cyan-300\/80 { color: rgb(var(--acc-300) / 0.8); }
+[data-accent] .text-cyan-400 { color: rgb(var(--acc-400)); }
+[data-accent] .text-cyan-400\/70 { color: rgb(var(--acc-400) / 0.7); }
+[data-accent] .hover\:text-cyan-300:hover { color: rgb(var(--acc-300)); }
+[data-accent] .bg-cyan-500\/10 { background-color: rgb(var(--acc-500) / 0.1); }
+[data-accent] .bg-cyan-500\/15 { background-color: rgb(var(--acc-500) / 0.15); }
+[data-accent] .bg-cyan-500\/20 { background-color: rgb(var(--acc-500) / 0.2); }
+[data-accent] .border-cyan-500\/20 { border-color: rgb(var(--acc-500) / 0.2); }
+[data-accent] .border-cyan-500\/30 { border-color: rgb(var(--acc-500) / 0.3); }
+[data-accent] .border-cyan-400\/60 { border-color: rgb(var(--acc-400) / 0.6); }
+[data-accent] .hover\:border-cyan-500\/30:hover { border-color: rgb(var(--acc-500) / 0.3); }
+[data-accent] .from-cyan-400 { --tw-gradient-from: rgb(var(--acc-400)) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+[data-accent] .from-cyan-300 { --tw-gradient-from: rgb(var(--acc-300)) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+[data-accent] .from-cyan-500\/20 { --tw-gradient-from: rgb(var(--acc-500) / 0.2) var(--tw-gradient-from-position, 0%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+[data-accent] .shadow-cyan-500\/30 { --tw-shadow-color: rgb(var(--acc-500) / 0.3); }
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);

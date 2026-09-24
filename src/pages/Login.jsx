@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn } from "lucide-reac
 import GoogleIcon from "@/components/GoogleIcon";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { markJustLoggedIn } from "@/lib/userPrefs";
 
 const INPUT = "w-full h-11 rounded-lg border border-white/10 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/60 transition-colors";
 
@@ -22,6 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      markJustLoggedIn();
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -31,6 +33,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    markJustLoggedIn();
     base44.auth.loginWithProvider("google", returnTo);
   };
 
