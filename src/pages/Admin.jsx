@@ -14,6 +14,11 @@ import UserLookup from '@/components/admin/UserLookup';
 import WebsiteBansTab from '@/components/admin/WebsiteBansTab';
 import DashboardTab from '@/components/admin/DashboardTab';
 import ApplicationsTab from '@/components/admin/ApplicationsTab';
+import WatchlistTab from '@/components/admin/watchlist/WatchlistTab';
+import BanEvasionTab from '@/components/admin/evasion/BanEvasionTab';
+import StaffPerformanceTab from '@/components/admin/performance/StaffPerformanceTab';
+import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
+import { Eye, ScanSearch, Trophy, Megaphone } from 'lucide-react';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -43,6 +48,10 @@ export default function Admin() {
         { value: 'logs', label: 'Staff Logs', icon: ScrollText },
         { value: 'applications', label: 'Applications', icon: FileText },
         { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { value: 'watchlist', label: 'Watchlist', icon: Eye },
+        { value: 'evasion', label: 'Ban Evasion', icon: ScanSearch },
+        { value: 'performance', label: 'Staff Performance', icon: Trophy },
+        { value: 'message', label: 'Message Players', icon: Megaphone },
       ]
     : [];
 
@@ -73,6 +82,10 @@ export default function Admin() {
           {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
           {isAdmin && <TabsContent value="applications"><ApplicationsTab /></TabsContent>}
           {isAdmin && <TabsContent value="dashboard"><DashboardTab /></TabsContent>}
+          {isAdmin && <TabsContent value="watchlist"><WatchlistTab /></TabsContent>}
+          {isAdmin && <TabsContent value="evasion"><BanEvasionTab /></TabsContent>}
+          {isAdmin && <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>}
+          {isAdmin && <TabsContent value="message"><MassMessageTab /></TabsContent>}
           </Tabs>
       </main>
     </div>

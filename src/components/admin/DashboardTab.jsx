@@ -9,6 +9,7 @@ import DashboardPortalControls from '@/components/admin/dashboard/DashboardPorta
 import DashboardLockdown from '@/components/admin/dashboard/DashboardLockdown';
 import DashboardQuestGrants from '@/components/admin/dashboard/DashboardQuestGrants';
 import DashboardClosedAppeals from '@/components/admin/dashboard/DashboardClosedAppeals';
+import DashboardSlaCard from '@/components/admin/dashboard/DashboardSlaCard';
 
 const DEFAULT_SETTINGS = {
   maintenance_mode: false,
@@ -130,6 +131,8 @@ export default function DashboardTab() {
           <div className="text-2xl font-bold text-white">{settings.maintenance_mode ? 'ON' : 'OFF'}</div>
         </div>
       </div>
+
+      <DashboardSlaCard />
 
       {/* Sections */}
       <DashboardLockdown settings={settings} update={update} />

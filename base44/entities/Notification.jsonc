@@ -19,7 +19,9 @@
       "description": "What kind of event triggered the notification",
       "enum": [
         "appeal_decision",
-        "moderation_issued"
+        "moderation_issued",
+        "moderation_expired",
+        "staff_message"
       ],
       "default": "appeal_decision"
     },

@@ -8,6 +8,7 @@ import AppealReviewModal from '@/components/admin/AppealReviewModal';
 import AppealRow from '@/components/admin/appeals/AppealRow';
 import AppealsFilters from '@/components/admin/appeals/AppealsFilters';
 import AppealsBulkBar from '@/components/admin/appeals/AppealsBulkBar';
+import SlaBanner from '@/components/admin/appeals/SlaBanner';
 import { PRIORITY_RANK, priorityFor } from '@/components/admin/appeals/appealMeta';
 import { applyAppealDecision } from '@/lib/appealDecision';
 
@@ -106,6 +107,8 @@ export default function AppealsTab() {
         {pendingCount > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">{pendingCount} new</span>}
         <span className="text-xs text-slate-500 ml-auto">Sorted by priority · Click to review</span>
       </div>
+
+      <SlaBanner appeals={appeals} />
 
       <AppealsFilters filters={filters} onChange={setFilters} />
 
