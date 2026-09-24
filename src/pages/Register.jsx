@@ -102,7 +102,7 @@ export default function Register() {
           </InputOTP>
         </div>
         <Button
-          className="w-full h-12 font-medium"
+          className="w-full h-12 font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
           onClick={handleVerify}
           disabled={loading || otpCode.length < 6}
         >
@@ -117,7 +117,7 @@ export default function Register() {
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
           Didn't receive the code?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
+          <button onClick={handleResend} className="text-cyan-400 font-semibold hover:text-cyan-300">
             Resend
           </button>
         </p>
@@ -135,7 +135,7 @@ export default function Register() {
           Already have an account?{" "}
           <Link
             to={"/login" + (safeReturnTo() !== "/" ? "?returnTo=" + encodeURIComponent(safeReturnTo()) : "")}
-            className="text-primary font-medium hover:underline"
+            className="text-cyan-400 font-semibold hover:text-cyan-300"
           >
             Log in
           </Link>
@@ -156,7 +156,7 @@ export default function Register() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-slate-900 rounded px-3 text-muted-foreground">or</span>
         </div>
       </div>
 
@@ -216,7 +216,7 @@ export default function Register() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
