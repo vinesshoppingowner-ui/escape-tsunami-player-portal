@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SettingsDialog from '@/components/profile/SettingsDialog';
+import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 
 const itemCls = 'flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md text-slate-300 focus:text-white focus:bg-white/5';
 
@@ -29,8 +30,8 @@ export default function ProfileMenu() {
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <button aria-label="Open profile menu" className="h-9 w-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold text-white ring-2 ring-white/10 hover:ring-cyan-400/50 transition-all">
-            {initials}
+          <button aria-label="Open profile menu" className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold text-white ring-2 ring-white/10 hover:ring-cyan-400/50 transition-all flex items-center justify-center">
+            {user.roblox_username ? <RobloxAvatar username={user.roblox_username} size={36} /> : initials}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60 bg-slate-900/95 backdrop-blur-xl border-white/10 text-white p-1.5">

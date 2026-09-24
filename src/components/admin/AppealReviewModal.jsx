@@ -156,7 +156,22 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           )}
 
-          {moderation && can(user, 'edit_moderations') && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
+          {moderation?.unlisted && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+              <div className="text-[11px] uppercase tracking-wider font-semibold text-amber-300">Punishment not on record</div>
+              <p className="mt-1 text-amber-100/80">The player says they received this punishment, but it isn't in their moderation history. Approving won't lift anything automatically.</p>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[['Type', appeal.unlisted_type], ['When', appeal.unlisted_date ? new Date(appeal.unlisted_date).toLocaleDateString() : 'Not given'], ['Reason given', appeal.unlisted_reason || 'Not given']].map(([k, v]) => (
+                  <div key={k} className="rounded-lg bg-slate-950/40 border border-white/10 px-3 py-2">
+                    <div className="text-[10px] uppercase text-slate-500">{k}</div>
+                    <div className="text-white">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {moderation && !moderation.unlisted && can(user, 'edit_moderations') && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
 
           {isAdmin && <PlayerHistoryPanel username={appeal.roblox_username} currentAppealId={appeal.id} />}
           {isAdmin && <AppealTimeline appeal={appeal} />}

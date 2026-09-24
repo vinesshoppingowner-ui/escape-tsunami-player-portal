@@ -50,7 +50,8 @@ export default function DesktopNotifications({ isDesktopApp }) {
           if (age < 60_000) {
             new Notification(n.title || 'Escape Tsunami', {
               body: n.body || '',
-              icon: 'https://base44.com/logo_v2.svg',
+              icon: 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png',
+              badge: 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png',
               tag: n.id,
             });
           }

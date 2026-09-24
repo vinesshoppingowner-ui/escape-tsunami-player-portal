@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
+import CustomDropdown from '@/components/ui/custom-dropdown';
+import DatePickerField from '@/components/ui/date-picker-field';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban', 'Other'];
 const MIN = 20;
@@ -37,12 +39,10 @@ export default function UnlistedAppealDialog({ open, onClose, onSubmit }) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1.5 text-sm">Punishment type
-              <select value={form.unlisted_type} onChange={set('unlisted_type')} className={`w-full h-9 rounded-md border px-2 ${field}`}>
-                {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
+              <CustomDropdown value={form.unlisted_type} onChange={(v) => setForm((f) => ({ ...f, unlisted_type: v }))} options={TYPES.map((t) => ({ value: t, label: t }))} />
             </label>
             <label className="space-y-1.5 text-sm">When (approx.)
-              <Input type="date" value={form.unlisted_date} onChange={set('unlisted_date')} className={field} />
+              <DatePickerField value={form.unlisted_date} onChange={(v) => setForm((f) => ({ ...f, unlisted_date: v }))} />
             </label>
           </div>
           <label className="block space-y-1.5 text-sm">Reason you were given (optional)
