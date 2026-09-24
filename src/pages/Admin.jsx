@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown } from 'lucide-react';
 import LiveChatTab from '@/components/admin/LiveChatTab';
 import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
@@ -18,7 +17,23 @@ import WatchlistTab from '@/components/admin/watchlist/WatchlistTab';
 import BanEvasionTab from '@/components/admin/evasion/BanEvasionTab';
 import StaffPerformanceTab from '@/components/admin/performance/StaffPerformanceTab';
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
-import { Eye, ScanSearch, Trophy, Megaphone } from 'lucide-react';
+import AdminToolbar from '@/components/admin/AdminToolbar';
+import AdminOverview from '@/components/admin/AdminOverview';
+import QuickPunishButton from '@/components/admin/QuickPunishButton';
+
+const ADMIN_TOOLS = [
+  { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { value: 'users', label: 'Users', icon: Users },
+  { value: 'performance', label: 'Staff Performance', icon: Trophy },
+  { value: 'logs', label: 'Staff Logs', icon: ScrollText },
+  { value: 'watchlist', label: 'Watchlist', icon: Eye },
+  { value: 'evasion', label: 'Ban Evasion', icon: ScanSearch },
+  { value: 'message', label: 'Message Players', icon: Megaphone },
+  { value: 'bans', label: 'Website Bans', icon: Ban },
+  { value: 'applications', label: 'Applications', icon: FileText },
+];
+
+const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -41,53 +56,57 @@ export default function Admin() {
 
   const isAdmin = isOwner(user);
 
-  const moreItems = isAdmin
-    ? [
-        { value: 'users', label: 'Users', icon: Users },
-        { value: 'bans', label: 'Website Bans', icon: Ban },
-        { value: 'logs', label: 'Staff Logs', icon: ScrollText },
-        { value: 'applications', label: 'Applications', icon: FileText },
-        { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { value: 'watchlist', label: 'Watchlist', icon: Eye },
-        { value: 'evasion', label: 'Ban Evasion', icon: ScanSearch },
-        { value: 'performance', label: 'Staff Performance', icon: Trophy },
-        { value: 'message', label: 'Message Players', icon: Megaphone },
-      ]
-    : [];
-
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className={`min-h-screen text-white ${isAdmin ? 'bg-gradient-to-b from-amber-950/30 via-slate-950 to-slate-950 bg-slate-950' : 'bg-slate-950'}`}>
       <SiteNav />
-      <main className="max-w-5xl mx-auto px-5 pt-28 pb-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-medium text-rose-300 mb-4">
-          <ShieldAlert className="h-3.5 w-3.5" /> Staff Dashboard
-        </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Moderation console</h1>
-        <p className="mt-2 text-slate-400">Review appeals, issue moderations, and manage staff access.</p>
+      <main className="max-w-5xl mx-auto px-5 pt-28 pb-24">
+        {isAdmin ? (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-semibold text-amber-200 mb-4">
+            <Crown className="h-3.5 w-3.5" /> Administrator
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-medium text-rose-300 mb-4">
+            <ShieldAlert className="h-3.5 w-3.5" /> Staff Dashboard
+          </div>
+        )}
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+          {isAdmin ? 'Admin command center' : 'Moderation console'}
+        </h1>
+        <p className="mt-2 text-slate-400">
+          {isAdmin ? `Welcome back${user?.full_name ? `, ${user.full_name}` : ''} — full control over moderation, staff, and the portal.` : 'Review appeals, issue moderations, and manage staff access.'}
+        </p>
+
+        {isAdmin && <AdminOverview />}
 
         <Tabs value={tab} onValueChange={setTab} className="mt-8">
           <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/5 border border-white/10 h-auto rounded-xl">
-            <TabsTrigger value="appeals" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
-            <TabsTrigger value="moderations" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
-            <TabsTrigger value="lookup" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
-            <TabsTrigger value="livechat" className="shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg"><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
-            <AdminMoreMenu items={moreItems} value={tab} onSelect={setTab} />
+            <TabsTrigger value="appeals" className={tabCls}><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
+            <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
+            <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
+            <TabsTrigger value="livechat" className={tabCls}><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
           </TabsList>
+          {isAdmin && <AdminToolbar items={ADMIN_TOOLS} />}
+
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
-          {isAdmin && <TabsContent value="users"><UsersTab /></TabsContent>}
           <TabsContent value="lookup"><UserLookup /></TabsContent>
           <TabsContent value="livechat"><LiveChatTab /></TabsContent>
-          {isAdmin && <TabsContent value="bans"><WebsiteBansTab /></TabsContent>}
-          {isAdmin && <TabsContent value="logs"><StaffLogsTab /></TabsContent>}
-          {isAdmin && <TabsContent value="applications"><ApplicationsTab /></TabsContent>}
-          {isAdmin && <TabsContent value="dashboard"><DashboardTab /></TabsContent>}
-          {isAdmin && <TabsContent value="watchlist"><WatchlistTab /></TabsContent>}
-          {isAdmin && <TabsContent value="evasion"><BanEvasionTab /></TabsContent>}
-          {isAdmin && <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>}
-          {isAdmin && <TabsContent value="message"><MassMessageTab /></TabsContent>}
-          </Tabs>
+          {isAdmin && (
+            <>
+              <TabsContent value="users"><UsersTab /></TabsContent>
+              <TabsContent value="bans"><WebsiteBansTab /></TabsContent>
+              <TabsContent value="logs"><StaffLogsTab /></TabsContent>
+              <TabsContent value="applications"><ApplicationsTab /></TabsContent>
+              <TabsContent value="dashboard"><DashboardTab /></TabsContent>
+              <TabsContent value="watchlist"><WatchlistTab /></TabsContent>
+              <TabsContent value="evasion"><BanEvasionTab /></TabsContent>
+              <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>
+              <TabsContent value="message"><MassMessageTab /></TabsContent>
+            </>
+          )}
+        </Tabs>
       </main>
+      <QuickPunishButton />
     </div>
   );
 }

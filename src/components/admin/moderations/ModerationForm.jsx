@@ -12,6 +12,9 @@ import CustomDropdown from '@/components/ui/custom-dropdown';
 import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
 import { emailPlayer } from '@/lib/userEmails';
+import { isOwner } from '@/lib/isOwner';
+import EscalationHint from '@/components/admin/moderations/EscalationHint';
+import TemplatePicker from '@/components/admin/moderations/TemplatePicker';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -166,6 +169,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
+  // Fills type/duration (and reason, if the preset has one) from a template or escalation suggestion.
+  const applyPreset = (p) => {
+    const duration = p.duration || '';
+    setForm((f) => ({ ...f, moderation_type: p.moderation_type, duration, reason: p.reason || f.reason }));
+    setDurationMode(DURATION_PRESETS.some((d) => d.value === duration) ? duration : 'custom');
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
       <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
@@ -260,6 +270,8 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   <Label className="text-xs text-slate-400">Roblox username *</Label>
                   <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
                 </div>
+                <EscalationHint username={form.roblox_username} onApply={applyPreset} />
+                <TemplatePicker onPick={applyPreset} current={form} isAdmin={isOwner(user)} />
                 <div>
                   <Label className="text-xs text-slate-400">Type</Label>
                   <div className="flex flex-wrap gap-2 mt-1.5">

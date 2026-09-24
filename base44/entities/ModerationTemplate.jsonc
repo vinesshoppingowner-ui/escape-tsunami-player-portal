@@ -1,0 +1,97 @@
+{
+  "name": "ModerationTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Short label for the preset, e.g. Exploiting"
+    },
+    "moderation_type": {
+      "type": "string",
+      "enum": [
+        "Warning",
+        "Mute",
+        "Kick",
+        "Temporary Ban",
+        "Permanent Ban"
+      ],
+      "default": "Warning"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason filled in when the preset is used"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Duration filled in, e.g. 7d"
+    }
+  },
+  "required": [
+    "name",
+    "moderation_type",
+    "reason"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}
