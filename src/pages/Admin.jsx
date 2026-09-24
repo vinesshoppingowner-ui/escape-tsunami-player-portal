@@ -17,7 +17,7 @@ import WatchlistTab from '@/components/admin/watchlist/WatchlistTab';
 import BanEvasionTab from '@/components/admin/evasion/BanEvasionTab';
 import StaffPerformanceTab from '@/components/admin/performance/StaffPerformanceTab';
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
-import AdminToolbar from '@/components/admin/AdminToolbar';
+import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
 import AdminOverview from '@/components/admin/AdminOverview';
 import QuickPunishButton from '@/components/admin/QuickPunishButton';
 
@@ -84,8 +84,8 @@ export default function Admin() {
             <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
             <TabsTrigger value="livechat" className={tabCls}><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
+            {isAdmin && <AdminMoreMenu items={ADMIN_TOOLS} value={tab} onSelect={setTab} />}
           </TabsList>
-          {isAdmin && <AdminToolbar items={ADMIN_TOOLS} />}
 
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
