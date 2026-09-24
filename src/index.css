@@ -345,9 +345,9 @@
   border-radius: 9999px !important;
   background: linear-gradient(
     150deg,
-    rgba(255, 255, 255, 0.14) 0%,
-    rgba(186, 230, 253, 0.07) 40%,
-    rgba(59, 130, 246, 0.1) 100%
+    rgba(255, 255, 255, calc(0.14 * var(--glass-mult, 1))) 0%,
+    rgba(186, 230, 253, calc(0.07 * var(--glass-mult, 1))) 40%,
+    rgba(59, 130, 246, calc(0.1 * var(--glass-mult, 1))) 100%
   ) !important;
   backdrop-filter: blur(26px) saturate(2) brightness(1.12);
   -webkit-backdrop-filter: blur(26px) saturate(2) brightness(1.12);
@@ -377,9 +377,9 @@
 .bg-gradient-to-r.from-cyan-400.to-blue-500:hover {
   background: linear-gradient(
     150deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(186, 230, 253, 0.12) 40%,
-    rgba(59, 130, 246, 0.16) 100%
+    rgba(255, 255, 255, calc(0.2 * var(--glass-mult, 1))) 0%,
+    rgba(186, 230, 253, calc(0.12 * var(--glass-mult, 1))) 40%,
+    rgba(59, 130, 246, calc(0.16 * var(--glass-mult, 1))) 100%
   ) !important;
   box-shadow:
     0 12px 34px rgba(8, 20, 45, 0.36),

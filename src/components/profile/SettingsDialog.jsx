@@ -1,4 +1,5 @@
-import { Palette, Bell, Snowflake, LayoutGrid } from 'lucide-react';
+import { Palette, Bell, Snowflake, LayoutGrid, Droplets } from 'lucide-react';
+import GlassSlider from '@/components/profile/GlassSlider';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
@@ -46,6 +47,9 @@ export default function SettingsDialog({ open, onOpenChange }) {
         <div className="space-y-3">
           <Section icon={Palette} title="Theme color" desc="Accent color used across the portal.">
             <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
+          </Section>
+          <Section icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">
+            <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
           </Section>
           <Section icon={Bell} title="Notifications">{toggleRow('welcome_popup', 'Show welcome popup after logging in')}</Section>
           <Section icon={Snowflake} title="Effects">{toggleRow('seasonal_effects', 'Show seasonal effects (snow, sparkles)')}</Section>

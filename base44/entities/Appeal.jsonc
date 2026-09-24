@@ -4,7 +4,7 @@
   "properties": {
     "moderation_id": {
       "type": "string",
-      "description": "Reference to the Moderation being appealed"
+      "description": "Reference to the Moderation being appealed, or 'unlisted' for a punishment not on record"
     },
     "roblox_username": {
       "type": "string",
@@ -21,6 +21,19 @@
     "deserved_infraction": {
       "type": "string",
       "description": "The player's answer to: Did you deserve this infraction in your opinion?"
+    },
+    "unlisted_type": {
+      "type": "string",
+      "description": "For unlisted punishments: the type the player says they received"
+    },
+    "unlisted_date": {
+      "type": "string",
+      "format": "date",
+      "description": "For unlisted punishments: roughly when it happened"
+    },
+    "unlisted_reason": {
+      "type": "string",
+      "description": "For unlisted punishments: the reason the player was given, if any"
     },
     "status": {
       "type": "string",

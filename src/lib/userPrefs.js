@@ -10,6 +10,7 @@ export const DEFAULT_PREFS = {
   appeal_card_style: 'standard',
   welcome_popup: true,
   seasonal_effects: true,
+  glass_transparency: 50,
 };
 
 const localKey = (user) => `et_prefs_${user?.id || 'guest'}`;

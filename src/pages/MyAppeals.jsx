@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle, MessageSquare, ArrowLeft } from 'lucide-react';
+import { Loader2, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle, MessageSquare, ArrowLeft, Plus } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import UnlistedAppealDialog from '@/components/appeals/UnlistedAppealDialog';
+import { UNLISTED_ID, unlistedModeration } from '@/lib/unlistedAppeal';
 
 const STATUS_STYLES = {
   'Pending': { cls: 'bg-amber-500/10 text-amber-300 border-amber-500/20', icon: Clock, label: 'Pending' },
@@ -21,6 +24,8 @@ export default function MyAppeals() {
   const [appeals, setAppeals] = useState([]);
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unlistedOpen, setUnlistedOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user?.roblox_username) setSavedUsername(user.roblox_username);
@@ -48,7 +53,14 @@ export default function MyAppeals() {
     if (user) { try { await base44.auth.updateMe({ roblox_username: username }); } catch {} }
   };
 
-  const modFor = (id) => moderations.find((m) => m.id === id);
+  const modOf = (a) => moderations.find((m) => m.id === a.moderation_id) || unlistedModeration(a);
+  const locked = appeals.some((a) => a.admin_locked);
+
+  const submitUnlisted = async (data) => {
+    const created = await base44.entities.Appeal.create({ ...data, moderation_id: UNLISTED_ID, roblox_username: savedUsername, status: 'Pending' });
+    setAppeals((prev) => [created, ...prev]);
+    toast({ title: 'Appeal submitted', description: 'Staff will review it soon.' });
+  };
 
   if (!savedUsername) {
     return (
@@ -93,6 +105,19 @@ export default function MyAppeals() {
           ))}
         </div>
 
+        {!locked && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+            <div>
+              <div className="text-sm font-semibold text-white">Punishment not shown?</div>
+              <div className="text-xs text-slate-400">If you were punished in-game but it isn't in your history, you can still appeal it.</div>
+            </div>
+            <Button size="sm" onClick={() => setUnlistedOpen(true)} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
+              <Plus className="h-4 w-4" /> Appeal unlisted punishment
+            </Button>
+          </div>
+        )}
+        <UnlistedAppealDialog open={unlistedOpen} onClose={() => setUnlistedOpen(false)} onSubmit={submitUnlisted} />
+
         {/* Appeals list */}
         <div className="mt-8 space-y-4">
           {loading ? (
@@ -116,7 +141,7 @@ export default function MyAppeals() {
             </div>
           ) : (
             appeals.map((a, i) => {
-              const mod = modFor(a.moderation_id);
+              const mod = modOf(a);
               const st = STATUS_STYLES[a.status] || STATUS_STYLES['Pending'];
               const StatusIcon = st.icon;
               return (

@@ -24,7 +24,7 @@ export async function applyAppealDecision({
     data: { status: appeal.status, staff_response: appeal.staff_response || '', internal_notes: appeal.internal_notes || '', can_reappeal: appeal.can_reappeal !== false },
   }];
   await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal });
-  if (status === 'Approved' && moderation && moderation.status !== 'Repealed') {
+  if (status === 'Approved' && moderation && !moderation.unlisted && moderation.status !== 'Repealed') {
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
     await pushUnban(appeal.roblox_username);
     undoOps.push({ op: 'update', entity: 'Moderation', id: moderation.id, data: { status: moderation.status } }, ...rebanOp(moderation));

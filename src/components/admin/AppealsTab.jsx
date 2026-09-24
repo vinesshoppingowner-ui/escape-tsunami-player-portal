@@ -14,6 +14,7 @@ import { applyAppealDecision } from '@/lib/appealDecision';
 import { can } from '@/lib/staffPermissions';
 import { isOwner } from '@/lib/isOwner';
 import AutoAssignToggle from '@/components/admin/appeals/AutoAssignToggle';
+import { unlistedModeration } from '@/lib/unlistedAppeal';
 
 export default function AppealsTab() {
   const { user } = useAuth();
@@ -39,13 +40,13 @@ export default function AppealsTab() {
   };
   useEffect(() => { load(); }, []);
 
-  const modFor = (id) => moderations.find((m) => m.id === id);
+  const modOf = (a) => moderations.find((m) => m.id === a.moderation_id) || unlistedModeration(a);
   const selected = appeals.find((a) => a.id === selectedId) || null;
 
   const q = filters.search.trim().toLowerCase();
   const visible = appeals
     .filter((a) => {
-      const mod = modFor(a.moderation_id);
+      const mod = modOf(a);
       if (filters.status !== 'all' && a.status !== filters.status) return false;
       if (filters.priority !== 'all' && priorityFor(mod).label !== filters.priority) return false;
       if (filters.type !== 'all' && mod?.moderation_type !== filters.type) return false;
@@ -53,8 +54,8 @@ export default function AppealsTab() {
       return true;
     })
     .sort((a, b) => {
-      const pa = PRIORITY_RANK[priorityFor(modFor(a.moderation_id)).label];
-      const pb = PRIORITY_RANK[priorityFor(modFor(b.moderation_id)).label];
+      const pa = PRIORITY_RANK[priorityFor(modOf(a)).label];
+      const pb = PRIORITY_RANK[priorityFor(modOf(b)).label];
       if (pa !== pb) return pa - pb;
       return new Date(b.created_date) - new Date(a.created_date);
     });
@@ -68,7 +69,7 @@ export default function AppealsTab() {
   const quickAction = async (appeal, status) => {
     setBusyIds((s) => new Set(s).add(appeal.id));
     try {
-      await applyAppealDecision({ appeal, moderation: modFor(appeal.moderation_id), user, status });
+      await applyAppealDecision({ appeal, moderation: modOf(appeal), user, status });
       await load();
       toast({ title: `Appeal ${status.toLowerCase()}`, description: appeal.roblox_username });
     } catch (e) {
@@ -87,7 +88,7 @@ export default function AppealsTab() {
     if (!window.confirm(`Set ${targets.length} appeal(s) to "${status}"? Players will be notified.`)) return;
     setBulkRunning(true);
     for (const appeal of targets) {
-      await applyAppealDecision({ appeal, moderation: modFor(appeal.moderation_id), user, status });
+      await applyAppealDecision({ appeal, moderation: modOf(appeal), user, status });
     }
     await load();
     setChecked(new Set());
@@ -141,7 +142,7 @@ export default function AppealsTab() {
         <AppealRow
           key={a.id}
           appeal={a}
-          moderation={modFor(a.moderation_id)}
+          moderation={modOf(a)}
           checked={checked.has(a.id)}
           onToggle={() => toggle(a.id)}
           onOpen={() => setSelectedId(a.id)}
@@ -156,7 +157,7 @@ export default function AppealsTab() {
         onClose={() => setSelectedId(null)}
         playerLocked={selected ? isPlayerLocked(selected.roblox_username) : false}
         appeal={selected}
-        moderation={selected ? modFor(selected.moderation_id) : null}
+        moderation={selected ? modOf(selected) : null}
         onSaved={load}
       />
     </div>
