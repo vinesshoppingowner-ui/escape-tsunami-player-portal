@@ -13,6 +13,8 @@ import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
 import { emailPlayer } from '@/lib/userEmails';
 import { isOwner } from '@/lib/isOwner';
+import { canIssueType } from '@/lib/staffPermissions';
+import { isBanType } from '@/lib/staffUndo';
 import EscalationHint from '@/components/admin/moderations/EscalationHint';
 import TemplatePicker from '@/components/admin/moderations/TemplatePicker';
 
@@ -124,7 +126,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
           }
         } catch { /* use typed name as fallback */ }
         const modData = { ...form, roblox_username: resolvedUsername, moderation_date: new Date().toISOString() };
-        await base44.entities.Moderation.create(modData);
+        const created = await base44.entities.Moderation.create(modData);
         base44.entities.Notification.create({
           roblox_username: resolvedUsername,
           title: `New ${form.moderation_type} issued`,
@@ -132,7 +134,8 @@ export default function ModerationForm({ open, onClose, onCreated }) {
           type: 'moderation_issued',
           read: false,
         });
-        logStaffAction(user, 'moderation_issued', resolvedUsername, `Issued ${form.moderation_type} — ${form.reason}`);
+        logStaffAction(user, 'moderation_issued', resolvedUsername, `Issued ${form.moderation_type} — ${form.reason}`,
+          [{ op: 'delete', entity: 'Moderation', id: created.id }, ...(isBanType(form.moderation_type) ? [{ op: 'unban', username: resolvedUsername }] : [])]);
         emailPlayer({
           robloxUsername: resolvedUsername,
           subject: `New ${form.moderation_type} on your account`,
@@ -280,7 +283,9 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                         key={t}
                         type="button"
                         onClick={() => set('moderation_type')(t)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                        disabled={!canIssueType(user, t)}
+                        title={canIssueType(user, t) ? undefined : "You don't have permission for this"}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                           form.moderation_type === t
                             ? typeColor(t)
                             : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
@@ -396,7 +401,10 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <Button variant="outline" onClick={copyForDiscord} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
                   <Copy className="h-4 w-4 mr-1.5" /> Copy for Discord
                 </Button>
-                <Button onClick={create} disabled={saving || !form.roblox_username || !form.reason} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
+                {!canIssueType(user, form.moderation_type) && (
+                  <span className="mr-auto self-center text-xs text-rose-300">You don't have permission to issue a {form.moderation_type}.</span>
+                )}
+                <Button onClick={create} disabled={saving || !form.roblox_username || !form.reason || !canIssueType(user, form.moderation_type)} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
                   {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Issuing</> : <><Gavel className="h-4 w-4 mr-1.5" /> Issue moderation</>}
                 </Button>
               </div>

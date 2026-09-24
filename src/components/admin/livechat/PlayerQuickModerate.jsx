@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Gavel, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { pushBan } from '@/lib/renderBridge';
+import { isBanType } from '@/lib/staffUndo';
+import { canIssueType } from '@/lib/staffPermissions';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const DURATIONS = ['', '1h', '24h', '7d', '30d'];
@@ -37,7 +39,7 @@ export default function PlayerQuickModerate({ username, evidence, onDone }) {
         evidence_type: evidence ? 'chat_log' : 'none',
         evidence_text: evidence || '',
       };
-      await base44.entities.Moderation.create(data);
+      const created = await base44.entities.Moderation.create(data);
       base44.entities.Notification.create({
         roblox_username: username,
         title: `New ${type} issued`,
@@ -45,7 +47,8 @@ export default function PlayerQuickModerate({ username, evidence, onDone }) {
         type: 'moderation_issued',
         read: false,
       });
-      logStaffAction(user, 'moderation_issued', username, `Issued ${type} from Live Chat — ${reason.trim()}`);
+      logStaffAction(user, 'moderation_issued', username, `Issued ${type} from Live Chat — ${reason.trim()}`,
+        [{ op: 'delete', entity: 'Moderation', id: created.id }, ...(isBanType(type) ? [{ op: 'unban', username }] : [])]);
 
       if (type === 'Permanent Ban' || type === 'Temporary Ban') {
         try {
@@ -65,7 +68,7 @@ export default function PlayerQuickModerate({ username, evidence, onDone }) {
   return (
     <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3.5 space-y-3">
       <div className="flex flex-wrap gap-1.5">
-        {TYPES.map((t) => (
+        {TYPES.filter((t) => canIssueType(user, t)).map((t) => (
           <button
             key={t}
             onClick={() => setType(t)}

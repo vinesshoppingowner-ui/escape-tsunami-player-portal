@@ -15,7 +15,9 @@
         "moderation_issued",
         "moderation_edited",
         "moderation_deleted",
-        "user_role_changed"
+        "user_role_changed",
+        "permissions_changed",
+        "action_undone"
       ]
     },
     "target": {
@@ -25,6 +27,24 @@
     "detail": {
       "type": "string",
       "description": "Short human-readable summary of the action"
+    },
+    "undo_ops": {
+      "type": "string",
+      "description": "JSON list of operations that revert this action"
+    },
+    "undone": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether an admin reverted this action"
+    },
+    "undone_by": {
+      "type": "string",
+      "description": "Admin who reverted the action"
+    },
+    "undone_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action was reverted"
     }
   },
   "required": [

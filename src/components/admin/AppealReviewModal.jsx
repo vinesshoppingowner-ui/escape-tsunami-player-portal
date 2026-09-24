@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { useAuth } from '@/lib/AuthContext';
 import { applyAppealDecision } from '@/lib/appealDecision';
 import { isOwner } from '@/lib/isOwner';
+import { can } from '@/lib/staffPermissions';
 import ReviewQuickDecision from '@/components/admin/appeals/ReviewQuickDecision';
 import ReviewModerationAdjust from '@/components/admin/appeals/ReviewModerationAdjust';
 import ReviewAppealManage from '@/components/admin/appeals/ReviewAppealManage';
@@ -73,6 +74,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
   if (!appeal || !draft) return null;
 
   const isAdmin = isOwner(user);
+  const canDecide = can(user, 'decide_appeals');
   const st = STATUS_STYLES[appeal.status] || STATUS_STYLES['Pending'];
   const StatusIcon = st.icon;
 
@@ -127,7 +129,13 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           )}
 
-          <ReviewQuickDecision current={appeal.status} onDecide={decide} />
+          {canDecide ? (
+            <ReviewQuickDecision current={appeal.status} onDecide={decide} />
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs text-slate-400">
+              An admin has turned off your permission to approve or deny appeals. You can still move it to Under Review, chat, and add notes.
+            </div>
+          )}
 
           {isAdmin && <AppealAssign appeal={appeal} user={user} onChanged={() => onSaved?.()} />}
 
@@ -148,7 +156,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
             </div>
           )}
 
-          {moderation && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
+          {moderation && can(user, 'edit_moderations') && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
 
           {isAdmin && <PlayerHistoryPanel username={appeal.roblox_username} currentAppealId={appeal.id} />}
           {isAdmin && <AppealTimeline appeal={appeal} />}
@@ -253,7 +261,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
                 <CustomDropdown
                   value={draft.status}
                   onChange={(v) => setDraft({ ...draft, status: v })}
-                  options={STATUSES.map((s) => ({ value: s, label: s }))}
+                  options={STATUSES.filter((s) => canDecide || s === appeal.status || !['Approved', 'Denied'].includes(s)).map((s) => ({ value: s, label: s }))}
                   placeholder="Select decision"
                 />
                 {draft.status === 'Denied' && (

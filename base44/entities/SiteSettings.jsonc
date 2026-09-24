@@ -91,6 +91,11 @@
       "description": "Maximum appeals a user can submit",
       "default": 3
     },
+    "auto_assign_appeals": {
+      "type": "boolean",
+      "description": "Whether new appeals are automatically assigned to staff",
+      "default": false
+    },
     "updated_by": {
       "type": "string",
       "description": "Email of the owner who last updated settings"

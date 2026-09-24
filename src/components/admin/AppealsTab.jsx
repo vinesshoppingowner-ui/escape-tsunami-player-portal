@@ -11,6 +11,9 @@ import AppealsBulkBar from '@/components/admin/appeals/AppealsBulkBar';
 import SlaBanner from '@/components/admin/appeals/SlaBanner';
 import { PRIORITY_RANK, priorityFor } from '@/components/admin/appeals/appealMeta';
 import { applyAppealDecision } from '@/lib/appealDecision';
+import { can } from '@/lib/staffPermissions';
+import { isOwner } from '@/lib/isOwner';
+import AutoAssignToggle from '@/components/admin/appeals/AutoAssignToggle';
 
 export default function AppealsTab() {
   const { user } = useAuth();
@@ -64,15 +67,23 @@ export default function AppealsTab() {
 
   const quickAction = async (appeal, status) => {
     setBusyIds((s) => new Set(s).add(appeal.id));
-    await applyAppealDecision({ appeal, moderation: modFor(appeal.moderation_id), user, status });
-    await load();
+    try {
+      await applyAppealDecision({ appeal, moderation: modFor(appeal.moderation_id), user, status });
+      await load();
+      toast({ title: `Appeal ${status.toLowerCase()}`, description: appeal.roblox_username });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Not allowed', description: e.message });
+    }
     setBusyIds((s) => { const n = new Set(s); n.delete(appeal.id); return n; });
-    toast({ title: `Appeal ${status.toLowerCase()}`, description: appeal.roblox_username });
   };
 
   const bulkAction = async (status) => {
     const targets = appeals.filter((a) => checked.has(a.id) && a.status !== status);
     if (!targets.length) return;
+    if (['Approved', 'Denied'].includes(status) && !can(user, 'decide_appeals')) {
+      toast({ variant: 'destructive', title: 'Not allowed', description: "You don't have permission to approve or deny appeals." });
+      return;
+    }
     if (!window.confirm(`Set ${targets.length} appeal(s) to "${status}"? Players will be notified.`)) return;
     setBulkRunning(true);
     for (const appeal of targets) {
@@ -106,6 +117,7 @@ export default function AppealsTab() {
         <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">{appeals.length}</span>
         {pendingCount > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">{pendingCount} new</span>}
         <span className="text-xs text-slate-500 ml-auto">Sorted by priority · Click to review</span>
+        {isOwner(user) && <AutoAssignToggle />}
       </div>
 
       <SlaBanner appeals={appeals} />

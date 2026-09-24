@@ -19,6 +19,8 @@ import { bulkModerationAction } from '@/lib/moderationBulk';
 import { downloadCsv } from '@/lib/csv';
 import { isOwner } from '@/lib/isOwner';
 import { Download } from 'lucide-react';
+import { snapshot, rebanOp } from '@/lib/staffUndo';
+import { can } from '@/lib/staffPermissions';
 
 const CSV_COLUMNS = [
   { key: 'roblox_username', label: 'Username' },
@@ -118,7 +120,8 @@ export default function ModerationsTab() {
           toast({ variant: 'destructive', title: 'Failed to push unban to game', description: e.message });
         }
       }
-      await logStaffAction(user, 'moderation_deleted', deleteTarget.roblox_username, `Deleted ${deleteTarget.moderation_type} — ${deleteTarget.reason}`);
+      await logStaffAction(user, 'moderation_deleted', deleteTarget.roblox_username, `Deleted ${deleteTarget.moderation_type} — ${deleteTarget.reason}`,
+        [{ op: 'create', entity: 'Moderation', data: snapshot(deleteTarget) }, ...rebanOp(deleteTarget)]);
       setDeleteTarget(null);
       await load();
     } finally {
@@ -275,6 +278,7 @@ export default function ModerationsTab() {
             onToggle={toggleSelect}
             onToggleAll={(ids, on) => setSelected(on ? new Set(ids) : new Set())}
             onEdit={setEditTarget}
+            canDelete={can(user, 'delete_moderations')}
           />
         </>
       )}

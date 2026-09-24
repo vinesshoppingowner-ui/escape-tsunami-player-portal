@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Pencil } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
+import { snapshot, rebanOp } from '@/lib/staffUndo';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -31,7 +32,9 @@ export default function ModerationEditDialog({ moderation, user, onClose, onSave
     if (moderation.moderation_type.includes('Ban') && moderation.status === 'Active' && status !== 'Active') {
       try { await pushUnban(roblox_username); } catch { /* game server offline */ }
     }
-    await logStaffAction(user, 'moderation_edited', roblox_username, `Edited ${moderation_type} — ${reason}`);
+    const liftedBan = moderation.moderation_type.includes('Ban') && moderation.status === 'Active' && status !== 'Active';
+    await logStaffAction(user, 'moderation_edited', roblox_username, `Edited ${moderation_type} — ${reason}`,
+      [{ op: 'update', entity: 'Moderation', id: moderation.id, data: snapshot(moderation) }, ...(liftedBan ? rebanOp(moderation) : [])]);
     setSaving(false);
     onSaved?.();
     onClose();

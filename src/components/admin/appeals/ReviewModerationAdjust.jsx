@@ -5,6 +5,7 @@ import { Loader2, SlidersHorizontal, Undo2, Save } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { logStaffAction } from '@/lib/staffLog';
 import { pushUnban } from '@/lib/renderBridge';
+import { rebanOp } from '@/lib/staffUndo';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const isBan = (t) => t === 'Temporary Ban' || t === 'Permanent Ban';
@@ -26,7 +27,9 @@ export default function ReviewModerationAdjust({ moderation, user, onChanged }) 
     setBusy('save');
     await base44.entities.Moderation.update(moderation.id, { moderation_type: type, duration });
     if (isBan(moderation.moderation_type) && !isBan(type)) await pushUnban(moderation.roblox_username);
-    await logStaffAction(user, 'moderation_issued', moderation.roblox_username, `Adjusted ${moderation.moderation_type} → ${type}${duration ? ` (${duration})` : ''}`);
+    await logStaffAction(user, 'moderation_edited', moderation.roblox_username, `Adjusted ${moderation.moderation_type} → ${type}${duration ? ` (${duration})` : ''}`,
+      [{ op: 'update', entity: 'Moderation', id: moderation.id, data: { moderation_type: moderation.moderation_type, duration: moderation.duration || '' } },
+        ...(isBan(moderation.moderation_type) && !isBan(type) ? rebanOp(moderation) : [])]);
     setBusy(null);
     onChanged();
   };
@@ -36,7 +39,8 @@ export default function ReviewModerationAdjust({ moderation, user, onChanged }) 
     setBusy('repeal');
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
     if (isBan(moderation.moderation_type)) await pushUnban(moderation.roblox_username);
-    await logStaffAction(user, 'moderation_issued', moderation.roblox_username, `Repealed ${moderation.moderation_type}`);
+    await logStaffAction(user, 'moderation_edited', moderation.roblox_username, `Repealed ${moderation.moderation_type}`,
+      [{ op: 'update', entity: 'Moderation', id: moderation.id, data: { status: moderation.status } }, ...rebanOp(moderation)]);
     setBusy(null);
     onChanged();
   };

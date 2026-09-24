@@ -31,6 +31,13 @@
       "type": "string",
       "format": "date-time",
       "description": "When the user last logged in"
+    },
+    "denied_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Staff powers an admin has switched off for this user"
     }
   },
   "required": [

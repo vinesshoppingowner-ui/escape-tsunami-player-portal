@@ -1,0 +1,40 @@
+{
+  "name": "Auto Assign Appeals",
+  "description": "When a new appeal is submitted, assign it to the staff member with the fewest open appeals (only if auto-assign is switched on)",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Appeal",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ (.trigger.data.assigned_to_email // \"\") == \"\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_assign_appeals",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "assign_appeal": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoAssignAppeal",
+            "args": {
+              "appeal_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Assign to staff",
+            "description": "Lightest open queue"
+          }
+        }
+      }
+    ]
+  }
+}

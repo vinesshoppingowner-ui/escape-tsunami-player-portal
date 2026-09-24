@@ -14,7 +14,7 @@ function formatDate(d) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function ModerationTable({ items, onDelete, isAdmin, selected = new Set(), onToggle, onToggleAll, onEdit }) {
+export default function ModerationTable({ items, onDelete, isAdmin, selected = new Set(), onToggle, onToggleAll, onEdit, canDelete = true }) {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -108,14 +108,16 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => onDelete(m)}
-                    className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {canDelete && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => onDelete(m)}
+                      className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </td>
               </tr>
             );

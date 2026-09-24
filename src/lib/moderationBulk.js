@@ -1,6 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { logStaffAction } from '@/lib/staffLog';
 import { pushUnban } from '@/lib/renderBridge';
+import { snapshot, rebanOp } from '@/lib/staffUndo';
 
 // action: 'Repealed' | 'Expired' | 'delete'
 export async function bulkModerationAction(items, action, user) {
@@ -10,11 +11,18 @@ export async function bulkModerationAction(items, action, user) {
     if (m.moderation_type?.includes('Ban') && m.status === 'Active') {
       try { await pushUnban(m.roblox_username); } catch { /* game server offline */ }
     }
+    const undoOps = [
+      action === 'delete'
+        ? { op: 'create', entity: 'Moderation', data: snapshot(m) }
+        : { op: 'update', entity: 'Moderation', id: m.id, data: { status: m.status } },
+      ...rebanOp(m),
+    ];
     await logStaffAction(
       user,
       action === 'delete' ? 'moderation_deleted' : 'moderation_edited',
       m.roblox_username,
-      action === 'delete' ? `Bulk deleted ${m.moderation_type} — ${m.reason}` : `Bulk set ${m.moderation_type} to ${action}`
+      action === 'delete' ? `Bulk deleted ${m.moderation_type} — ${m.reason}` : `Bulk set ${m.moderation_type} to ${action}`,
+      undoOps
     );
   }
 }

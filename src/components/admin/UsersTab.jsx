@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
-import { Loader2, ShieldCheck, User as UserIcon, UserPlus } from 'lucide-react';
+import { Loader2, ShieldCheck, User as UserIcon, UserPlus, KeyRound } from 'lucide-react';
+import StaffPermissionsDialog from '@/components/admin/users/StaffPermissionsDialog';
+import { deniedPermissions } from '@/lib/staffPermissions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -15,6 +17,7 @@ export default function UsersTab() {
   const [inviteRole, setInviteRole] = useState('admin');
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null);
+  const [permTarget, setPermTarget] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -113,6 +116,12 @@ export default function UsersTab() {
               <div className="text-xs text-slate-500 truncate">@{u.email.split('@')[0]}</div>
             </div>
             <div className="flex items-center gap-2">
+              {u.role === 'staff' && (
+                <button onClick={() => setPermTarget(u)} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200 hover:bg-amber-500/20">
+                  <KeyRound className="h-3.5 w-3.5" /> Permissions
+                  {deniedPermissions(u).length > 0 && <span className="text-rose-300">({deniedPermissions(u).length} off)</span>}
+                </button>
+              )}
               {u.role === 'admin' ? (
                 <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
                   <ShieldCheck className="h-3.5 w-3.5" /> Admin
@@ -136,6 +145,7 @@ export default function UsersTab() {
           </div>
         ))}
       </div>
+      {permTarget && <StaffPermissionsDialog target={permTarget} user={user} onClose={() => setPermTarget(null)} onSaved={load} />}
     </div>
   );
 }
