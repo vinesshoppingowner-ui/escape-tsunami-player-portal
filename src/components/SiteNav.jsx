@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown, Columns2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -177,6 +177,11 @@ export default function SiteNav() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
+          {user && window.name !== 'split-pane' && (
+            <Link to="/split" title="Split View" className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-white/10">
+              <Columns2 className="h-3.5 w-3.5" /> Split
+            </Link>
+          )}
           <Link to="/portal">
             <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
               <LogIn className="h-4 w-4 mr-1.5" /> Member Portal

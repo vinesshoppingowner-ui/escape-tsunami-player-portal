@@ -18,6 +18,7 @@ import Applications from './pages/Applications';
 import Apply from './pages/Apply';
 import ModerationPopOut from './pages/ModerationPopOut';
 import PlayerProfile from './pages/PlayerProfile';
+import SplitView from './pages/SplitView';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/apply/:id" element={<Apply />} />
           <Route path="/moderation-popout" element={<ModerationPopOut />} />
           <Route path="/admin/player/:username" element={<PlayerProfile />} />
+          <Route path="/split" element={<SplitView />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

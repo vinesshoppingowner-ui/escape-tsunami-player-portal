@@ -41,7 +41,7 @@ const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/
 
 export default function Admin() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('appeals');
+  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get('tab') || 'appeals');
 
   if (!isOwner(user) && user?.role !== 'staff') {
     return (
