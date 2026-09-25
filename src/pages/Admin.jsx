@@ -5,7 +5,6 @@ import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown, UserRound, FileDown } from 'lucide-react';
 import PlayersTab from '@/components/admin/players/PlayersTab';
-import AdminDashboardTab from '@/components/admin/admindash/AdminDashboardTab';
 import ReportsTab from '@/components/admin/reports/ReportsTab';
 import LiveChatTab from '@/components/admin/LiveChatTab';
 import AppealsTab from '@/components/admin/AppealsTab';
@@ -89,7 +88,6 @@ export default function Admin() {
             <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
             <TabsTrigger value="livechat" className={tabCls}><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
-            {isAdmin && <TabsTrigger value="admindash" className={`${tabCls} text-amber-200 data-[state=active]:text-amber-100 data-[state=active]:bg-amber-500/15`}><Crown className="h-3.5 w-3.5" /> Admin Dashboard</TabsTrigger>}
             {isAdmin && <AdminMoreMenu items={ADMIN_TOOLS} value={tab} onSelect={setTab} />}
           </TabsList>
 
@@ -109,7 +107,6 @@ export default function Admin() {
               <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>
               <TabsContent value="message"><MassMessageTab /></TabsContent>
               <TabsContent value="players"><PlayersTab /></TabsContent>
-              <TabsContent value="admindash"><AdminDashboardTab /></TabsContent>
               <TabsContent value="reports"><ReportsTab /></TabsContent>
             </>
           )}
