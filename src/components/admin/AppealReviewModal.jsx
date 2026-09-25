@@ -1,4 +1,5 @@
 import AppealChat from '@/components/appeals/AppealChat';
+import { Link } from 'react-router-dom';
 import AppealAssign from '@/components/admin/appeals/AppealAssign';
 import AppealTimeline from '@/components/admin/appeals/AppealTimeline';
 import PlayerHistoryPanel from '@/components/admin/appeals/PlayerHistoryPanel';
@@ -103,7 +104,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-cyan-300 font-medium">{appeal.roblox_username}</span>
+                <Link to={`/admin/player/${encodeURIComponent(appeal.roblox_username)}`} className="text-cyan-300 font-medium hover:underline">{appeal.roblox_username}</Link>
                 <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${st.cls}`}>
                   <StatusIcon className="h-3 w-3" /> {appeal.status}
                 </span>

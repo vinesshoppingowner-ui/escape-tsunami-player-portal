@@ -14,6 +14,7 @@ import {
   solveChallenge,
 } from '@/lib/banEvasion';
 import { useAuth } from '@/lib/AuthContext';
+import { getPrefs } from '@/lib/userPrefs';
 
 export default function IpBanCheck({ children }) {
   const [status, setStatus] = useState('checking');
@@ -109,9 +110,10 @@ export default function IpBanCheck({ children }) {
     (async () => {
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json').then((r) => r.json());
+        const hidden = getPrefs(user).hide_online_status;
         await base44.auth.updateMe({
           last_ip: ipRes.ip,
-          last_seen: new Date().toISOString(),
+          ...(hidden ? { last_seen: null } : { last_seen: new Date().toISOString() }),
         });
       } catch {
         // Non-critical — fail silently

@@ -493,6 +493,23 @@ a.bg-white\/5:hover {
   --acc-800: 146 64 14; --acc-900: 120 53 15; --acc-950: 69 26 3;
 }
 
+/* ===== Display settings ===== */
+[data-reduce-motion] *,
+[data-reduce-motion] *::before,
+[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+[data-compact] .p-6 { padding: 1rem; }
+[data-compact] .p-5 { padding: 0.875rem; }
+[data-compact] .p-4 { padding: 0.75rem; }
+[data-compact] .gap-6 { gap: 1rem; }
+[data-compact] .gap-4 { gap: 0.75rem; }
+[data-compact] .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem; }
+[data-compact] .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);

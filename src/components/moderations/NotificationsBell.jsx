@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useUserPrefs, notifAllowed, playNotifSound } from '@/lib/userPrefs';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function NotificationsBell({ notifications = [], onMarkAllRead }) {
+export default function NotificationsBell({ notifications: all = [], onMarkAllRead }) {
   const [open, setOpen] = useState(false);
+  const prefs = useUserPrefs();
+  const notifications = all.filter((n) => notifAllowed(prefs, n.type));
   const unread = notifications.filter((n) => !n.read).length;
+  const prevUnread = useRef(unread);
+
+  useEffect(() => {
+    if (unread > prevUnread.current && prefs.notification_sound) playNotifSound();
+    prevUnread.current = unread;
+  }, [unread]);
 
   const toggle = () => {
     const next = !open;

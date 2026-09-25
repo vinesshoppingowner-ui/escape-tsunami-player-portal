@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
 import Apply from './pages/Apply';
 import ModerationPopOut from './pages/ModerationPopOut';
+import PlayerProfile from './pages/PlayerProfile';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/applications" element={<Applications />} />
           <Route path="/apply/:id" element={<Apply />} />
           <Route path="/moderation-popout" element={<ModerationPopOut />} />
+          <Route path="/admin/player/:username" element={<PlayerProfile />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
@@ -79,7 +81,7 @@ const AuthenticatedApp = () => {
     <IpBanCheck>
       <MaintenanceGuard>
         <AccentApplier />
-        {prefs.seasonal_effects && <SeasonalEffects season={season} />}
+        {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />

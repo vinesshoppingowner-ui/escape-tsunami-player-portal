@@ -3,7 +3,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown, UserRound, FileDown } from 'lucide-react';
+import PlayersTab from '@/components/admin/players/PlayersTab';
+import ReportsTab from '@/components/admin/reports/ReportsTab';
 import LiveChatTab from '@/components/admin/LiveChatTab';
 import AppealsTab from '@/components/admin/AppealsTab';
 import ModerationsTab from '@/components/admin/ModerationsTab';
@@ -31,6 +33,8 @@ const ADMIN_TOOLS = [
   { value: 'message', label: 'Message Players', icon: Megaphone },
   { value: 'bans', label: 'Website Bans', icon: Ban },
   { value: 'applications', label: 'Applications', icon: FileText },
+  { value: 'players', label: 'Player Profiles', icon: UserRound },
+  { value: 'reports', label: 'Reports & Export', icon: FileDown },
 ];
 
 const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg';
@@ -102,6 +106,8 @@ export default function Admin() {
               <TabsContent value="evasion"><BanEvasionTab /></TabsContent>
               <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>
               <TabsContent value="message"><MassMessageTab /></TabsContent>
+              <TabsContent value="players"><PlayersTab /></TabsContent>
+              <TabsContent value="reports"><ReportsTab /></TabsContent>
             </>
           )}
         </Tabs>

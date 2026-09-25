@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { useUserPrefs, notifAllowed, playNotifSound } from '@/lib/userPrefs';
 
 /**
  * Fires native OS notifications for new portal notifications — but ONLY
@@ -14,6 +15,8 @@ export default function DesktopNotifications({ isDesktopApp }) {
   const { user } = useAuth();
   const seenIds = useRef(new Set());
   const usernameRef = useRef(null);
+  const prefsRef = useRef(null);
+  prefsRef.current = useUserPrefs();
 
   useEffect(() => {
     if (!isDesktopApp) return;
@@ -47,7 +50,8 @@ export default function DesktopNotifications({ isDesktopApp }) {
 
           // Don't fire for notifications that existed before the app opened
           const age = Date.now() - new Date(n.created_date).getTime();
-          if (age < 60_000) {
+          if (age < 60_000 && notifAllowed(prefsRef.current, n.type)) {
+            if (prefsRef.current.notification_sound) playNotifSound();
             new Notification(n.title || 'Escape Tsunami', {
               body: n.body || '',
               icon: 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png',
