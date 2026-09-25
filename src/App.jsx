@@ -31,6 +31,7 @@ import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
 import AccentApplier from '@/components/AccentApplier';
 import WelcomeModal from '@/components/WelcomeModal';
+import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
 
 const AuthenticatedApp = () => {
@@ -44,11 +45,7 @@ const AuthenticatedApp = () => {
 
   let content;
   if (isLoading) {
-    content = (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    content = <AppLoadingScreen />;
   } else if (authError?.type === 'user_not_registered') {
     content = <UserNotRegisteredError />;
   } else if (authError?.type === 'auth_required') {
