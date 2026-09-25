@@ -19,6 +19,7 @@ export default function DisplaySettings({ prefs, set }) {
         </div>
       </div>
       <SettingToggle label="Compact mode" hint="Tighter spacing to fit more on screen" checked={prefs.compact_mode} onChange={(v) => set({ compact_mode: v })} />
+      <SettingToggle label="Split View" hint="Show the Split button in the top bar to view two pages side by side" checked={prefs.split_view} onChange={(v) => set({ split_view: v })} />
       <SettingToggle label="Reduce motion" hint="Turns off animations and seasonal effects" checked={prefs.reduce_motion} onChange={(v) => set({ reduce_motion: v })} />
     </SettingsSection>
   );

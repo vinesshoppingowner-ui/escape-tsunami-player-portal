@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
 import ProfileMenu from '@/components/profile/ProfileMenu';
+import { useUserPrefs } from '@/lib/userPrefs';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
@@ -16,6 +17,7 @@ export default function SiteNav() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
+  const prefs = useUserPrefs();
   const isDesktopApp = useDesktopApp();
   const isDesktopLayout = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
   const [hasNewActivity, setHasNewActivity] = useState(false);
@@ -177,7 +179,7 @@ export default function SiteNav() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          {user && window.name !== 'split-pane' && (
+          {user && prefs.split_view && window.name !== 'split-pane' && (
             <Link to="/split" title="Split View" className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-white/10">
               <Columns2 className="h-3.5 w-3.5" /> Split
             </Link>

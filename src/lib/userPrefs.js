@@ -14,6 +14,7 @@ export const DEFAULT_PREFS = {
   font_size: 'normal',
   compact_mode: false,
   reduce_motion: false,
+  split_view: false,
   notify_appeals: true,
   notify_moderations: true,
   notify_staff_messages: true,
