@@ -37,6 +37,10 @@
       "type": "string",
       "description": "Private staff notes"
     },
+    "applicant_feedback": {
+      "type": "string",
+      "description": "Feedback from staff shown to the applicant"
+    },
     "reviewed_by": {
       "type": "string",
       "description": "Email of staff who reviewed"
@@ -45,6 +49,37 @@
       "type": "string",
       "format": "date-time",
       "description": "When the response was reviewed"
+    },
+    "attempt": {
+      "type": "number",
+      "description": "Which attempt this is for the applicant (1 = first)",
+      "default": 1
+    },
+    "retake_allowed": {
+      "type": "boolean",
+      "description": "Staff granted this applicant a retake",
+      "default": false
+    },
+    "ai_score": {
+      "type": "number",
+      "description": "AI quality score 0-100"
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "enum": [
+        "accept",
+        "review",
+        "reject"
+      ],
+      "description": "AI suggested decision"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "Short AI summary of the application"
+    },
+    "ai_review": {
+      "type": "string",
+      "description": "JSON with AI strengths, concerns and flags"
     }
   },
   "required": [

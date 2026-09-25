@@ -10,6 +10,8 @@ import { useToast } from '@/components/ui/use-toast';
 import ApplyField from '@/components/apply/ApplyField';
 import ApplyReview from '@/components/apply/ApplyReview';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
+import { getRetakeState } from '@/lib/applicationRetake';
+import { runAIReview } from '@/lib/applicationAI';
 
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
@@ -26,7 +28,8 @@ export default function Apply() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [existingResponse, setExistingResponse] = useState(null);
+  const [myResponses, setMyResponses] = useState([]);
+  const retake = getRetakeState(settings, myResponses);
 
   useEffect(() => {
     (async () => {
@@ -35,13 +38,15 @@ export default function Apply() {
         setApp(a);
         setQuestions(JSON.parse(a.questions || '[]'));
         setSettings(JSON.parse(a.settings || '{}'));
-        const responses = await base44.entities.ApplicationResponse.filter({ application_id: id }, '-created_date', 1);
-        if (responses?.length > 0) setExistingResponse(responses[0]);
+        if (user?.id) {
+          const mine = await base44.entities.ApplicationResponse.filter({ application_id: id, created_by_id: user.id }, '-created_date', 50);
+          setMyResponses(mine || []);
+        }
       } catch {} finally {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, user?.id]);
 
   const total = questions.length;
   const current = step >= 0 && step < total ? questions[step] : null;
@@ -68,6 +73,11 @@ export default function Apply() {
     if (firstBad !== -1) { setStep(firstBad); setError(validateQuestion(questions[firstBad])); return; }
     setSubmitting(true);
     try {
+      let ai = {};
+      if (settings.aiReviewEnabled) {
+        // AI screening is optional — never block a submission if it fails.
+        ai = await runAIReview(app, answers).catch(() => ({}));
+      }
       await base44.entities.ApplicationResponse.create({
         application_id: id,
         application_title: app.title,
@@ -75,6 +85,8 @@ export default function Apply() {
         submitted_by_email: user?.email || '',
         answers: JSON.stringify(answers),
         status: 'submitted',
+        attempt: retake.attempt,
+        ...ai,
       });
       await base44.entities.Application.update(id, { response_count: (app.response_count || 0) + 1 });
       setSubmitted(true);
@@ -105,10 +117,14 @@ export default function Apply() {
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
   if (app.status !== 'open') return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is not currently accepting responses.</ApplyStatusScreen>;
   if (submitted) return <ApplyStatusScreen icon={CheckCircle2} tone="emerald" title="Application submitted!">{app.success_message || 'Thank you for applying. Our team will review your application and get back to you.'}</ApplyStatusScreen>;
-  if (existingResponse && settings.oneResponsePerUser) {
+  if (!retake.canApply) {
+    const status = <span className="text-cyan-300 capitalize">{retake.latest.status.replace('_', ' ')}</span>;
     return (
-      <ApplyStatusScreen icon={Clock} tone="cyan" title="You've already applied">
-        Your response to "{app.title}" is <span className="text-cyan-300 capitalize">{existingResponse.status.replace('_', ' ')}</span>. Check the Applications page for status updates.
+      <ApplyStatusScreen icon={Clock} tone="cyan" title={retake.reason === 'cooldown' ? 'Retake on cooldown' : retake.reason === 'max' ? 'No attempts left' : "You've already applied"}>
+        {retake.reason === 'cooldown' && <>You can retake "{app.title}" on <span className="text-cyan-300">{retake.availableAt.toLocaleString()}</span>.</>}
+        {retake.reason === 'max' && <>You've used all {settings.maxAttempts} attempts for "{app.title}".</>}
+        {retake.reason === 'applied' && <>Your response to "{app.title}" is {status}. Check the Applications page for status updates.</>}
+        {retake.latest.applicant_feedback && <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Staff feedback: </span>{retake.latest.applicant_feedback}</p>}
       </ApplyStatusScreen>
     );
   }
@@ -142,7 +158,11 @@ export default function Apply() {
                     <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">{total} questions</span>
                     <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">~{Math.max(1, Math.ceil(total * 0.75))} min</span>
                     {user && <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">Applying as {user.roblox_username || user.email}</span>}
+                    {retake.attempt > 1 && <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200">Attempt #{retake.attempt}</span>}
                   </div>
+                  {retake.latest?.applicant_feedback && (
+                    <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Feedback from last attempt: </span>{retake.latest.applicant_feedback}</p>
+                  )}
                   <Button onClick={goNext} size="lg" className="mt-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-12 px-8">Start application <ChevronRight className="h-4 w-4 ml-1" /></Button>
                 </div>
               )}

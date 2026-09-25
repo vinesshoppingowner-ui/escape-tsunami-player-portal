@@ -28,4 +28,24 @@ export const defaultSettings = () => ({
   responseLimit: 0,
   allowEditing: false,
   showProgressBar: true,
+  allowRetake: false,
+  retakeCooldownDays: 7,
+  maxAttempts: 3,
+  aiReviewEnabled: false,
+  aiCriteria: '',
 });
+
+export const RESPONSE_STATUS = {
+  submitted: { label: 'Submitted', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' },
+  under_review: { label: 'Under Review', cls: 'bg-violet-500/15 text-violet-300 border-violet-500/30' },
+  accepted: { label: 'Accepted', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+  rejected: { label: 'Rejected', cls: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
+};
+
+export const formatAnswer = (q, a) => {
+  if (a === undefined || a === null || a === '' || (Array.isArray(a) && !a.length)) return '';
+  if (Array.isArray(a)) return a.join(', ');
+  if (q.type === 'rating') return `${a} / 5`;
+  if (q.type === 'yesno') return a ? 'Yes' : 'No';
+  return String(a);
+};

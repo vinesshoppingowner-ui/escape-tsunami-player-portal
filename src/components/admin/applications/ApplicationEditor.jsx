@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { X, Plus, Save, Settings, FileText, ChevronDown } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import QuestionEditor from './QuestionEditor';
+import ApplicationAdvancedSettings from './ApplicationAdvancedSettings';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 
 const ICONS = ['📋', '📝', '🎯', '🏆', '⭐', '🎤', '🎨', '🎮', '🛡️', '💬', '📢', '🎪', '🎓', '💼', '🚀', '⚡', '🔥', '💎', '🌟', '🎭'];
@@ -184,34 +185,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
           </div>
 
           {/* Advanced Settings */}
-          <div className="rounded-2xl bg-white/[0.03] border border-white/10">
-            <button onClick={() => setShowAdvanced(!showAdvanced)} className="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold text-slate-300">
-              <span className="flex items-center gap-2"><Settings className="h-4 w-4" /> Advanced Settings</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-            </button>
-            {showAdvanced && (
-              <div className="px-4 pb-4 space-y-3">
-                {[
-                  { key: 'requireRobloxVerification', label: 'Require Roblox Verification', desc: 'Applicant must have a verified Roblox account' },
-                  { key: 'oneResponsePerUser', label: 'One Response Per User', desc: 'Prevent users from submitting multiple times' },
-                  { key: 'allowEditing', label: 'Allow Editing After Submission', desc: 'Users can modify their responses after submitting' },
-                  { key: 'showProgressBar', label: 'Show Progress Bar', desc: 'Display completion progress to applicants' },
-                ].map((s) => (
-                  <div key={s.key} className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm text-slate-300">{s.label}</Label>
-                      <p className="text-xs text-slate-500 mt-0.5">{s.desc}</p>
-                    </div>
-                    <Toggle checked={settings[s.key]} onChange={(v) => updateSetting(s.key, v)} />
-                  </div>
-                ))}
-                <div>
-                  <Label className="text-xs text-slate-400 mb-1.5 block">Response Limit (0 = unlimited)</Label>
-                  <Input type="number" value={settings.responseLimit || ''} onChange={(e) => updateSetting('responseLimit', parseInt(e.target.value) || 0)} placeholder="0" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
-                </div>
-              </div>
-            )}
-          </div>
+          <ApplicationAdvancedSettings settings={settings} update={updateSetting} />
         </div>
       </div>
     </div>

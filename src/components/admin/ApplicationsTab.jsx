@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
-import ResponseViewer from './applications/ResponseViewer';
+import ResponsesBoard from './applications/ResponsesBoard';
 
 const STATUS_STYLES = {
   draft: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
@@ -59,10 +59,7 @@ export default function ApplicationsTab() {
     }
   };
 
-  const openResponses = (app) => {
-    setViewingApp(app);
-    loadResponses(app);
-  };
+  const openResponses = (app) => setViewingApp(app);
 
   const openEditor = (app = null) => {
     setEditingApp(app);
@@ -84,61 +81,7 @@ export default function ApplicationsTab() {
 
   const filtered = applications.filter((a) => a.title?.toLowerCase().includes(search.toLowerCase()));
 
-  if (viewingApp) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <button onClick={() => setViewingApp(null)} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white">
-            <ChevronLeft className="h-4 w-4" /> Back to applications
-          </button>
-          <div className="text-sm text-slate-400">{responses.length} response{responses.length !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{viewingApp.icon}</span>
-          <div>
-            <h3 className="font-semibold text-white">{viewingApp.title}</h3>
-            <p className="text-xs text-slate-500">{viewingApp.category}</p>
-          </div>
-        </div>
-        {loadingResponses ? (
-          <div className="flex items-center justify-center py-12 text-slate-400">
-            <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading responses...
-          </div>
-        ) : responses.length === 0 ? (
-          <div className="rounded-2xl bg-white/[0.02] border border-white/10 py-12 text-center">
-            <Users className="h-8 w-8 text-slate-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">No responses yet.</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {responses.map((r) => (
-              <button key={r.id} onClick={() => setViewingResponse(r)} className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 p-3 flex items-center justify-between transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300 text-sm font-semibold">
-                    {(r.roblox_username || '?')[0]?.toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white">{r.roblox_username || 'Unknown'}</div>
-                    <div className="text-xs text-slate-500">{new Date(r.created_date).toLocaleDateString()}</div>
-                  </div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full border ${RESPONSE_STATUS_STYLES[r.status] || RESPONSE_STATUS_STYLES.submitted}`}>
-                  {r.status.replace('_', ' ')}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        <ResponseViewer
-          open={!!viewingResponse}
-          response={viewingResponse}
-          application={viewingApp}
-          onClose={() => setViewingResponse(null)}
-          onUpdate={(updated) => setResponses(responses.map((r) => (r.id === updated.id ? updated : r)))}
-        />
-      </div>
-    );
-  }
+  if (viewingApp) return <ResponsesBoard app={viewingApp} onBack={() => { setViewingApp(null); load(); }} />;
 
   return (
     <div className="space-y-4">
