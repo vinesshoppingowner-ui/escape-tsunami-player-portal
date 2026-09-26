@@ -1,0 +1,107 @@
+{
+  "name": "PlayerSession",
+  "type": "object",
+  "properties": {
+    "roblox_username": {
+      "type": "string",
+      "description": "Roblox username of the player"
+    },
+    "roblox_user_id": {
+      "type": "string",
+      "description": "Roblox user ID"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Roblox display name"
+    },
+    "is_premium": {
+      "type": "boolean",
+      "description": "Whether the player has a Roblox Premium membership",
+      "default": false
+    },
+    "server_name": {
+      "type": "string",
+      "description": "The game server the player joined"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the player joined"
+    },
+    "left_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the player left"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "How long the player played in this session"
+    },
+    "online": {
+      "type": "boolean",
+      "description": "Whether the player is still in game",
+      "default": true
+    }
+  },
+  "required": [
+    "roblox_username"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}

@@ -15,6 +15,7 @@ import RepeatOffenders from '@/components/analytics/RepeatOffenders';
 import ActivityHeatmap from '@/components/analytics/ActivityHeatmap';
 import StaffAudit from '@/components/analytics/StaffAudit';
 import GameAnalytics from '@/components/analytics/GameAnalytics';
+import PlayerCount from '@/components/analytics/PlayerCount';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -80,6 +81,7 @@ export default function Analytics() {
 
         {/* Game Performance */}
         <GameAnalytics />
+        <PlayerCount />
 
         {/* Overview */}
         <div className="mt-10 mb-4 flex items-center gap-2">
