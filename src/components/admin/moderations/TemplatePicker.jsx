@@ -33,7 +33,7 @@ export default function TemplatePicker({ onPick, current, isAdmin }) {
             <button type="button" onClick={() => onPick(t)} className="inline-flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-md text-xs font-medium bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-indigo-500 transition-colors">
               <Zap className="h-3.5 w-3.5 text-indigo-400" />
               {t.name}
-              <span className="text-slate-500 font-normal">({t.duration || shortType(t.moderation_type)})</span>
+              <span className="text-slate-400 font-normal">({t.duration || shortType(t.moderation_type)})</span>
             </button>
             {isAdmin && (
               <button type="button" onClick={(e) => remove(e, t.id)} title="Delete template" className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-4 w-4 items-center justify-center rounded bg-slate-800 border border-slate-700 text-slate-400 hover:text-rose-300">

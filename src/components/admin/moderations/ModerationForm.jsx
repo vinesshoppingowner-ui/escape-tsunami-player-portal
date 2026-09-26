@@ -72,7 +72,8 @@ const empty = {
   duration_minutes: 5,
 };
 
-const SectionHeader = ({ label }) => <SectionLabel>{label}</SectionLabel>;
+const SectionHeader = ({ label }) => <SectionLabel className="mt-6">{label}</SectionLabel>;
+const stickyFooter = 'sticky -bottom-6 -mx-6 -mb-6 px-6 py-3 bg-slate-900 border-t border-slate-800 flex justify-end gap-2 z-10';
 
 export default function ModerationForm({ open, onClose, onCreated }) {
   const { user } = useAuth();
@@ -216,11 +217,11 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-slate-400">Discord user ID *</Label>
-                    <Input value={form.discord_user_id} onChange={(e) => set('discord_user_id')(e.target.value)} placeholder="e.g. 123456789012345678" className="bg-slate-950/60 border-white/10 text-white mt-1 font-mono text-sm" />
+                    <Input value={form.discord_user_id} onChange={(e) => set('discord_user_id')(e.target.value)} placeholder="e.g. 123456789012345678" className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1 font-mono text-sm" />
                   </div>
                   <div>
                     <Label className="text-xs text-slate-400">Discord username (optional)</Label>
-                    <Input value={form.discord_username} onChange={(e) => set('discord_username')(e.target.value)} placeholder="e.g. username" className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    <Input value={form.discord_username} onChange={(e) => set('discord_username')(e.target.value)} placeholder="e.g. username" className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                   </div>
                   <div>
                     <Label className="text-xs text-slate-400">Action type</Label>
@@ -234,13 +235,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   {form.action_type === 'timeout' && (
                     <div>
                       <Label className="text-xs text-slate-400">Duration (minutes)</Label>
-                      <Input type="number" min="1" value={form.duration_minutes} onChange={(e) => set('duration_minutes')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                      <Input type="number" min="1" value={form.duration_minutes} onChange={(e) => set('duration_minutes')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                     </div>
                   )}
                 </div>
                 <div>
                   <Label className="text-xs text-slate-400">Reason *</Label>
-                  <Textarea rows={2} value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  <Textarea rows={2} value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                 </div>
               </div>
 
@@ -249,7 +250,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <span>Your Discord bot will pick this up and execute it within ~10 seconds.</span>
               </div>
 
-              <div className="flex justify-end">
+              <div className={stickyFooter}>
                 <Button onClick={create} disabled={saving || !form.discord_user_id || !form.reason} className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0">
                   {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Queuing</> : <><Bot className="h-4 w-4 mr-1.5" /> Queue Discord action</>}
                 </Button>
@@ -262,13 +263,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <SectionHeader icon={UserIcon} label="Player & Action" />
                 <div>
                   <Label className="text-xs text-slate-400">Roblox username *</Label>
-                  <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                 </div>
                 <EscalationHint username={form.roblox_username} onApply={applyPreset} />
                 <TemplatePicker onPick={applyPreset} current={form} isAdmin={isOwner(user)} />
                 <div>
                   <Label className="text-xs text-slate-400">Type</Label>
-                  <div className="flex flex-wrap gap-2 mt-1.5">
+                  <div className="flex flex-wrap sm:flex-nowrap gap-1 mt-1.5 p-1 rounded-lg bg-slate-950 border border-slate-800">
                     {TYPES.map((t) => (
                       <button
                         key={t}
@@ -276,10 +277,10 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                         onClick={() => set('moderation_type')(t)}
                         disabled={!canIssueType(user, t)}
                         title={canIssueType(user, t) ? undefined : "You don't have permission for this"}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                        className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                           form.moderation_type === t
-                            ? typeColor(t)
-                            : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                            ? 'bg-slate-800 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         {typeIcon(t)} {t}
@@ -290,7 +291,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-slate-400">Reason *</Label>
-                    <Input value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    <Input value={form.reason} onChange={(e) => set('reason')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                   </div>
                   <div>
                     <Label className="text-xs text-slate-400">Duration</Label>
@@ -307,7 +308,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   {durationMode === 'custom' && (
                     <div className="sm:col-span-2">
                       <Label className="text-xs text-slate-400">Custom duration</Label>
-                      <Input value={form.duration} onChange={(e) => set('duration')(e.target.value)} placeholder="e.g. 12h, 5d" className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                      <Input value={form.duration} onChange={(e) => set('duration')(e.target.value)} placeholder="e.g. 12h, 5d" className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                     </div>
                   )}
                 </div>
@@ -319,7 +320,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-slate-400">Staff member</Label>
-                    <Input value={form.staff_member} onChange={(e) => set('staff_member')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    <Input value={form.staff_member} onChange={(e) => set('staff_member')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                   </div>
                   <div>
                     <Label className="text-xs text-slate-400">Status</Label>
@@ -333,7 +334,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 </div>
                 <div>
                   <Label className="text-xs text-slate-400">Additional details</Label>
-                  <Textarea rows={2} value={form.details} onChange={(e) => set('details')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                  <Textarea rows={2} value={form.details} onChange={(e) => set('details')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                 </div>
               </div>
 
@@ -356,13 +357,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                 {form.evidence_type === 'chat_log' && (
                   <div>
                     <Label className="text-xs text-slate-400">Chat log</Label>
-                    <Textarea rows={4} value={form.evidence_text} onChange={(e) => set('evidence_text')(e.target.value)} className="bg-slate-950/60 border-white/10 text-white mt-1 font-mono text-xs" placeholder="Paste the in-game chat log…" />
+                    <Textarea rows={4} value={form.evidence_text} onChange={(e) => set('evidence_text')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1 font-mono text-xs" placeholder="Paste the in-game chat log…" />
                   </div>
                 )}
                 {form.evidence_type === 'screenshot' && (
                   <div>
                     <Label className="text-xs text-slate-400">Screenshot URL</Label>
-                    <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/60 border-white/10 text-white mt-1" />
+                    <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                   </div>
                 )}
               </div>
@@ -388,7 +389,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
               </div>
 
               {/* Footer */}
-              <div className="flex justify-end gap-2 pt-1">
+              <div className={stickyFooter}>
                 <Button variant="outline" onClick={copyForDiscord} className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white">
                   <Copy className="h-4 w-4 mr-1.5" /> Copy for Discord
                 </Button>
