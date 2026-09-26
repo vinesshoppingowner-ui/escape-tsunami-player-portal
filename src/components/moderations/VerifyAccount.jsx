@@ -4,6 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/lib/AuthContext';
+import { startRobloxLogin } from '@/lib/robloxOAuth';
 import {
   Loader2, User, ShieldCheck, KeyRound, ExternalLink, ArrowRight,
   RefreshCw, AlertCircle, Copy, Check, Fingerprint,
@@ -41,6 +43,19 @@ export default function VerifyAccount({ onVerified }) {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const { user } = useAuth();
+
+  const robloxLogin = async () => {
+    setRedirecting(true);
+    setError('');
+    try {
+      await startRobloxLogin();
+    } catch {
+      setError('Could not start Roblox sign-in. Please try again.');
+      setRedirecting(false);
+    }
+  };
 
   const startVerification = () => {
     if (!username.trim()) return;
@@ -135,6 +150,26 @@ export default function VerifyAccount({ onVerified }) {
                 Continue <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
+            {user && (
+              <>
+                <div className="my-5 flex items-center gap-3 text-xs text-slate-500">
+                  <div className="h-px flex-1 bg-white/10" /> or <div className="h-px flex-1 bg-white/10" />
+                </div>
+                <Button
+                  onClick={robloxLogin}
+                  disabled={redirecting}
+                  className="w-full h-12 bg-white/5 border border-white/15 text-white hover:bg-white/10"
+                >
+                  {redirecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+                  Verify instantly with Roblox
+                </Button>
+              </>
+            )}
+            {error && (
+              <div className="mt-4 rounded-lg flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 p-3">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /> <span>{error}</span>
+              </div>
+            )}
           </div>
         )}
 
