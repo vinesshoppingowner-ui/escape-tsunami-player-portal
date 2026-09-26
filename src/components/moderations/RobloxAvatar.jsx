@@ -9,7 +9,7 @@ const inflight = new Map(); // username(lower) -> Promise<imageUrl>
 async function fetchHeadshot(username) {
   const res = await fetch('https://users.roproxy.com/v1/usernames/users', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
   });
   if (!res.ok) throw new Error('lookup failed');
