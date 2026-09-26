@@ -34,7 +34,8 @@ export default function SettingsDialog({ open, onOpenChange }) {
           <SettingsSection icon={Palette} title="Theme color" desc="Accent color used across the portal.">
             <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
           </SettingsSection>
-          <SettingsSection icon={Image} title="Background" desc="Pick a background theme, or set your own color or image.">
+          <SettingsSection icon={Image} title="Background" desc="Pick a background theme, or set your own color or image."
+            badge={<span className="ml-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">New</span>}>
             <BackgroundPicker prefs={prefs} set={set} />
           </SettingsSection>
           <SettingsSection icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">

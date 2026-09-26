@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
-import debounce from 'lodash/debounce';
+import { useRef, useState } from 'react';
+import CustomColorPanel from '@/components/profile/CustomColorPanel';
 import { Check, ImagePlus, Loader2, Pipette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BACKGROUNDS } from '@/lib/backgrounds';
@@ -10,10 +10,10 @@ export default function BackgroundPicker({ prefs, set }) {
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const current = prefs.background || 'default';
-  // Color pickers fire on every drag step — save once the user settles on a color.
-  const setRef = useRef(set);
-  setRef.current = set;
-  const setColor = useMemo(() => debounce((c) => setRef.current({ background: 'custom_color', background_color: c }), 400), []);
+  const [showCustom, setShowCustom] = useState(false);
+  const customCss = prefs.background_color
+    ? (prefs.background_color2 ? `linear-gradient(135deg, ${prefs.background_color}, ${prefs.background_color2})` : prefs.background_color)
+    : '#131722';
 
   const upload = async (e) => {
     const file = e.target.files?.[0];
@@ -26,6 +26,7 @@ export default function BackgroundPicker({ prefs, set }) {
   };
 
   return (
+    <>
     <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
       {BACKGROUNDS.map((b) => (
         <button key={b.value} type="button" onClick={() => set({ background: b.value })} className="flex flex-col gap-1.5">
@@ -36,14 +37,12 @@ export default function BackgroundPicker({ prefs, set }) {
         </button>
       ))}
 
-      <label className="flex flex-col gap-1.5 cursor-pointer">
-        <span className={tile(current === 'custom_color')} style={{ background: prefs.background_color || '#131722' }}>
+      <button type="button" onClick={() => setShowCustom((s) => !s)} className="flex flex-col gap-1.5">
+        <span className={tile(current === 'custom_color' || showCustom)} style={{ background: customCss }}>
           {current === 'custom_color' ? <Check className="h-5 w-5 text-white" /> : <Pipette className="h-5 w-5 text-slate-300" />}
-          <input type="color" value={prefs.background_color || '#131722'} className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={(e) => setColor(e.target.value)} />
         </span>
         <span className="text-[11px] text-slate-400">Custom color</span>
-      </label>
+      </button>
 
       <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="flex flex-col gap-1.5">
         <span className={tile(current === 'custom_image')}
@@ -56,5 +55,7 @@ export default function BackgroundPicker({ prefs, set }) {
       </button>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={upload} />
     </div>
+    {showCustom && <CustomColorPanel prefs={prefs} set={set} />}
+    </>
   );
 }

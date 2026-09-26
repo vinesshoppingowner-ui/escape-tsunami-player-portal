@@ -12,9 +12,11 @@ export const BACKGROUNDS = [
 const DIM = 'linear-gradient(rgba(11,13,19,0.65), rgba(11,13,19,0.65))';
 
 // Resolves the user's background prefs to a CSS background, or null for the default look.
-export function resolveBackground({ background, background_color, background_image }) {
+export function resolveBackground({ background, background_color, background_color2, background_image }) {
   if (background === 'custom_image' && background_image) return `${DIM}, url("${background_image}")`;
-  if (background === 'custom_color' && background_color) return background_color;
+  if (background === 'custom_color' && background_color) {
+    return background_color2 ? `linear-gradient(135deg, ${background_color}, ${background_color2})` : background_color;
+  }
   const preset = BACKGROUNDS.find((b) => b.value === background);
   return preset && preset.value !== 'default' ? preset.css : null;
 }
