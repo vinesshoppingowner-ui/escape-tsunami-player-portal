@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,9 +31,10 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --font-heading: ui-sans-serif, system-ui, sans-serif;
-    --font-body: ui-sans-serif, system-ui, sans-serif;
-    --font-display: ui-sans-serif, system-ui, sans-serif;
+    --panel: 225 25% 10%;
+    --font-heading: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -68,6 +71,7 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --panel: 225 25% 10%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -336,106 +340,64 @@
   animation: snowflake-spin 8s linear infinite;
 }
 
-/* ===== Liquid Glass Buttons ===== */
+/* ===== Flat buttons (modern gaming style) ===== */
 
-/* Primary cyan-blue gradient CTA buttons — liquid glass */
+/* Primary accent buttons — flat, 6px radius, crisp hover */
 .bg-gradient-to-r.from-cyan-500.to-blue-600,
 .bg-gradient-to-r.from-cyan-400.to-blue-500 {
-  position: relative;
-  border-radius: 9999px !important;
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, calc(0.14 * var(--glass-mult, 1))) 0%,
-    rgba(186, 230, 253, calc(0.07 * var(--glass-mult, 1))) 40%,
-    rgba(59, 130, 246, calc(0.1 * var(--glass-mult, 1))) 100%
-  ) !important;
-  backdrop-filter: blur(26px) saturate(2) brightness(1.12);
-  -webkit-backdrop-filter: blur(26px) saturate(2) brightness(1.12);
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow:
-    0 8px 28px rgba(8, 20, 45, 0.3),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.75),
-    inset 0 -10px 18px -10px rgba(255, 255, 255, 0.45),
-    inset 1px 0 1px rgba(255, 255, 255, 0.25),
-    inset -1px 0 1px rgba(255, 255, 255, 0.25) !important;
-  transition: box-shadow 0.3s ease, transform 0.2s ease, background 0.3s ease !important;
+  border-radius: 6px !important;
+  background: rgb(var(--acc-500)) !important;
+  border: 1px solid rgb(var(--acc-400) / 0.4) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease !important;
 }
-
-/* Top-edge specular highlight, like glass catching light */
-.bg-gradient-to-r.from-cyan-500.to-blue-600::after,
-.bg-gradient-to-r.from-cyan-400.to-blue-500::after {
-  content: '';
-  position: absolute;
-  inset: 1px 1px auto 1px;
-  height: 48%;
-  border-radius: 9999px 9999px 60% 60% / 9999px 9999px 100% 100%;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0));
-  pointer-events: none;
-}
-
 .bg-gradient-to-r.from-cyan-500.to-blue-600:hover,
 .bg-gradient-to-r.from-cyan-400.to-blue-500:hover {
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, calc(0.2 * var(--glass-mult, 1))) 0%,
-    rgba(186, 230, 253, calc(0.12 * var(--glass-mult, 1))) 40%,
-    rgba(59, 130, 246, calc(0.16 * var(--glass-mult, 1))) 100%
-  ) !important;
-  box-shadow:
-    0 12px 34px rgba(8, 20, 45, 0.36),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.9),
-    inset 0 -10px 20px -10px rgba(255, 255, 255, 0.55),
-    inset 1px 0 1px rgba(255, 255, 255, 0.3),
-    inset -1px 0 1px rgba(255, 255, 255, 0.3),
-    0 0 30px rgba(125, 211, 252, 0.22) !important;
-  transform: translateY(-1px);
+  background: rgb(var(--acc-400)) !important;
+}
+.bg-gradient-to-r.from-cyan-500.to-blue-600:active,
+.bg-gradient-to-r.from-cyan-400.to-blue-500:active {
+  background: rgb(var(--acc-600)) !important;
 }
 
-/* Amber-orange gradient buttons — liquid glass */
+/* Amber buttons — flat */
 .bg-gradient-to-r.from-amber-500.to-orange-600,
 .bg-gradient-to-r.from-amber-400.to-orange-500 {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.72), rgba(234, 88, 12, 0.72)) !important;
-  backdrop-filter: blur(10px) saturate(1.6);
-  -webkit-backdrop-filter: blur(10px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow:
-    0 0 20px rgba(245, 158, 11, 0.28),
-    0 4px 16px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
-  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+  border-radius: 6px !important;
+  background: #f59e0b !important;
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease !important;
 }
-
 .bg-gradient-to-r.from-amber-500.to-orange-600:hover,
 .bg-gradient-to-r.from-amber-400.to-orange-500:hover {
-  box-shadow:
-    0 0 38px rgba(245, 158, 11, 0.48),
-    0 8px 28px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.48),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
-  transform: translateY(-1px);
+  background: #fbbf24 !important;
 }
 
-/* Frosted glass outline / secondary buttons */
+/* Secondary buttons — subtle border, no gloss */
 button.bg-white\/5,
 a.bg-white\/5 {
-  backdrop-filter: blur(14px) saturate(1.5);
-  -webkit-backdrop-filter: blur(14px) saturate(1.5);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    inset 0 -6px 12px -8px rgba(255, 255, 255, 0.2),
-    0 4px 16px rgba(8, 20, 45, 0.25) !important;
-  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-
 button.bg-white\/5:hover,
 a.bg-white\/5:hover {
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.45),
-    inset 0 -6px 12px -8px rgba(255, 255, 255, 0.28),
-    0 6px 20px rgba(8, 20, 45, 0.3) !important;
-  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
 }
+
+/* ===== Surfaces: deep canvas + slate panels ===== */
+.bg-slate-950 { background-color: #0B0D13 !important; }
+.bg-white\/\[0\.03\],
+.bg-white\/\[0\.04\],
+.bg-white\/\[0\.05\] { background-color: #131722; }
+.rounded-2xl { border-radius: 10px; }
+.rounded-xl { border-radius: 8px; }
+.border-white\/10 { border-color: rgba(255, 255, 255, 0.08); }
+
+h1, h2, h3 { font-family: var(--font-heading); }
 
 /* ===== Dark scrollbars everywhere ===== */
 * {

@@ -13,6 +13,7 @@ module.exports = {
   		colors: {
   			cyan: Object.fromEntries([50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((s) => [s, `rgb(var(--acc-${s}) / <alpha-value>)`])),
   			background: 'hsl(var(--background))',
+  			panel: 'hsl(var(--panel))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
   				DEFAULT: 'hsl(var(--card))',

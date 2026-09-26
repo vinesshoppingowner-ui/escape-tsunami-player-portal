@@ -7,7 +7,7 @@ import { Loader2, ShieldCheck, LogOut, RefreshCw, LogIn, Sparkles, ExternalLink,
 import { Link } from 'react-router-dom';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
-import ModerationCard from '@/components/moderations/ModerationCard';
+import ModerationFeed from '@/components/moderations/ModerationFeed';
 import AppealDialog from '@/components/moderations/AppealDialog';
 import AppealHistory from '@/components/moderations/AppealHistory';
 import NotificationsBell from '@/components/moderations/NotificationsBell';
@@ -146,13 +146,18 @@ export default function Portal() {
       <main className="max-w-4xl mx-auto px-5 pt-28 pb-20">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-4">
-            <ShieldCheck className="h-3.5 w-3.5" /> Member Portal
+          <div className="flex items-center gap-4 rounded-lg bg-panel border border-white/[0.08] p-5">
+            {savedUsername ? <RobloxAvatar username={savedUsername} size={52} /> : (
+              <div className="h-[52px] w-[52px] rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-cyan-300" /></div>
+            )}
+            <div>
+              <div className="text-xs uppercase tracking-wider text-slate-500">Member Portal</div>
+              <h1 className="font-heading text-2xl font-semibold tracking-tight">
+                {savedUsername ? `Welcome back, ${savedUsername}` : 'Welcome back'}
+              </h1>
+              <p className="mt-0.5 text-sm text-slate-400">Review your in-game moderations and submit appeals.</p>
+            </div>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Welcome back 👋
-          </h1>
-          <p className="mt-2 text-slate-400">Review your recent in-game moderations and submit appeals.</p>
         </motion.div>
 
         {/* Guest sign-in banner */}
@@ -260,7 +265,7 @@ export default function Portal() {
             {/* Quick Actions */}
             <div className="mt-8 mb-3 flex items-center gap-2">
               <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-cyan-300">
+              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
                 <Zap className="h-3.5 w-3.5" /> Quick Actions
               </span>
               <div className="h-px flex-1 bg-white/10" />
@@ -282,7 +287,7 @@ export default function Portal() {
             {/* Your Moderations */}
             <div className="mt-8 mb-3 flex items-center gap-2">
               <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-rose-300">
+              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
                 <ShieldCheck className="h-3.5 w-3.5" /> Your Moderations
               </span>
               <div className="h-px flex-1 bg-white/10" />
@@ -304,30 +309,19 @@ export default function Portal() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {moderations.map((m, i) => (
-                    <motion.div
-                      key={m.id}
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.05 }}
-                    >
-                      <ModerationCard
-                        moderation={m}
-                        appeal={appealFor(m.id)}
-                        onAppeal={() => openAppeal(m)}
-                        appealsLocked={appeals.some((a) => a.admin_locked)}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                <ModerationFeed
+                  moderations={moderations}
+                  appealFor={appealFor}
+                  onAppeal={openAppeal}
+                  appealsLocked={appeals.some((a) => a.admin_locked)}
+                />
               )}
             </div>
 
             {/* Appeals & Support */}
             <div className="mt-8 mb-3 flex items-center gap-2">
               <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-amber-300">
+              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
                 <LifeBuoy className="h-3.5 w-3.5" /> Appeals & Support
               </span>
               <div className="h-px flex-1 bg-white/10" />
@@ -344,7 +338,7 @@ export default function Portal() {
             {/* Account Security */}
             <div className="mt-8 mb-3 flex items-center gap-2">
               <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold tracking-[0.15em] uppercase text-violet-300">
+              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
                 <Lock className="h-3.5 w-3.5" /> Account Security
               </span>
               <div className="h-px flex-1 bg-white/10" />

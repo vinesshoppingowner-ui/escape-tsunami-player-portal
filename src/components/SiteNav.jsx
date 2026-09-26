@@ -63,10 +63,12 @@ export default function SiteNav() {
 
   const directLinks = [
     { label: 'Home', to: '/', icon: Home },
+    { label: 'Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
   ];
   const dropdownLinks = [
     { label: 'Applications', to: '/applications', icon: FileText },
+    ...(user && prefs.split_view && window.name !== 'split-pane' ? [{ label: 'Split View', to: '/split', icon: Columns2 }] : []),
     ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
@@ -104,7 +106,7 @@ export default function SiteNav() {
         </div>
       )}
       {showBanner && (
-        <div className={`relative px-4 py-2.5 text-center text-sm flex items-center justify-center gap-2 border-b border-white/5 ${BANNER_COLORS[siteSettings.banner_color] || BANNER_COLORS.cyan}`}>
+        <div className={`relative px-4 py-1.5 text-center text-xs font-medium flex items-center justify-center gap-2 border-b ${BANNER_COLORS[siteSettings.banner_color] || BANNER_COLORS.cyan}`}>
           <Megaphone className="h-4 w-4 shrink-0" />
           <span className="truncate">{siteSettings.banner_message}</span>
           {siteSettings.banner_dismissible && (
@@ -124,10 +126,10 @@ export default function SiteNav() {
           </button>
         </div>
       )}
-      <div className={`max-w-6xl mx-auto px-5 h-16 flex items-center ${isDesktopLayout ? 'gap-6' : 'justify-between'}`}>
-        <SiteBrand />
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-6">
+        <div className="md:w-40 shrink-0"><SiteBrand /></div>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-1">
           {directLinks.map((l) => {
             const active = location.pathname === l.to;
             return (
@@ -178,21 +180,14 @@ export default function SiteNav() {
           )}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2">
-          {user && prefs.split_view && window.name !== 'split-pane' && (
-            <Link to="/split" title="Split View" className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-white/10">
-              <Columns2 className="h-3.5 w-3.5" /> Split
+        <div className="hidden md:flex items-center justify-end gap-2 w-40">
+          {!user && (
+            <Link to="/login">
+              <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">Sign in</Button>
             </Link>
           )}
-          <Link to="/portal">
-            <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0">
-              <LogIn className="h-4 w-4 mr-1.5" /> Member Portal
-            </Button>
-          </Link>
           <ProfileMenu />
         </div>
-
-        {isDesktopLayout && <div className="flex-1" />}
 
         <div className="md:hidden flex items-center gap-1">
           <ProfileMenu />
