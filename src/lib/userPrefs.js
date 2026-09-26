@@ -7,6 +7,9 @@ export const WELCOME_FLAG = 'et_welcome';
 
 export const DEFAULT_PREFS = {
   accent: 'cyan',
+  background: 'default',
+  background_color: '',
+  background_image: '',
   appeal_card_style: 'standard',
   welcome_popup: true,
   seasonal_effects: true,

@@ -1,4 +1,5 @@
-import { Palette, Snowflake, LayoutGrid, Droplets } from 'lucide-react';
+import { Palette, Snowflake, LayoutGrid, Droplets, Image } from 'lucide-react';
+import BackgroundPicker from '@/components/profile/BackgroundPicker';
 import GlassSlider from '@/components/profile/GlassSlider';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
@@ -32,6 +33,9 @@ export default function SettingsDialog({ open, onOpenChange }) {
         <div className="space-y-3">
           <SettingsSection icon={Palette} title="Theme color" desc="Accent color used across the portal.">
             <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
+          </SettingsSection>
+          <SettingsSection icon={Image} title="Background" desc="Pick a background theme, or set your own color or image.">
+            <BackgroundPicker prefs={prefs} set={set} />
           </SettingsSection>
           <SettingsSection icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">
             <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />

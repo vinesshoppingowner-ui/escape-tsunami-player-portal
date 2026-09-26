@@ -1,11 +1,18 @@
 import { useEffect } from 'react';
 import { useUserPrefs } from '@/lib/userPrefs';
+import { resolveBackground } from '@/lib/backgrounds';
 
 const FONT_SIZES = { small: '14px', normal: '16px', large: '18px' };
 
 // Puts the chosen theme/display settings on <html> so the CSS overrides apply site-wide.
 export default function AccentApplier() {
-  const { accent, glass_transparency, font_size, compact_mode, reduce_motion } = useUserPrefs();
+  const { accent, glass_transparency, font_size, compact_mode, reduce_motion, background, background_color, background_image } = useUserPrefs();
+  useEffect(() => {
+    const el = document.documentElement;
+    const bg = resolveBackground({ background, background_color, background_image });
+    if (bg) { el.style.setProperty('--page-bg', bg); el.dataset.bg = ''; }
+    else { el.style.removeProperty('--page-bg'); delete el.dataset.bg; }
+  }, [background, background_color, background_image]);
   useEffect(() => {
     // 50% = default look, 0% = heavily tinted, 100% = fully clear glass
     const mult = ((100 - glass_transparency) / 50) ** 2;
