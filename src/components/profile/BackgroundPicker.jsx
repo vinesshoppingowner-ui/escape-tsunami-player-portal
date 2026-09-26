@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import CustomColorPanel from '@/components/profile/CustomColorPanel';
+import BackgroundAdjust from '@/components/profile/BackgroundAdjust';
 import { Check, ImagePlus, Loader2, Pipette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BACKGROUNDS } from '@/lib/backgrounds';
@@ -56,6 +57,7 @@ export default function BackgroundPicker({ prefs, set }) {
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={upload} />
     </div>
     {showCustom && <CustomColorPanel prefs={prefs} set={set} />}
+    {current === 'custom_image' && prefs.background_image && <BackgroundAdjust prefs={prefs} set={set} />}
     </>
   );
 }

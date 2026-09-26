@@ -13,6 +13,10 @@ import SettingToggle from '@/components/profile/SettingToggle';
 import DisplaySettings from '@/components/profile/DisplaySettings';
 import NotificationSettings from '@/components/profile/NotificationSettings';
 import PrivacySettings from '@/components/profile/PrivacySettings';
+import AccentHexInput from '@/components/profile/AccentHexInput';
+import AppearanceSettings from '@/components/profile/AppearanceSettings';
+import NavigationSettings from '@/components/profile/NavigationSettings';
+import AccountSettings from '@/components/profile/AccountSettings';
 
 export default function SettingsDialog({ open, onOpenChange }) {
   const { user } = useAuth();
@@ -33,7 +37,9 @@ export default function SettingsDialog({ open, onOpenChange }) {
         <div className="space-y-3">
           <SettingsSection icon={Palette} title="Theme color" desc="Accent color used across the portal.">
             <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
+            <AccentHexInput active={prefs.accent === 'custom'} hex={prefs.accent_hex} onApply={(accent_hex) => set({ accent: 'custom', accent_hex })} />
           </SettingsSection>
+          <AppearanceSettings prefs={prefs} set={set} />
           <SettingsSection icon={Image} title="Background" desc="Pick a background theme, or set your own color or image."
             badge={<span className="ml-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">New</span>}>
             <BackgroundPicker prefs={prefs} set={set} />
@@ -42,11 +48,13 @@ export default function SettingsDialog({ open, onOpenChange }) {
             <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
           </SettingsSection>
           <DisplaySettings prefs={prefs} set={set} />
+          {user && <NavigationSettings prefs={prefs} set={set} staff={staff} />}
           <NotificationSettings prefs={prefs} set={set} />
           <SettingsSection icon={Snowflake} title="Effects">
             <SettingToggle label="Show seasonal effects (snow, sparkles)" checked={prefs.seasonal_effects} onChange={(v) => set({ seasonal_effects: v })} />
           </SettingsSection>
           {user && <PrivacySettings prefs={prefs} set={set} user={user} />}
+          {user && <AccountSettings user={user} set={set} />}
           {staff && (
             <SettingsSection icon={LayoutGrid} title="Appeal card style" desc="How appeals look in your staff queue."
               badge={<span className="ml-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200">Staff only</span>}>

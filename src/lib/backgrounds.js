@@ -9,11 +9,12 @@ export const BACKGROUNDS = [
   { value: 'storm', label: 'Storm', css: 'linear-gradient(160deg, #1f2937 0%, #0B0D13 55%, #111827 100%)' },
 ];
 
-const DIM = 'linear-gradient(rgba(11,13,19,0.65), rgba(11,13,19,0.65))';
-
 // Resolves the user's background prefs to a CSS background, or null for the default look.
-export function resolveBackground({ background, background_color, background_color2, background_image }) {
-  if (background === 'custom_image' && background_image) return `${DIM}, url("${background_image}")`;
+export function resolveBackground({ background, background_color, background_color2, background_image, background_dim = 65 }) {
+  if (background === 'custom_image' && background_image) {
+    const a = background_dim / 100;
+    return `linear-gradient(rgba(11,13,19,${a}), rgba(11,13,19,${a})), url("${background_image}")`;
+  }
   if (background === 'custom_color' && background_color) {
     return background_color2 ? `linear-gradient(135deg, ${background_color}, ${background_color2})` : background_color;
   }

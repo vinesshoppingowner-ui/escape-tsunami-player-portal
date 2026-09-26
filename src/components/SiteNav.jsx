@@ -10,6 +10,7 @@ import { isOwner } from '@/lib/isOwner';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { useUserPrefs } from '@/lib/userPrefs';
+import { useAutoHideNav } from '@/hooks/useAutoHideNav';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 
@@ -18,6 +19,7 @@ export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const prefs = useUserPrefs();
+  const navHidden = useAutoHideNav(prefs.auto_hide_nav);
   const isDesktopApp = useDesktopApp();
   const isDesktopLayout = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
   const [hasNewActivity, setHasNewActivity] = useState(false);
@@ -98,7 +100,7 @@ export default function SiteNav() {
 
   return (
     <>
-    <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-slate-950/60 border-b border-white/10">
+    <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-slate-950/60 border-b border-white/10 transition-transform duration-300 ${navHidden && !open ? '-translate-y-full' : ''}`}>
       {showEmergency && (
         <div className="bg-rose-600 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0" />

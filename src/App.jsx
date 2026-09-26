@@ -33,6 +33,7 @@ import SeasonalEffects from '@/components/SeasonalEffects';
 import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
 import AccentApplier from '@/components/AccentApplier';
+import LandingRedirect from '@/components/LandingRedirect';
 import WelcomeModal from '@/components/WelcomeModal';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
     <IpBanCheck>
       <MaintenanceGuard>
         <AccentApplier />
+        {!isLoading && <LandingRedirect />}
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}

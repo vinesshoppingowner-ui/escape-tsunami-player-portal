@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -391,11 +392,17 @@ a.bg-white\/5:hover {
 
 /* ===== Surfaces: deep canvas + slate panels ===== */
 .bg-slate-950 { background-color: #0B0D13 !important; }
-html[data-bg] .min-h-screen.bg-slate-950 {
-  background: var(--page-bg) !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-attachment: fixed !important;
+html[data-bg] .min-h-screen.bg-slate-950 { background: transparent !important; }
+/* Custom page background lives on its own fixed layer so it can be blurred */
+.page-bg-layer {
+  position: fixed;
+  inset: -40px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--page-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--bg-blur, 0px));
 }
 .bg-white\/\[0\.03\],
 .bg-white\/\[0\.04\],
@@ -478,6 +485,26 @@ h1, h2, h3 { font-family: var(--font-heading); }
 [data-compact] .gap-4 { gap: 0.75rem; }
 [data-compact] .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem; }
 [data-compact] .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+
+/* Corner style */
+[data-corners="sharp"] .rounded-md,
+[data-corners="sharp"] .rounded-lg,
+[data-corners="sharp"] .rounded-xl,
+[data-corners="sharp"] .rounded-2xl,
+[data-corners="sharp"] .bg-gradient-to-r.from-cyan-500.to-blue-600 { border-radius: 2px !important; }
+[data-corners="round"] .rounded-md { border-radius: 10px !important; }
+[data-corners="round"] .rounded-lg { border-radius: 12px !important; }
+[data-corners="round"] .rounded-xl { border-radius: 16px !important; }
+[data-corners="round"] .rounded-2xl { border-radius: 20px !important; }
+[data-corners="round"] .bg-gradient-to-r.from-cyan-500.to-blue-600,
+[data-corners="round"] button.bg-white\/5 { border-radius: 9999px !important; }
+
+/* High contrast */
+[data-contrast] .text-slate-500 { color: #94a3b8; }
+[data-contrast] .text-slate-400 { color: #cbd5e1; }
+[data-contrast] .text-slate-300 { color: #e2e8f0; }
+[data-contrast] .border-white\/5 { border-color: rgba(255, 255, 255, 0.16); }
+[data-contrast] .border-white\/10 { border-color: rgba(255, 255, 255, 0.24); }
 
 /* Reusable liquid glass utility */
 .liquid-glass {
