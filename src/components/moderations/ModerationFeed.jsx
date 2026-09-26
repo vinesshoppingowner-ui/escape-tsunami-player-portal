@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ModerationRow from '@/components/moderations/ModerationRow';
+import ModerationRow, { ROW_GRID } from '@/components/moderations/ModerationRow';
 
 export default function ModerationFeed({ moderations, appealFor, onAppeal, appealsLocked }) {
   const [tab, setTab] = useState('all');
@@ -27,8 +27,8 @@ export default function ModerationFeed({ moderations, appealFor, onAppeal, appea
           </button>
         ))}
       </div>
-      <div className="hidden sm:grid grid-cols-[1.6fr_1fr_0.9fr_1fr_auto] gap-3 px-4 py-2 text-[11px] uppercase tracking-wider text-slate-500 border-b border-white/[0.06]">
-        <span className="pl-5">Type / Reason</span><span>Date</span><span>Status</span><span>Appeal</span><span className="w-16" />
+      <div className={`hidden sm:grid ${ROW_GRID} px-4 py-2.5 bg-slate-800/40 border-b border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-400`}>
+        <span className="pl-6">Type / Reason</span><span>Date</span><span>Status</span><span>Appeal</span><span className="text-right">Action</span>
       </div>
       {rows.length === 0 ? (
         <div className="py-10 text-center text-sm text-slate-500">Nothing here.</div>

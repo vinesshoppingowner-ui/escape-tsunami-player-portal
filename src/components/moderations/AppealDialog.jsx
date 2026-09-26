@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldAlert, Calendar, Clock, UserCog, X } from 'lucide-react';
+import AppealField from '@/components/moderations/AppealField';
+import { Loader2, ShieldAlert, Calendar, Clock, UserCog } from 'lucide-react';
 
 const MIN_CHARS = 20;
 const MAX_CHARS = 500;
@@ -45,9 +45,12 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
   const count1 = reason.trim().length;
   const count2 = whyAccepted.trim().length;
   const count3 = deserved.trim().length;
-  const tooShort1 = count1 > 0 && count1 < MIN_CHARS;
-  const tooShort2 = count2 > 0 && count2 < MIN_CHARS;
-  const tooShort3 = count3 > 0 && count3 < MIN_CHARS;
+  const type = moderation?.moderation_type || '';
+  const tint = type.includes('Ban')
+    ? 'bg-red-500/10 border-red-500/20'
+    : type === 'Kick'
+    ? 'bg-orange-500/10 border-orange-500/20'
+    : 'bg-amber-500/10 border-amber-500/20';
   const canSubmit = count1 >= MIN_CHARS && count1 <= MAX_CHARS
     && count2 >= MIN_CHARS && count2 <= MAX_CHARS
     && count3 >= MIN_CHARS && count3 <= MAX_CHARS
@@ -61,25 +64,22 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-lg p-0 flex flex-col gap-0 max-h-[90vh] overflow-y-auto">
-        <div className="p-6 pb-4 border-b border-white/10">
-          <div className="flex items-start justify-between gap-4">
-            <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
-              <ShieldAlert className="h-6 w-6 text-rose-400" />
-            </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 transition-colors">
-              <X className="h-5 w-5" />
-            </button>
+      <DialogContent className="bg-slate-950 border-white/10 text-white sm:max-w-2xl p-0 flex flex-col gap-0 max-h-[95vh] overflow-y-auto">
+        <div className="px-6 pt-5 pb-4 border-b border-white/10 flex items-start gap-3 pr-12">
+          <div className="h-10 w-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+            <ShieldAlert className="h-5 w-5 text-rose-400" />
           </div>
-          <DialogTitle className="text-xl font-semibold mt-4">Appeal your moderation</DialogTitle>
-          <DialogDescription className="text-slate-400 mt-1.5 leading-relaxed">
-            Answer the questions below so staff can review your case. Be honest and respectful — your appeal goes straight to the staff team.
-          </DialogDescription>
+          <div>
+            <DialogTitle className="text-lg font-semibold">Appeal your moderation</DialogTitle>
+            <DialogDescription className="text-sm text-slate-400 mt-0.5">
+              Be honest and respectful — your appeal goes straight to the staff team.
+            </DialogDescription>
+          </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="px-6 py-5 space-y-4">
           {/* Moderation context */}
-          <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
+          <div className={`rounded-md border p-3.5 ${tint}`}>
             <div className="text-slate-500 text-[11px] uppercase tracking-wider font-medium">Moderation</div>
             <div className="mt-1.5 flex items-center gap-2 flex-wrap">
               <span className="text-white font-semibold">{moderation?.moderation_type}</span>
@@ -96,73 +96,20 @@ export default function AppealDialog({ open, onClose, moderation, robloxUsername
             )}
           </div>
 
-          {/* Q1: Appeal reason */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="appeal-reason" className="text-sm font-medium text-white">
-                1. Explain what happened <span className="text-rose-400">*</span>
-              </label>
-              <span className={`text-xs font-mono ${tooShort1 ? 'text-amber-400' : count1 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {count1}/{MAX_CHARS}
-              </span>
-            </div>
-            <Textarea
-              id="appeal-reason"
-              ref={textareaRef}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit(); }}
-              placeholder="Tell us what happened, why the decision should be reconsidered, or any context the staff may have missed…"
-              maxLength={MAX_CHARS}
-              rows={5}
-              className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
-            />
-            {tooShort1 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
-          </div>
-
-          {/* Q2: Why should your appeal be accepted? */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="appeal-why" className="text-sm font-medium text-white">
-                2. Why should your appeal be accepted? <span className="text-rose-400">*</span>
-              </label>
-              <span className={`text-xs font-mono ${tooShort2 ? 'text-amber-400' : count2 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {count2}/{MAX_CHARS}
-              </span>
-            </div>
-            <Textarea
-              id="appeal-why"
-              value={whyAccepted}
-              onChange={(e) => setWhyAccepted(e.target.value)}
-              placeholder="Explain why you believe this appeal deserves to be approved…"
-              maxLength={MAX_CHARS}
-              rows={4}
-              className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
-            />
-            {tooShort2 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
-          </div>
-
-          {/* Q3: Did you deserve this infraction? */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="appeal-deserved" className="text-sm font-medium text-white">
-                3. Did you deserve this infraction in your opinion? <span className="text-rose-400">*</span>
-              </label>
-              <span className={`text-xs font-mono ${tooShort3 ? 'text-amber-400' : count3 >= MIN_CHARS ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {count3}/{MAX_CHARS}
-              </span>
-            </div>
-            <Textarea
-              id="appeal-deserved"
-              value={deserved}
-              onChange={(e) => setDeserved(e.target.value)}
-              placeholder="Be honest — do you feel the moderation was justified? Why or why not?"
-              maxLength={MAX_CHARS}
-              rows={4}
-              className="bg-slate-900/60 border-white/15 text-white placeholder:text-slate-500 resize-none focus-visible:ring-cyan-500/40"
-            />
-            {tooShort3 && <p className="text-xs text-amber-400/90">Add a little more detail so the staff can review your appeal properly.</p>}
-          </div>
+          <AppealField
+            id="appeal-reason"
+            ref={textareaRef}
+            label="1. Explain what happened"
+            value={reason}
+            onChange={setReason}
+            onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit(); }}
+            placeholder="Context or details about the incident…"
+            min={MIN_CHARS}
+            max={MAX_CHARS}
+            rows={3}
+          />
+          <AppealField id="appeal-why" label="2. Why should your appeal be accepted?" value={whyAccepted} onChange={setWhyAccepted} min={MIN_CHARS} max={MAX_CHARS} />
+          <AppealField id="appeal-deserved" label="3. Did you deserve this infraction in your opinion?" value={deserved} onChange={setDeserved} min={MIN_CHARS} max={MAX_CHARS} />
 
           {/* Footer */}
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
