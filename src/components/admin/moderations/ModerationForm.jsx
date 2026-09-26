@@ -17,6 +17,7 @@ import { canIssueType } from '@/lib/staffPermissions';
 import { isBanType } from '@/lib/staffUndo';
 import EscalationHint from '@/components/admin/moderations/EscalationHint';
 import TemplatePicker from '@/components/admin/moderations/TemplatePicker';
+import SectionLabel from '@/components/SectionLabel';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -71,17 +72,7 @@ const empty = {
   duration_minutes: 5,
 };
 
-const SectionHeader = ({ icon: Icon, label, color = 'cyan' }) => {
-  const colorMap = {
-    cyan: 'text-cyan-400/80',
-    indigo: 'text-indigo-400/80',
-  };
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] text-[11px] font-semibold uppercase tracking-wider ${colorMap[color] || colorMap.cyan}`}>
-      <Icon className="h-3 w-3" /> {label}
-    </div>
-  );
-};
+const SectionHeader = ({ label }) => <SectionLabel>{label}</SectionLabel>;
 
 export default function ModerationForm({ open, onClose, onCreated }) {
   const { user } = useAuth();
@@ -398,7 +389,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
 
               {/* Footer */}
               <div className="flex justify-end gap-2 pt-1">
-                <Button variant="outline" onClick={copyForDiscord} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+                <Button variant="outline" onClick={copyForDiscord} className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white">
                   <Copy className="h-4 w-4 mr-1.5" /> Copy for Discord
                 </Button>
                 {!canIssueType(user, form.moderation_type) && (

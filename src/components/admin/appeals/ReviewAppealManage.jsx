@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdminLockButton from '@/components/admin/appeals/AdminLockButton';
+import SectionLabel from '@/components/SectionLabel';
 import { Copy, ExternalLink, Lock, Unlock, Trash2, Loader2, Check } from 'lucide-react';
 
 export default function ReviewAppealManage({ appeal, canReappeal, onReappealChange, onDeleted, isAdmin, user, onChanged, playerLocked }) {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(null);
-  const btn = 'inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs font-medium transition-colors disabled:opacity-40';
+  const btn = 'inline-flex items-center gap-1.5 h-8 px-3 rounded-md border text-xs font-medium transition-colors disabled:opacity-40';
+  const neutral = 'bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white';
 
   const copy = async () => {
     await navigator.clipboard.writeText(appeal.roblox_username);
@@ -34,21 +36,21 @@ export default function ReviewAppealManage({ appeal, canReappeal, onReappealChan
   };
 
   return (
-    <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
-      <div className="text-slate-500 text-[11px] uppercase tracking-wider font-medium mb-2">Appeal management</div>
+    <div className="space-y-3">
+      <SectionLabel>Appeal management</SectionLabel>
       <div className="flex flex-wrap gap-2">
-        <button onClick={copy} className={`${btn} border-white/10 text-slate-200 hover:bg-white/10`}>
+        <button onClick={copy} className={`${btn} ${neutral}`}>
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied' : 'Copy username'}
         </button>
         <a
           href={`https://www.roblox.com/search/users?keyword=${encodeURIComponent(appeal.roblox_username)}`}
           target="_blank"
           rel="noreferrer"
-          className={`${btn} border-white/10 text-slate-200 hover:bg-white/10`}
+          className={`${btn} ${neutral}`}
         >
           <ExternalLink className="h-3.5 w-3.5" /> Roblox profile
         </a>
-        <button disabled={!!busy} onClick={toggleLock} className={`${btn} border-amber-500/30 text-amber-300 hover:bg-amber-500/15`}>
+        <button disabled={!!busy} onClick={toggleLock} className={`${btn} ${neutral}`}>
           {busy === 'lock' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : canReappeal ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
           {canReappeal ? 'Lock re-appeals' : 'Allow re-appeals'}
         </button>

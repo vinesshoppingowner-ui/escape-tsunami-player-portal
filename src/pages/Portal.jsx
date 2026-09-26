@@ -19,6 +19,7 @@ import QuickLinks from '@/components/portal/QuickLinks';
 import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
+import SectionLabel from '@/components/SectionLabel';
 import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
 
@@ -263,13 +264,7 @@ export default function Portal() {
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
-                <Zap className="h-3.5 w-3.5" /> Quick Actions
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionLabel className="mt-8 mb-3">Quick Actions</SectionLabel>
 
             {/* Quick Links */}
             <QuickLinks />
@@ -285,13 +280,7 @@ export default function Portal() {
             )}
 
             {/* Your Moderations */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
-                <ShieldCheck className="h-3.5 w-3.5" /> Your Moderations
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionLabel className="mt-8 mb-3">Your Moderations</SectionLabel>
 
             <div ref={moderationsRef} className="scroll-mt-24">
               {loading ? (
@@ -319,13 +308,7 @@ export default function Portal() {
             </div>
 
             {/* Appeals & Support */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
-                <LifeBuoy className="h-3.5 w-3.5" /> Appeals & Support
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionLabel className="mt-8 mb-3">Appeals & Support</SectionLabel>
 
             <GoodStandingTips />
 
@@ -336,13 +319,7 @@ export default function Portal() {
             </div>
 
             {/* Account Security */}
-            <div className="mt-8 mb-3 flex items-center gap-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="inline-flex items-center gap-2 px-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
-                <Lock className="h-3.5 w-3.5" /> Account Security
-              </span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <SectionLabel className="mt-8 mb-3">Account Security</SectionLabel>
 
             <SecurityCard user={user} robloxUsername={savedUsername} />
           </>

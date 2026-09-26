@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { UserSearch, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { STATUS_STYLES } from '@/components/admin/appeals/appealMeta';
+import SectionLabel from '@/components/SectionLabel';
 
 export default function PlayerHistoryPanel({ username, currentAppealId }) {
   const [data, setData] = useState(null);
@@ -23,32 +24,31 @@ export default function PlayerHistoryPanel({ username, currentAppealId }) {
   ];
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
-        <UserSearch className="h-4 w-4 text-cyan-400" /> Player history
-      </h3>
-      <div className="grid grid-cols-4 gap-2">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-lg bg-slate-900/60 border border-white/10 p-2 text-center">
-            <div className="text-lg font-bold text-white">{s.value}</div>
-            <div className="text-[10px] uppercase tracking-wide text-slate-500">{s.label}</div>
-          </div>
+    <div className="space-y-3">
+      <SectionLabel>Player history</SectionLabel>
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+        {stats.map((s, i) => (
+          <span key={s.label} className="inline-flex items-baseline gap-1.5">
+            {i > 0 && <span className="text-slate-700 mr-1">•</span>}
+            <span className="text-lg font-semibold text-white">{s.value}</span>
+            <span className="text-slate-400">{s.label}</span>
+          </span>
         ))}
       </div>
-      <div className="rounded-xl bg-slate-900/60 border border-white/10 max-h-56 overflow-y-auto divide-y divide-white/5">
+      <div className="max-h-56 overflow-y-auto divide-y divide-slate-800/70">
         {data.mods.map((m) => (
-          <div key={m.id} className="px-3 py-2 flex items-center gap-2 text-sm">
+          <div key={m.id} className="py-2 flex items-center gap-2 text-sm">
             <span className="text-white font-medium shrink-0">{m.moderation_type}</span>
             <span className="text-slate-400 truncate flex-1">{m.reason}</span>
-            <span className="text-[10px] text-slate-500 shrink-0">{m.moderation_date ? new Date(m.moderation_date).toLocaleDateString() : '—'}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded border border-white/10 text-slate-300 shrink-0">{m.status}</span>
+            <span className="text-[11px] text-slate-500 shrink-0">{m.moderation_date ? new Date(m.moderation_date).toLocaleDateString() : '—'}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 shrink-0">{m.status}</span>
           </div>
         ))}
         {data.apps.map((a) => (
-          <div key={a.id} className="px-3 py-2 flex items-center gap-2 text-sm">
-            <span className="text-cyan-300 font-medium shrink-0">Appeal{a.id === currentAppealId ? ' (this)' : ''}</span>
+          <div key={a.id} className="py-2 flex items-center gap-2 text-sm">
+            <span className="text-indigo-300 font-medium shrink-0">Appeal{a.id === currentAppealId ? ' (this)' : ''}</span>
             <span className="text-slate-400 truncate flex-1">{a.appeal_reason}</span>
-            <span className="text-[10px] text-slate-500 shrink-0">{new Date(a.created_date).toLocaleDateString()}</span>
+            <span className="text-[11px] text-slate-500 shrink-0">{new Date(a.created_date).toLocaleDateString()}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${STATUS_STYLES[a.status] || ''}`}>{a.removed ? 'Removed' : a.status}</span>
           </div>
         ))}

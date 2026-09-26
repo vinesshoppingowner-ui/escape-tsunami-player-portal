@@ -20,10 +20,10 @@ export default function QuickPunishButton() {
       <button
         onClick={() => setOpen(true)}
         title="Moderate a player (Shift + M)"
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 h-12 px-5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-100 text-sm font-semibold backdrop-blur-xl shadow-lg shadow-rose-950/40 hover:bg-rose-500/30 transition-colors"
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 h-10 px-4 rounded-md bg-slate-900 border border-slate-700 text-slate-200 text-sm font-medium shadow-lg shadow-black/40 hover:bg-slate-800 hover:text-white transition-colors"
       >
-        <Gavel className="h-4 w-4" /> Moderate player
-        <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-white/10 border border-white/15 font-mono">⇧M</kbd>
+        <Gavel className="h-4 w-4 text-slate-400" /> Moderate player
+        <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400 font-mono">⇧M</kbd>
       </button>
       <ModerationForm open={open} onClose={() => setOpen(false)} />
     </>

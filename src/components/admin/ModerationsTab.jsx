@@ -189,7 +189,7 @@ export default function ModerationsTab() {
               size="sm"
               variant="outline"
               onClick={() => downloadCsv(`moderations-${new Date().toISOString().slice(0, 10)}.csv`, filtered, CSV_COLUMNS)}
-              className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+              className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
             >
               <Download className="h-4 w-4 mr-1.5" /> Export CSV
             </Button>
@@ -198,7 +198,7 @@ export default function ModerationsTab() {
             size="sm"
             variant="outline"
             onClick={() => window.open('/moderation-popout', '_blank', 'noopener,noreferrer,width=1200,height=800')}
-            className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+            className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
           >
             <ExternalLink className="h-4 w-4 mr-1.5" /> Open Pop Out
           </Button>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Check, X, Eye, Loader2 } from 'lucide-react';
+import SectionLabel from '@/components/SectionLabel';
 
 const BUTTONS = [
   { status: 'Approved', label: 'Approve', icon: Check, cls: 'border-emerald-500/30 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20' },
@@ -15,8 +16,8 @@ export default function ReviewQuickDecision({ current, onDecide }) {
     setBusy(null);
   };
   return (
-    <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3">
-      <div className="text-slate-500 text-[11px] uppercase tracking-wider font-medium mb-2">One-click decision</div>
+    <div>
+      <SectionLabel className="mb-3">One-click decision</SectionLabel>
       <div className="grid grid-cols-3 gap-2">
         {BUTTONS.map((b) => (
           <button
