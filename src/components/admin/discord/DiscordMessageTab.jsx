@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import FormatToolbar from '@/components/admin/discord/FormatToolbar';
+import AskGeminiDialog from '@/components/admin/discord/AskGeminiDialog';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import EmbedPreview from '@/components/admin/discord/EmbedPreview';
 
@@ -18,6 +20,12 @@ export default function DiscordMessageTab() {
   const [useEmbed, setUseEmbed] = useState(false);
   const [e, setE] = useState({ title: '', description: '', colorHex: '#2563EB', image: '', footer: '' });
   const [sending, setSending] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
+  const textRef = useRef(null);
+  const applyAI = (r) => {
+    setContent(r.content || '');
+    if (useEmbed) setE({ ...e, title: r.title || '', description: r.description || '', footer: r.footer || '', colorHex: /^#[0-9a-f]{6}$/i.test(r.color || '') ? r.color : e.colorHex });
+  };
 
   useEffect(() => {
     base44.functions.invoke('discordSend', { action: 'channels' })
@@ -55,7 +63,11 @@ export default function DiscordMessageTab() {
           <option value="">{channels ? 'Select a channel…' : 'Loading channels…'}</option>
           {(channels || []).map((c) => <option key={c.id} value={c.id}>#{c.name}</option>)}
         </select>
-        <Textarea value={content} onChange={(ev) => setContent(ev.target.value)} placeholder="Message text (optional with embed)" rows={4} className={field} />
+        <Button type="button" variant="outline" onClick={() => setAskOpen(true)} className="w-full border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20 hover:text-white">
+          <Sparkles className="h-4 w-4" /> Ask Gemini
+        </Button>
+        <FormatToolbar textareaRef={textRef} value={content} onChange={setContent} />
+        <Textarea ref={textRef} value={content} onChange={(ev) => setContent(ev.target.value)} placeholder="Message text (optional with embed)" rows={4} className={field} />
         <label className="flex items-center gap-2 text-sm text-slate-300"><Switch checked={useEmbed} onCheckedChange={setUseEmbed} /> Include embed</label>
         {useEmbed && (
           <div className="space-y-2">
@@ -76,6 +88,7 @@ export default function DiscordMessageTab() {
         <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Preview</div>
         <EmbedPreview content={content} embed={embed} />
       </div>
+      <AskGeminiDialog open={askOpen} onOpenChange={setAskOpen} useEmbed={useEmbed} onResult={applyAI} />
     </div>
   );
 }
