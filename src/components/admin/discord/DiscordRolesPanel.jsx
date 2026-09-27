@@ -59,9 +59,19 @@ export default function DiscordRolesPanel() {
     setSaving(false);
   };
 
-  const applyImport = (changes) => {
+  const applyImport = ({ changes, remove_names, keep_only }) => {
     const next = { ...edits };
     let count = 0;
+    const byName = (n) => original.find((x) => x.name.toLowerCase() === (n || '').toLowerCase());
+    const keepIds = changes.map((c) => byName(c.old_name)?.id).filter(Boolean);
+    const removable = original.filter((r) => r.name !== '@everyone' && !r.managed);
+    const toRemove = keep_only
+      ? removable.filter((r) => !keepIds.includes(r.id))
+      : remove_names.map(byName).filter((r) => r && removable.includes(r));
+    if (toRemove.length) {
+      setChecked(toRemove.map((r) => r.id));
+      toast({ title: `${toRemove.length} role(s) ticked for removal`, description: 'Review them, then click "Remove selected" to delete.' });
+    }
     changes.forEach((c) => {
       const r = original.find((x) => x.name.toLowerCase() === (c.old_name || '').toLowerCase());
       if (!r) return;
