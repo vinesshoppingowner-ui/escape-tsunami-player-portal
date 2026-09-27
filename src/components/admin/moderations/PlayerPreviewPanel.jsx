@@ -12,18 +12,12 @@ export default function PlayerPreviewPanel({ username }) {
     setState('loading');
     let active = true;
     const t = setTimeout(async () => {
-      const res = await fetch('https://users.roproxy.com/v1/usernames/users', {
-        method: 'POST', headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ usernames: [name], excludeBannedUsers: false }),
-      }).then((r) => r.json()).catch(() => null);
-      const match = res?.data?.[0];
+      const res = await base44.functions.invoke('robloxLookup', { username: name }).catch(() => null);
+      const match = res?.data?.user;
       if (!active) return;
       if (!match) { setState('notfound'); return; }
-      const [profile, mods] = await Promise.all([
-        fetch(`https://users.roproxy.com/v1/users/${match.id}`).then((r) => r.json()).catch(() => match),
-        base44.entities.Moderation.filter({ roblox_username: match.name }, '-moderation_date', 50),
-      ]);
-      if (active) setState({ profile: { ...match, ...profile }, mods });
+      const mods = await base44.entities.Moderation.filter({ roblox_username: match.name }, '-moderation_date', 50);
+      if (active) setState({ profile: match, mods });
     }, 500);
     return () => { active = false; clearTimeout(t); };
   }, [username]);
