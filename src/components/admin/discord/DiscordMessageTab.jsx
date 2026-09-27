@@ -10,6 +10,7 @@ import { Loader2, Send, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import EmbedPreview from '@/components/admin/discord/EmbedPreview';
 import BulkSendPanel from '@/components/admin/discord/BulkSendPanel';
+import DiscordRolesPanel from '@/components/admin/discord/DiscordRolesPanel';
 
 const field = 'bg-slate-950/60 border-white/15 text-white';
 
@@ -61,8 +62,9 @@ export default function DiscordMessageTab() {
   const modeBtn = (m, label) => (
     <button onClick={() => setMode(m)} className={`flex-1 px-3 py-1.5 rounded-md text-sm ${mode === m ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}>{label}</button>
   );
-  const switcher = <div className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800 mb-4 max-w-xs">{modeBtn('single', 'Single')}{modeBtn('bulk', 'Bulk (5 channels)')}</div>;
+  const switcher = <div className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800 mb-4 max-w-xs">{modeBtn('single', 'Single')}{modeBtn('bulk', 'Bulk (5 channels)')}{modeBtn('roles', 'Roles')}</div>;
   if (mode === 'bulk') return <div>{switcher}<BulkSendPanel channels={channels} /></div>;
+  if (mode === 'roles') return <div>{switcher}<DiscordRolesPanel /></div>;
 
   return (
     <div>{switcher}
