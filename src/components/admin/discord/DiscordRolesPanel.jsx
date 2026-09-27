@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import RoleEditor from '@/components/admin/discord/RoleEditor';
 import ImageRoleImport from '@/components/admin/discord/ImageRoleImport';
 import TextRoleImport from '@/components/admin/discord/TextRoleImport';
+import BulkRoleMember from '@/components/admin/discord/BulkRoleMember';
 import { PERMISSIONS } from '@/components/admin/discord/discordPerms';
 
 const KEYS = ['name', 'color', 'hoist', 'mentionable', 'permissions'];
@@ -98,6 +99,7 @@ export default function DiscordRolesPanel() {
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-2 max-h-[600px] overflow-y-auto">
         <ImageRoleImport roleNames={original.map((r) => r.name)} onApply={applyImport} />
         <TextRoleImport roleNames={original.map((r) => r.name)} onApply={applyImport} />
+        {checked.length > 0 && <BulkRoleMember roleIds={checked} />}
         {checked.length > 0 && (
           <Button size="sm" disabled={saving} onClick={() => removeRoles(checked)} className="w-full mb-2 bg-rose-600 hover:bg-rose-500 text-white"><Trash2 className="h-4 w-4" /> Remove {checked.length} selected</Button>
         )}
