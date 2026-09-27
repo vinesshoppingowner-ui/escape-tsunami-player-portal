@@ -13,6 +13,7 @@ export const DEFAULT_PREFS = {
   background_image: '',
   background_dim: 65,
   background_blur: 0,
+  background_effect: 'none',
   accent_hex: '',
   font_pair: 'default',
   corner_style: 'default',

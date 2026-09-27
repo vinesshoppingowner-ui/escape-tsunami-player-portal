@@ -1,4 +1,6 @@
-import { Palette, Snowflake, LayoutGrid, Droplets, Image } from 'lucide-react';
+import { Palette, Snowflake, LayoutGrid, Droplets, Image, CloudRain } from 'lucide-react';
+import BackgroundEffectPicker from '@/components/profile/BackgroundEffectPicker';
+import { canUseBgEffects } from '@/lib/backgroundEffects';
 import BackgroundPicker from '@/components/profile/BackgroundPicker';
 import GlassSlider from '@/components/profile/GlassSlider';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -44,6 +46,12 @@ export default function SettingsDialog({ open, onOpenChange }) {
             badge={<span className="ml-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">New</span>}>
             <BackgroundPicker prefs={prefs} set={set} />
           </SettingsSection>
+          {canUseBgEffects(user) && (
+            <SettingsSection icon={CloudRain} title="Background effect" desc="Animated weather and seasonal effects behind the page."
+              badge={<span className="ml-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-violet-300">Only you</span>}>
+              <BackgroundEffectPicker value={prefs.background_effect} onChange={(background_effect) => set({ background_effect })} />
+            </SettingsSection>
+          )}
           <SettingsSection icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">
             <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
           </SettingsSection>

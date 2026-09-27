@@ -34,6 +34,7 @@ import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
 import AccentApplier from '@/components/AccentApplier';
 import LandingRedirect from '@/components/LandingRedirect';
+import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
@@ -86,6 +87,7 @@ const AuthenticatedApp = () => {
     <IpBanCheck>
       <MaintenanceGuard>
         <AccentApplier />
+        <BackgroundEffectLayer />
         {!isLoading && <LandingRedirect />}
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
