@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Send, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import EmbedPreview from '@/components/admin/discord/EmbedPreview';
+import BulkSendPanel from '@/components/admin/discord/BulkSendPanel';
 
 const field = 'bg-slate-950/60 border-white/15 text-white';
 
@@ -21,6 +22,7 @@ export default function DiscordMessageTab() {
   const [e, setE] = useState({ title: '', description: '', colorHex: '#2563EB', image: '', footer: '' });
   const [sending, setSending] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+  const [mode, setMode] = useState('single');
   const textRef = useRef(null);
   const applyAI = (r) => {
     setContent(r.content || '');
@@ -56,7 +58,14 @@ export default function DiscordMessageTab() {
   const set = (k) => (ev) => setE({ ...e, [k]: ev.target.value });
   const empty = !content.trim() && !(useEmbed && (e.title || e.description || e.image));
 
+  const modeBtn = (m, label) => (
+    <button onClick={() => setMode(m)} className={`flex-1 px-3 py-1.5 rounded-md text-sm ${mode === m ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}>{label}</button>
+  );
+  const switcher = <div className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800 mb-4 max-w-xs">{modeBtn('single', 'Single')}{modeBtn('bulk', 'Bulk (5 channels)')}</div>;
+  if (mode === 'bulk') return <div>{switcher}<BulkSendPanel channels={channels} /></div>;
+
   return (
+    <div>{switcher}
     <div className="grid lg:grid-cols-2 gap-5">
       <div className="space-y-3 rounded-2xl bg-white/[0.03] border border-white/10 p-5">
         <select value={channel} onChange={(ev) => setChannel(ev.target.value)} className={`w-full rounded-md border px-3 py-2 text-sm ${field}`}>
@@ -89,6 +98,7 @@ export default function DiscordMessageTab() {
         <EmbedPreview content={content} embed={embed} />
       </div>
       <AskGeminiDialog open={askOpen} onOpenChange={setAskOpen} useEmbed={useEmbed} onResult={applyAI} />
+    </div>
     </div>
   );
 }
