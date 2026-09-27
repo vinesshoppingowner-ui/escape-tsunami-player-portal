@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info, Mail, Globe, ShieldBan } from 'lucide-react';
+import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info, Mail, Globe, ShieldBan, Link2 } from 'lucide-react';
+import BloxlinkLookup from '@/components/admin/BloxlinkLookup';
 import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
 import { useToast } from '@/components/ui/use-toast';
 import { findUserByRobloxUsername } from '@/lib/userLookup';
@@ -241,7 +242,21 @@ export default function UserLookup() {
         >
           <Bot className="h-4 w-4 inline mr-1.5" /> Discord
         </button>
+        <button
+          type="button"
+          onClick={() => { setPlatform('bloxlink'); setRobloxProfile(null); setDiscordData(null); setError(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+            platform === 'bloxlink'
+              ? 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+              : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
+          }`}
+        >
+          <Link2 className="h-4 w-4 inline mr-1.5" /> Bloxlink
+        </button>
       </div>
+
+      {platform === 'bloxlink' && <BloxlinkLookup />}
+      {platform !== 'bloxlink' && (<>
 
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
@@ -296,6 +311,7 @@ export default function UserLookup() {
           </p>
         </div>
       )}
+      </>)}
     </div>
   );
 }
