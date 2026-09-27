@@ -13,8 +13,8 @@ export default function BulkRoleMember({ roleIds }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (query.trim().length < 2) return setResults([]);
-    const t = setTimeout(() => call('searchMembers', null, query).then((r) => setResults(r.data.members)).catch(() => setResults([])), 350);
+    if (!query.trim()) return setResults([]);
+    const t = setTimeout(() => call('searchMembers', null, query.trim()).then((r) => setResults(r.data.members)).catch((e) => { setResults([]); toast({ title: e.response?.data?.error || 'Member search failed', variant: 'destructive' }); }), 200);
     return () => clearTimeout(t);
   }, [query]);
 

@@ -16,8 +16,8 @@ export default function RoleMembers({ roleId }) {
   const load = () => call('roleMembers', roleId).then((r) => setMembers(r.data.members)).catch((e) => { setMembers([]); fail(e); });
   useEffect(() => { setMembers(null); load(); }, [roleId]);
   useEffect(() => {
-    if (query.trim().length < 2) return setResults([]);
-    const t = setTimeout(() => call('searchMembers', null, query).then((r) => setResults(r.data.members)).catch(fail), 350);
+    if (!query.trim()) return setResults([]);
+    const t = setTimeout(() => call('searchMembers', null, query.trim()).then((r) => setResults(r.data.members)).catch(fail), 200);
     return () => clearTimeout(t);
   }, [query]);
 
