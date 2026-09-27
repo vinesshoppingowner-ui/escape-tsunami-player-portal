@@ -59,11 +59,13 @@ export default function DiscordRolesPanel() {
     setSaving(false);
   };
 
-  const applyImport = ({ changes, remove_names, keep_only }) => {
+  const applyImport = ({ changes, remove_names, keep_only, keep_names = [] }) => {
     const next = { ...edits };
     let count = 0;
-    const byName = (n) => original.find((x) => x.name.toLowerCase() === (n || '').toLowerCase());
-    const keepIds = changes.map((c) => byName(c.old_name)?.id).filter(Boolean);
+    const norm = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const byName = (n) => original.find((x) => norm(x.name) === norm(n));
+    const keepNames = [...keep_names, ...changes.flatMap((c) => [c.old_name, c.new_name])].map(norm).filter(Boolean);
+    const keepIds = original.filter((r) => keepNames.includes(norm(r.name))).map((r) => r.id);
     const removable = original.filter((r) => r.name !== '@everyone' && !r.managed);
     const toRemove = keep_only
       ? removable.filter((r) => !keepIds.includes(r.id))
