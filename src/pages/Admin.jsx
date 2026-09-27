@@ -3,7 +3,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown, UserRound, FileDown } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown, UserRound, FileDown, Send } from 'lucide-react';
+import DiscordMessageTab from '@/components/admin/discord/DiscordMessageTab';
 import PlayersTab from '@/components/admin/players/PlayersTab';
 import ReportsTab from '@/components/admin/reports/ReportsTab';
 import LiveChatTab from '@/components/admin/LiveChatTab';
@@ -31,6 +32,7 @@ const ADMIN_TOOLS = [
   { value: 'watchlist', label: 'Watchlist', icon: Eye },
   { value: 'evasion', label: 'Ban Evasion', icon: ScanSearch },
   { value: 'message', label: 'Message Players', icon: Megaphone },
+  { value: 'discord', label: 'Discord Messages', icon: Send },
   { value: 'bans', label: 'Website Bans', icon: Ban },
   { value: 'applications', label: 'Applications', icon: FileText },
   { value: 'players', label: 'Player Profiles', icon: UserRound },
@@ -106,6 +108,7 @@ export default function Admin() {
               <TabsContent value="evasion"><BanEvasionTab /></TabsContent>
               <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>
               <TabsContent value="message"><MassMessageTab /></TabsContent>
+              <TabsContent value="discord"><DiscordMessageTab /></TabsContent>
               <TabsContent value="players"><PlayersTab /></TabsContent>
               <TabsContent value="reports"><ReportsTab /></TabsContent>
             </>
