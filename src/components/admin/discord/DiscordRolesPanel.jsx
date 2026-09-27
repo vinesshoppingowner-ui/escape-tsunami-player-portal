@@ -5,6 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Save, Trash2, Undo2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import RoleEditor from '@/components/admin/discord/RoleEditor';
+import ImageRoleImport from '@/components/admin/discord/ImageRoleImport';
+import { PERMISSIONS } from '@/components/admin/discord/discordPerms';
 
 const KEYS = ['name', 'color', 'hoist', 'mentionable', 'permissions'];
 
@@ -56,11 +58,32 @@ export default function DiscordRolesPanel() {
     setSaving(false);
   };
 
+  const applyImport = (changes) => {
+    const next = { ...edits };
+    let count = 0;
+    changes.forEach((c) => {
+      const r = original.find((x) => x.name.toLowerCase() === (c.old_name || '').toLowerCase());
+      if (!r) return;
+      const e = { ...current(r) };
+      if (c.new_name) e.name = c.new_name;
+      if (/^#?[0-9a-f]{6}$/i.test(c.color_hex || '')) e.color = parseInt(c.color_hex.replace('#', ''), 16);
+      if (c.permissions?.length) {
+        const bits = PERMISSIONS.filter(([, l]) => c.permissions.some((p) => p.toLowerCase() === l.toLowerCase())).map(([b]) => b);
+        e.permissions = bits.reduce((acc, b) => acc | (1n << BigInt(b)), 0n).toString();
+      }
+      next[r.id] = e;
+      count++;
+    });
+    updateEdits(next);
+    return count;
+  };
+
   const toggleCheck = (id) => setChecked((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-5">
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-2 max-h-[600px] overflow-y-auto">
+        <ImageRoleImport roleNames={original.map((r) => r.name)} onApply={applyImport} />
         {checked.length > 0 && (
           <Button size="sm" disabled={saving} onClick={() => removeRoles(checked)} className="w-full mb-2 bg-rose-600 hover:bg-rose-500 text-white"><Trash2 className="h-4 w-4" /> Remove {checked.length} selected</Button>
         )}
