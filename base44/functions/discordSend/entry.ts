@@ -19,6 +19,12 @@ export default async function(req) {
       return Response.json({ roles: d.sort((a, b) => b.position - a.position) });
     }
 
+    if (action === 'deleteRole') {
+      const r = await fetch(`https://discord.com/api/v10/guilds/${guild}/roles/${channel_id}`, { method: 'DELETE', headers });
+      if (!r.ok) { const d = await r.json(); return Response.json({ error: d.message || 'Delete failed' }, { status: r.status }); }
+      return Response.json({ ok: true });
+    }
+
     if (action === 'updateRoles') {
       const results = [];
       for (const u of updates || []) {

@@ -11,6 +11,7 @@ export default function RoleEditor({ role, onChange }) {
     <div className="space-y-4">
       <div className="flex gap-2">
         <input type="color" value={hex(role.color)} onChange={(e) => set('color', parseInt(e.target.value.slice(1), 16))} className="h-9 w-12 rounded bg-transparent" />
+        <Input defaultValue={hex(role.color)} key={`${role.id}-${role.color}`} onChange={(e) => /^#?[0-9a-f]{6}$/i.test(e.target.value) && set('color', parseInt(e.target.value.replace('#', ''), 16))} placeholder="#RRGGBB" className={`${field} w-28 font-mono`} />
         <Input value={role.name} onChange={(e) => set('name', e.target.value)} className={field} />
       </div>
       <div className="grid sm:grid-cols-2 gap-2 text-sm text-slate-300">

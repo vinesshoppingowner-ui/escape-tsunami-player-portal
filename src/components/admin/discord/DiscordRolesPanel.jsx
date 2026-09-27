@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import RoleEditor from '@/components/admin/discord/RoleEditor';
 
@@ -35,6 +35,20 @@ export default function DiscordRolesPanel() {
     setSaving(false);
   };
 
+  const removeRole = async () => {
+    if (!window.confirm(`Delete the role "${role.name}" from Discord? This can't be undone.`)) return;
+    setSaving(true);
+    try {
+      await base44.functions.invoke('discordSend', { action: 'deleteRole', channel_id: role.id });
+      toast({ title: `Removed ${role.name}` });
+      setSelected(null);
+      await load();
+    } catch (err) {
+      toast({ title: err.response?.data?.error || 'Delete failed', variant: 'destructive' });
+    }
+    setSaving(false);
+  };
+
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-5">
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-2 max-h-[600px] overflow-y-auto">
@@ -49,6 +63,7 @@ export default function DiscordRolesPanel() {
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
         {role && <RoleEditor role={current(role)} onChange={(v) => setEdits({ ...edits, [role.id]: v })} />}
         <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
+          <Button variant="outline" disabled={!role || saving} onClick={removeRole} className="mr-auto border-rose-500/40 bg-transparent text-rose-300 hover:bg-rose-500/10"><Trash2 className="h-4 w-4" /> Remove role</Button>
           <Button variant="outline" disabled={!changed.length || saving} onClick={() => setEdits({})} className="border-slate-700 bg-transparent text-slate-300">Discard</Button>
           <Button onClick={saveAll} disabled={!changed.length || saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save all ({changed.length})
