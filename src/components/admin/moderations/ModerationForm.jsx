@@ -18,6 +18,7 @@ import { isBanType } from '@/lib/staffUndo';
 import EscalationHint from '@/components/admin/moderations/EscalationHint';
 import TemplatePicker from '@/components/admin/moderations/TemplatePicker';
 import SectionLabel from '@/components/SectionLabel';
+import PlayerPreviewPanel from '@/components/admin/moderations/PlayerPreviewPanel';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -265,6 +266,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                   <Label className="text-xs text-slate-400">Roblox username *</Label>
                   <Input value={form.roblox_username} onChange={(e) => set('roblox_username')(e.target.value)} className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                 </div>
+                <PlayerPreviewPanel username={form.roblox_username} />
                 <EscalationHint username={form.roblox_username} onApply={applyPreset} />
                 <TemplatePicker onPick={applyPreset} current={form} isAdmin={isOwner(user)} />
                 <div>
