@@ -509,34 +509,7 @@ h1, h2, h3 { font-family: var(--font-heading); }
 /* ===== Animated background effects ===== */
 html[data-fx] body { background-color: #0B0D13; }
 html[data-fx] .min-h-screen.bg-slate-950 { background: transparent !important; }
-.fx-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.fx-p { position: absolute; display: block; line-height: 1; will-change: transform; }
-.fx-fall { animation: fx-fall linear infinite; }
-.fx-rise { animation: fx-rise linear infinite; }
-.fx-twinkle { animation: fx-twinkle ease-in-out infinite; }
-.fx-float { animation: fx-float ease-in-out infinite; }
-.fx-rain { background: linear-gradient(to bottom, transparent, rgba(174, 200, 235, 0.55)); }
-.fx-snow { border-radius: 9999px; background: rgba(255, 255, 255, 0.85); filter: blur(0.5px); }
-.fx-firefly { border-radius: 9999px; background: #fde68a; box-shadow: 0 0 8px 3px rgba(253, 224, 71, 0.55); }
-.fx-star { border-radius: 9999px; background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.7); }
-.fx-bubble { border-radius: 9999px; border: 1px solid rgba(186, 230, 253, 0.4); background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25), transparent 60%); }
-
-@keyframes fx-fall {
-  from { transform: translate3d(0, -10vh, 0) rotate(0deg); }
-  to { transform: translate3d(var(--drift), 110vh, 0) rotate(var(--spin)); }
-}
-@keyframes fx-rise {
-  from { transform: translate3d(0, 110vh, 0); }
-  to { transform: translate3d(var(--drift), -10vh, 0); }
-}
-@keyframes fx-twinkle {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 1; }
-}
-@keyframes fx-float {
-  0%, 100% { transform: translate(0, 0); opacity: 0.15; }
-  50% { transform: translate(var(--drift), -30px); opacity: 1; }
-}
+.fx-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
 
 /* Reusable liquid glass utility */
 .liquid-glass {
