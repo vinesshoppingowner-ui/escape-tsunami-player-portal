@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Users, Loader2, Crown, Clock } from 'lucide-react';
+import { Users, Loader2, Crown, Clock, Flame } from 'lucide-react';
 import PlayerSessionRow, { formatDuration } from '@/components/analytics/PlayerSessionRow';
 
 export default function PlayerCount() {
@@ -27,9 +27,21 @@ export default function PlayerCount() {
   const avg = done.length ? done.reduce((a, s) => a + s.duration_seconds, 0) / done.length : 0;
   const list = tab === 'online' ? online : sessions;
 
+  // Highly engaged: played on 3+ different days in the last 7 days
+  const weekAgo = now - 7 * 86400000;
+  const days = {};
+  sessions.forEach((s) => {
+    const t = new Date(s.joined_at || s.created_date).getTime();
+    if (t < weekAgo) return;
+    (days[s.roblox_username] ||= new Set()).add(new Date(t).toDateString());
+  });
+  const engaged = new Set(Object.keys(days).filter((u) => days[u].size >= 3));
+  const engagedOnline = new Set(online.filter((s) => engaged.has(s.roblox_username)).map((s) => s.roblox_username)).size;
+
   const stats = [
     { label: 'Playing now', value: online.length, icon: Users, color: 'text-emerald-400' },
     { label: 'Unique players', value: unique, icon: Users, color: 'text-cyan-400' },
+    { label: 'Highly engaged', value: engaged.size, sub: `${engagedOnline} online now`, icon: Flame, color: 'text-orange-400' },
     { label: 'Premium players', value: premium, icon: Crown, color: 'text-amber-400' },
     { label: 'Avg. playtime', value: formatDuration(avg), icon: Clock, color: 'text-violet-400' },
   ];
@@ -40,12 +52,13 @@ export default function PlayerCount() {
         <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
         <h2 className="font-semibold text-white">Player count</h2>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
             <s.icon className={`h-4 w-4 ${s.color}`} />
             <div className="mt-1.5 text-xl font-bold tabular-nums">{s.value}</div>
             <div className="text-xs text-slate-500">{s.label}</div>
+            {s.sub && <div className="mt-0.5 flex items-center gap-1 text-[11px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />{s.sub}</div>}
           </div>
         ))}
       </div>
