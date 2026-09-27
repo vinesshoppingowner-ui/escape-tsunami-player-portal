@@ -19,6 +19,27 @@ export default async function(req) {
       return Response.json({ roles: d.sort((a, b) => b.position - a.position) });
     }
 
+    if (action === 'roleMembers') {
+      const r = await fetch(`https://discord.com/api/v10/guilds/${guild}/members?limit=1000`, { headers });
+      const d = await r.json();
+      if (!r.ok) return Response.json({ error: d.message || 'Could not load members (enable Server Members Intent for the bot)' }, { status: r.status });
+      const members = d.filter((m) => m.roles.includes(channel_id)).map((m) => ({ id: m.user.id, name: m.nick || m.user.global_name || m.user.username, username: m.user.username }));
+      return Response.json({ members });
+    }
+
+    if (action === 'searchMembers') {
+      const r = await fetch(`https://discord.com/api/v10/guilds/${guild}/members/search?limit=10&query=${encodeURIComponent(content || '')}`, { headers });
+      const d = await r.json();
+      if (!r.ok) return Response.json({ error: d.message || 'Search failed' }, { status: r.status });
+      return Response.json({ members: d.map((m) => ({ id: m.user.id, name: m.nick || m.user.global_name || m.user.username, username: m.user.username })) });
+    }
+
+    if (action === 'addRoleMember' || action === 'removeRoleMember') {
+      const r = await fetch(`https://discord.com/api/v10/guilds/${guild}/members/${content}/roles/${channel_id}`, { method: action === 'addRoleMember' ? 'PUT' : 'DELETE', headers });
+      if (!r.ok) { const d = await r.json(); return Response.json({ error: d.message || 'Failed' }, { status: r.status }); }
+      return Response.json({ ok: true });
+    }
+
     if (action === 'deleteRole') {
       const r = await fetch(`https://discord.com/api/v10/guilds/${guild}/roles/${channel_id}`, { method: 'DELETE', headers });
       if (!r.ok) { const d = await r.json(); return Response.json({ error: d.message || 'Delete failed' }, { status: r.status }); }

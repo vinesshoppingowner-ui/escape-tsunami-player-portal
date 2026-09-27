@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import RoleMembers from '@/components/admin/discord/RoleMembers';
 import { PERMISSIONS, hasPerm, togglePerm } from '@/components/admin/discord/discordPerms';
 
 const field = 'bg-slate-950/60 border-white/15 text-white';
@@ -18,6 +19,7 @@ export default function RoleEditor({ role, onChange }) {
         <label className="flex items-center gap-2"><Switch checked={role.hoist} onCheckedChange={(v) => set('hoist', v)} /> Display separately</label>
         <label className="flex items-center gap-2"><Switch checked={role.mentionable} onCheckedChange={(v) => set('mentionable', v)} /> Mentionable</label>
       </div>
+      <RoleMembers roleId={role.id} />
       <div>
         <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Permissions</div>
         <div className="grid sm:grid-cols-2 gap-x-4 gap-y-2 max-h-[420px] overflow-y-auto pr-1">
