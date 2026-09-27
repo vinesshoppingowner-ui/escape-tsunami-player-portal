@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import { Wrench, Clock, ShieldCheck, RefreshCw } from 'lucide-react';
+import LockdownScreen from '@/components/site/LockdownScreen';
 
 export default function MaintenanceGuard({ children }) {
   const { user } = useAuth();
@@ -28,6 +29,12 @@ export default function MaintenanceGuard({ children }) {
 
   const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthRoute = typeof window !== 'undefined' && AUTH_ROUTES.some((r) => window.location.pathname.startsWith(r));
+
+  const isStaff = isOwner(user) || user?.role === 'staff' || user?.role === 'admin';
+  const lockdown = settings?.portal_locked && settings?.appeals_frozen && settings?.emergency_alert_enabled;
+  if (lockdown && !isStaff && !isAuthRoute) {
+    return <LockdownScreen message={settings.emergency_alert_message} signedIn={!!user} />;
+  }
 
   if (settings?.maintenance_mode && user && !isOwner(user) && !isAuthRoute) {
     return <MaintenanceScreen message={settings.maintenance_message} scheduledUntil={settings.maintenance_scheduled_until} />;

@@ -60,7 +60,7 @@ export default function DashboardLockdown({ settings, update }) {
               )}
             </h3>
             <p className="text-xs text-slate-400 mt-1 max-w-md">
-              Emergency override for raids or large incidents. Instantly freezes new appeals, locks the portal to read-only, and broadcasts an emergency alert — all in one toggle.
+              Emergency override for raids or large incidents. Takes the website down for everyone except staff, freezes new appeals and shows a lockdown message — all in one toggle.
             </p>
           </div>
         </div>
@@ -71,8 +71,8 @@ export default function DashboardLockdown({ settings, update }) {
             lockdownActive ? 'bg-rose-500' : 'bg-white/10'
           }`}
         >
-          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-            lockdownActive ? 'translate-x-7' : 'translate-x-1'
+          <span className={`absolute left-0 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+            lockdownActive ? 'translate-x-8' : 'translate-x-1'
           }`} />
         </button>
       </div>
@@ -80,7 +80,7 @@ export default function DashboardLockdown({ settings, update }) {
       {lockdownActive && (
         <div className="mt-4 pt-4 border-t border-rose-500/20 flex items-center gap-2 text-xs text-rose-300">
           <ShieldAlert className="h-3.5 w-3.5" />
-          Portal is locked, appeals frozen, emergency alert live.
+          Website is down for non-staff. Players see the lockdown message; staff can still use everything.
         </div>
       )}
     </div>
