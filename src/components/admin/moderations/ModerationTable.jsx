@@ -29,7 +29,7 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
   if (items.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-white/10 overflow-x-auto">
+    <div className="rounded-xl border border-white/10 overflow-x-auto bg-[#131722]">
       <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="bg-white/[0.04] text-slate-400 text-xs uppercase tracking-wide border-b border-white/10">
@@ -42,13 +42,13 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                 />
               </th>
             )}
-            <th className="text-left font-semibold px-4 py-3.5">User</th>
-            <th className="text-left font-semibold px-4 py-3.5">Type</th>
-            <th className="text-left font-semibold px-4 py-3.5 min-w-[180px] max-w-[240px]">Reason</th>
-            <th className="text-left font-semibold px-4 py-3.5 hidden md:table-cell whitespace-nowrap">Moderator</th>
-            <th className="text-left font-semibold px-4 py-3.5 hidden lg:table-cell whitespace-nowrap">Date</th>
-            <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Status</th>
-            <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">Actions</th>
+            <th className="text-left font-semibold px-3 py-3.5">User</th>
+            <th className="text-left font-semibold px-3 py-3.5">Type</th>
+            <th className="text-left font-semibold px-3 py-3.5 max-w-[200px]">Reason</th>
+            <th className="text-left font-semibold px-3 py-3.5 hidden md:table-cell whitespace-nowrap">Moderator</th>
+            <th className="text-left font-semibold px-3 py-3.5 hidden lg:table-cell whitespace-nowrap">Date</th>
+            <th className="text-left font-semibold px-3 py-3.5 whitespace-nowrap">Status</th>
+            <th className="text-right font-semibold px-3 py-3.5 whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -62,17 +62,17 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                     <Checkbox checked={selected.has(m.id)} onCheckedChange={() => onToggle(m.id)} className="border-white/30" />
                   </td>
                 )}
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <div className="flex items-center gap-2.5">
                     <RobloxAvatar username={m.roblox_username} size={32} />
                     <button onClick={() => setSelectedUser(m.roblox_username)} className="text-cyan-300 font-medium hover:text-cyan-200 hover:underline">{m.roblox_username}</button>
                   </div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <TypeBadge type={m.moderation_type} />
                   {m.duration && <div className="text-[10px] text-slate-500 mt-1">{m.duration}</div>}
                 </td>
-                <td className="px-4 py-3 max-w-[240px]">
+                <td className="px-3 py-3 max-w-[200px]">
                   <div className={`text-slate-200 ${isExpanded ? 'whitespace-normal' : 'truncate'}`}>
                     {m.reason || '—'}
                   </div>
@@ -88,22 +88,22 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                     </button>
                   )}
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-slate-400 whitespace-nowrap">
+                <td className="px-3 py-3 hidden md:table-cell text-slate-400 whitespace-nowrap">
                   {m.staff_member || '—'}
                 </td>
-                <td className="px-4 py-3 hidden lg:table-cell text-slate-400 whitespace-nowrap">
+                <td className="px-3 py-3 hidden lg:table-cell text-slate-400 whitespace-nowrap">
                   {formatDate(m.moderation_date)}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <StatusBadge status={m.status} />
                 </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
+                <td className="px-3 py-3 text-right whitespace-nowrap">
                   {isAdmin && (
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => onEdit(m)}
-                      className="text-slate-500 hover:text-cyan-300 hover:bg-cyan-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                      className="text-slate-500 hover:text-cyan-300 hover:bg-cyan-500/10 h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -113,7 +113,7 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                       size="icon"
                       variant="ghost"
                       onClick={() => onDelete(m)}
-                      className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                      className="text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -127,7 +127,7 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-white/[0.02]">
+        <div className="flex items-center justify-between px-3 py-3 border-t border-white/10 bg-white/[0.02]">
           <span className="text-xs text-slate-400">
             {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, items.length)} of {items.length}
           </span>

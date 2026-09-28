@@ -22,7 +22,6 @@ import StaffPerformanceTab from '@/components/admin/performance/StaffPerformance
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
 import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
 import AdminOverview from '@/components/admin/AdminOverview';
-import QuickPunishButton from '@/components/admin/QuickPunishButton';
 
 const ADMIN_TOOLS = [
   { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -115,7 +114,6 @@ export default function Admin() {
           )}
         </Tabs>
       </main>
-      <QuickPunishButton />
     </div>
   );
 }
