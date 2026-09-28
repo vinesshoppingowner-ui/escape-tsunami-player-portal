@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown, Columns2 } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -70,7 +70,6 @@ export default function SiteNav() {
   ];
   const dropdownLinks = [
     { label: 'Applications', to: '/applications', icon: FileText },
-    ...(user && prefs.split_view && window.name !== 'split-pane' ? [{ label: 'Split View', to: '/split', icon: Columns2 }] : []),
     ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
