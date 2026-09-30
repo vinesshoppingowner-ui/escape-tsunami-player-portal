@@ -13,6 +13,7 @@ import { PRIORITY_RANK, priorityFor } from '@/components/admin/appeals/appealMet
 import { applyAppealDecision } from '@/lib/appealDecision';
 import { can } from '@/lib/staffPermissions';
 import { isOwner } from '@/lib/isOwner';
+import { isWebsiteBanAppeal } from '@/lib/banAppealGuard';
 import AutoAssignToggle from '@/components/admin/appeals/AutoAssignToggle';
 import { unlistedModeration } from '@/lib/unlistedAppeal';
 
@@ -34,7 +35,8 @@ export default function AppealsTab() {
       base44.entities.Appeal.list('-created_date', 100),
       base44.entities.Moderation.list('-moderation_date', 100),
     ]);
-    setAppeals((apps || []).filter((a) => !a.removed));
+    const admin = user?.role === 'admin' || isOwner(user);
+    setAppeals((apps || []).filter((a) => !a.removed && (admin || !isWebsiteBanAppeal(a))));
     setModerations(mods || []);
     setLoading(false);
   };
