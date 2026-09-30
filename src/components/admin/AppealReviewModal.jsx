@@ -48,6 +48,8 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
         staff_response: appeal.staff_response || '',
         internal_notes: appeal.internal_notes || '',
         can_reappeal: appeal.can_reappeal !== false,
+        reappeal_after: appeal.reappeal_after || '',
+        reappeal_guidance: appeal.reappeal_guidance || '',
       });
     }
   }, [appeal?.id]);

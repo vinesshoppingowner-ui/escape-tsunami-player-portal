@@ -15,6 +15,8 @@ export async function applyAppealDecision({
   staff_response = appeal.staff_response || '',
   internal_notes = appeal.internal_notes || '',
   can_reappeal = appeal.can_reappeal !== false,
+  reappeal_after = appeal.reappeal_after || '',
+  reappeal_guidance = appeal.reappeal_guidance || '',
 }) {
   if (['Approved', 'Denied'].includes(status) && status !== appeal.status && !can(user, 'decide_appeals')) {
     throw new Error("You don't have permission to approve or deny appeals.");
@@ -23,7 +25,7 @@ export async function applyAppealDecision({
     op: 'update', entity: 'Appeal', id: appeal.id,
     data: { status: appeal.status, staff_response: appeal.staff_response || '', internal_notes: appeal.internal_notes || '', can_reappeal: appeal.can_reappeal !== false },
   }];
-  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal });
+  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal, reappeal_after: reappeal_after || null, reappeal_guidance });
   if (status === 'Approved' && moderation && !moderation.unlisted && moderation.status !== 'Repealed') {
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
     await pushUnban(appeal.roblox_username);

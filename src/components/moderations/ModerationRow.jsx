@@ -35,7 +35,7 @@ export default function ModerationRow({ moderation: m, appeal, onAppeal, appeals
   const hasEvidence = (m.evidence_type === 'chat_log' && m.evidence_text) || (m.evidence_type === 'screenshot' && m.evidence_image_url);
   const date = m.moderation_date ? new Date(m.moderation_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const isDenied = appeal?.status === 'Denied';
-  const canAppeal = !appealsLocked && (!appeal || (isDenied && appeal.can_reappeal !== false));
+  const canAppeal = !appealsLocked && (!appeal || (isDenied && appeal.can_reappeal !== false && !(appeal.reappeal_after && new Date(appeal.reappeal_after) > new Date())));
 
   return (
     <div className="border-b border-slate-800/70 last:border-0">

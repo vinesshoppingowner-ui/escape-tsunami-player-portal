@@ -197,6 +197,12 @@ export default function MyAppeals() {
                     </div>
                   )}
 
+                  {a.status === 'Denied' && a.can_reappeal !== false && (a.reappeal_after || a.reappeal_guidance) && (
+                    <div className="mt-3 rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-3 text-xs text-slate-300 space-y-1">
+                      {a.reappeal_after && <div>{new Date(a.reappeal_after) > new Date() ? `You can submit a new appeal after ${new Date(a.reappeal_after).toLocaleString()}.` : 'You can now submit a new appeal.'}</div>}
+                      {a.reappeal_guidance && <div><span className="text-slate-500">Next time, include: </span>{a.reappeal_guidance}</div>}
+                    </div>
+                  )}
                   {a.status === 'Denied' && a.can_reappeal === false && (
                     <div className="mt-3 text-xs text-rose-400/80">This appeal was denied and you are not eligible to submit a new one for this moderation.</div>
                   )}

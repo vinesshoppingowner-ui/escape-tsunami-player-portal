@@ -59,6 +59,15 @@
       "description": "Whether the player may submit a new appeal after this one is denied",
       "default": true
     },
+    "reappeal_after": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Earliest time the player may submit a new appeal after denial"
+    },
+    "reappeal_guidance": {
+      "type": "string",
+      "description": "Staff tips shown to the player about what to include in their next appeal"
+    },
     "admin_locked": {
       "type": "boolean",
       "description": "When true, an admin has locked this player from submitting any appeals",

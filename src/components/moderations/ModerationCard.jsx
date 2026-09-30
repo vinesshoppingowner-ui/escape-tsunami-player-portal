@@ -36,7 +36,7 @@ export default function ModerationCard({ moderation, appeal, onAppeal, appealsLo
 
   const a = appeal ? appealBadge[appeal.status] : null;
   const isDenied = appeal?.status === 'Denied';
-  const canReappeal = appeal ? appeal.can_reappeal !== false : true;
+  const canReappeal = appeal ? appeal.can_reappeal !== false && !(appeal.reappeal_after && new Date(appeal.reappeal_after) > new Date()) : true;
   const awaiting = appeal?.status === 'Pending' || appeal?.status === 'Under Review';
 
   return (
