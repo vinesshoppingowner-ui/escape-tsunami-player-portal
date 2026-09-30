@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { emailModerationChanged } from '@/lib/moderationEmails';
 import { logStaffAction } from '@/lib/staffLog';
 import { pushUnban } from '@/lib/renderBridge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -29,6 +30,7 @@ export default function ModerationEditDialog({ moderation, user, onClose, onSave
     setSaving(true);
     const { roblox_username, moderation_type, reason, details, duration, status, staff_member, evidence_type, evidence_text, evidence_image_url } = form;
     await base44.entities.Moderation.update(moderation.id, { moderation_type, reason, details, duration, status, staff_member, evidence_type, evidence_text, evidence_image_url });
+    emailModerationChanged(moderation, { moderation_type, reason, duration, status });
     if (moderation.moderation_type.includes('Ban') && moderation.status === 'Active' && status !== 'Active') {
       try { await pushUnban(roblox_username); } catch { /* game server offline */ }
     }

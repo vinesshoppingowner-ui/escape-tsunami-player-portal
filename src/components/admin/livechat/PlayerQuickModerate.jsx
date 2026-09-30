@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { emailModerationIssued } from '@/lib/moderationEmails';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffLog';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ export default function PlayerQuickModerate({ username, evidence, onDone }) {
         evidence_text: evidence || '',
       };
       const created = await base44.entities.Moderation.create(data);
+      emailModerationIssued(data);
       base44.entities.Notification.create({
         roblox_username: username,
         title: `New ${type} issued`,

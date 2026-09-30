@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { emailAppealAssigned } from '@/lib/moderationEmails';
 import { logStaffAction } from '@/lib/staffLog';
 import { UserCheck, Loader2 } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
@@ -20,6 +21,7 @@ export default function AppealAssign({ appeal, user, onChanged }) {
     await base44.entities.Appeal.update(appeal.id, target
       ? { assigned_to: target.full_name || target.email, assigned_to_email: target.email, assigned_at: new Date().toISOString() }
       : { assigned_to: '', assigned_to_email: '', assigned_at: null });
+    if (target && !appeal.assigned_to_email) emailAppealAssigned(appeal);
     await logStaffAction(user, 'appeal_assigned', appeal.roblox_username, target ? `Assigned appeal to ${target.full_name || target.email}` : 'Unassigned appeal');
     setBusy(false);
     onChanged?.();

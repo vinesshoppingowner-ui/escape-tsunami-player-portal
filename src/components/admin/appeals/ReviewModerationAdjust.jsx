@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { emailModerationChanged } from '@/lib/moderationEmails';
 import { Input } from '@/components/ui/input';
 import { Loader2, SlidersHorizontal, Undo2, Save } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
@@ -26,6 +27,7 @@ export default function ReviewModerationAdjust({ moderation, user, onChanged }) 
   const saveAdjust = async () => {
     setBusy('save');
     await base44.entities.Moderation.update(moderation.id, { moderation_type: type, duration });
+    emailModerationChanged(moderation, { moderation_type: type, duration });
     if (isBan(moderation.moderation_type) && !isBan(type)) await pushUnban(moderation.roblox_username);
     await logStaffAction(user, 'moderation_edited', moderation.roblox_username, `Adjusted ${moderation.moderation_type} → ${type}${duration ? ` (${duration})` : ''}`,
       [{ op: 'update', entity: 'Moderation', id: moderation.id, data: { moderation_type: moderation.moderation_type, duration: moderation.duration || '' } },
@@ -38,6 +40,7 @@ export default function ReviewModerationAdjust({ moderation, user, onChanged }) 
     if (!window.confirm('Repeal this moderation without deciding the appeal?')) return;
     setBusy('repeal');
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
+    emailModerationChanged(moderation, { status: 'Repealed' });
     if (isBan(moderation.moderation_type)) await pushUnban(moderation.roblox_username);
     await logStaffAction(user, 'moderation_edited', moderation.roblox_username, `Repealed ${moderation.moderation_type}`,
       [{ op: 'update', entity: 'Moderation', id: moderation.id, data: { status: moderation.status } }, ...rebanOp(moderation)]);

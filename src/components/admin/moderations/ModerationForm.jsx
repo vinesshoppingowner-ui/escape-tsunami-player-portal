@@ -11,7 +11,7 @@ import { Loader2, Gavel, Copy, Bot, User as UserIcon, FileText, ShieldCheck, Clo
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { pushBan } from '@/lib/renderBridge';
 import { useToast } from '@/components/ui/use-toast';
-import { emailPlayer } from '@/lib/userEmails';
+import { emailModerationIssued } from '@/lib/moderationEmails';
 import { isOwner } from '@/lib/isOwner';
 import { canIssueType } from '@/lib/staffPermissions';
 import { isBanType } from '@/lib/staffUndo';
@@ -129,11 +129,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
         });
         logStaffAction(user, 'moderation_issued', resolvedUsername, `Issued ${form.moderation_type} — ${form.reason}`,
           [{ op: 'delete', entity: 'Moderation', id: created.id }, ...(isBanType(form.moderation_type) ? [{ op: 'unban', username: resolvedUsername }] : [])]);
-        emailPlayer({
-          robloxUsername: resolvedUsername,
-          subject: `New ${form.moderation_type} on your account`,
-          body: `Hi ${resolvedUsername},\n\nA ${form.moderation_type} has been issued on your account.\nReason: ${form.reason}\n${form.duration ? `Duration: ${form.duration}\n` : ''}\nView details in the Member Portal.\n\n— Escape Tsunami Staff Team`,
-        });
+        emailModerationIssued(modData);
 
         if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
           try {

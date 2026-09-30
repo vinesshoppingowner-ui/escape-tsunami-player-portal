@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { emailModerationChanged } from '@/lib/moderationEmails';
 import { logStaffAction } from '@/lib/staffLog';
 import { pushUnban } from '@/lib/renderBridge';
 import { snapshot, rebanOp } from '@/lib/staffUndo';
@@ -7,7 +8,10 @@ import { snapshot, rebanOp } from '@/lib/staffUndo';
 export async function bulkModerationAction(items, action, user) {
   for (const m of items) {
     if (action === 'delete') await base44.entities.Moderation.delete(m.id);
-    else await base44.entities.Moderation.update(m.id, { status: action });
+    else {
+      await base44.entities.Moderation.update(m.id, { status: action });
+      emailModerationChanged(m, { status: action });
+    }
     if (m.moderation_type?.includes('Ban') && m.status === 'Active') {
       try { await pushUnban(m.roblox_username); } catch { /* game server offline */ }
     }
