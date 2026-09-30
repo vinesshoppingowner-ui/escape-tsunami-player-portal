@@ -106,18 +106,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
       } else {
         if (!form.roblox_username || !form.reason) return;
         // Resolve exact Roblox username casing (case-insensitive match)
-        let resolvedUsername = form.roblox_username;
-        try {
-          const userRes = await fetch(`https://users.roproxy.com/v1/usernames/users`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ usernames: [form.roblox_username], excludeBannedUsers: false }),
-          });
-          if (userRes.ok) {
-            const match = (await userRes.json()).data?.[0];
-            if (match) resolvedUsername = match.name;
-          }
-        } catch { /* use typed name as fallback */ }
+        const lookup = await base44.functions.invoke('robloxLookup', { username: form.roblox_username.trim() });
+        const match = lookup.data?.user;
+        if (!match) {
+          toast({ title: 'Player not found', description: `No Roblox account named "${form.roblox_username}" exists.`, variant: 'destructive' });
+          return;
+        }
+        const resolvedUsername = match.name;
         const modData = { ...form, roblox_username: resolvedUsername, moderation_date: new Date().toISOString() };
         const created = await base44.entities.Moderation.create(modData);
         base44.entities.Notification.create({
