@@ -37,8 +37,10 @@ export default function Apply() {
       try {
         const a = await base44.entities.Application.get(id);
         setApp(a);
-        setQuestions(JSON.parse(a.questions || '[]'));
-        setSettings(JSON.parse(a.settings || '{}'));
+        const s = JSON.parse(a.settings || '{}');
+        const qs = JSON.parse(a.questions || '[]');
+        setQuestions(s.shuffleQuestions ? [...qs].sort(() => Math.random() - 0.5) : qs);
+        setSettings(s);
         if (user?.id) {
           const mine = await base44.entities.ApplicationResponse.filter({ application_id: id, created_by_id: user.id }, '-created_date', 50);
           setMyResponses(mine || []);
@@ -126,6 +128,12 @@ export default function Apply() {
     );
   }
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
+  const pastClose = app.auto_close_at && new Date(app.auto_close_at) < new Date();
+  const limitHit = settings.responseLimit > 0 && (app.response_count || 0) >= settings.responseLimit;
+  if (!submitted && (pastClose || limitHit)) return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is no longer accepting responses.</ApplyStatusScreen>;
+  if (settings.requireRobloxVerification && !(user?.roblox_username || user?.data?.roblox_username)) return <ApplyStatusScreen icon={Lock} tone="cyan" title="Verification required">Link and verify your Roblox account in the portal before applying to "{app.title}".</ApplyStatusScreen>;
+  const ageDays = user?.created_date ? (Date.now() - new Date(user.created_date)) / 86400000 : 0;
+  if (settings.minAccountAgeDays > 0 && ageDays < settings.minAccountAgeDays) return <ApplyStatusScreen icon={Clock} tone="cyan" title="Account too new">Your account must be at least {settings.minAccountAgeDays} days old to apply to "{app.title}".</ApplyStatusScreen>;
   if (app.status !== 'open') return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is not currently accepting responses.</ApplyStatusScreen>;
   if (submitted) return <ApplyStatusScreen icon={CheckCircle2} tone="emerald" title="Application submitted!">{app.success_message || 'Thank you for applying. Our team will review your application and get back to you.'}</ApplyStatusScreen>;
   if (!retake.canApply) {
@@ -152,7 +160,7 @@ export default function Apply() {
           <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
         </div>
 
-        {step < 0 ? (
+        {settings.showProgressBar === false ? <div className="mb-8" /> : step < 0 ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8" />
         ) : (
           <ApplyStepper questions={questions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />

@@ -3,13 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RotateCcw, Sparkles, Settings } from 'lucide-react';
 
-function Toggle({ checked, onChange }) {
-  return (
-    <button type="button" onClick={() => onChange(!checked)} className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${checked ? 'bg-cyan-500' : 'bg-white/10'}`}>
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-5' : 'translate-x-0.5'}`} />
-    </button>
-  );
-}
+import Toggle from './FormToggle';
 
 function Row({ label, desc, checked, onChange }) {
   return (
@@ -33,6 +27,18 @@ export default function ApplicationAdvancedSettings({ settings, update }) {
         <Row label="One Response Per User" desc="Prevent users from submitting multiple times" checked={settings.oneResponsePerUser} onChange={(v) => update('oneResponsePerUser', v)} />
         <Row label="Require Roblox Verification" desc="Applicant must have a verified Roblox account" checked={settings.requireRobloxVerification} onChange={(v) => update('requireRobloxVerification', v)} />
         <Row label="Show Progress Bar" desc="Display completion progress to applicants" checked={settings.showProgressBar} onChange={(v) => update('showProgressBar', v)} />
+        <Row label="Shuffle Question Order" desc="Each applicant sees the questions in a random order" checked={settings.shuffleQuestions} onChange={(v) => update('shuffleQuestions', v)} />
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <Label className="text-xs text-slate-400 mb-1.5 block">Response limit (0 = unlimited)</Label>
+            <Input type="number" min="0" value={settings.responseLimit ?? 0} onChange={(e) => update('responseLimit', parseInt(e.target.value) || 0)} className={inputCls} />
+          </div>
+          <div>
+            <Label className="text-xs text-slate-400 mb-1.5 block">Minimum account age (days)</Label>
+            <Input type="number" min="0" value={settings.minAccountAgeDays ?? 0} onChange={(e) => update('minAccountAgeDays', parseInt(e.target.value) || 0)} className={inputCls} />
+          </div>
+        </div>
+        <p className="text-[11px] text-slate-500">Account age counts from when the applicant joined this portal. The form closes automatically once the response limit is reached.</p>
       </div>
 
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 space-y-3">

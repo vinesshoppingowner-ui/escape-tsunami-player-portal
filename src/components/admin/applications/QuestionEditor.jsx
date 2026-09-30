@@ -1,122 +1,64 @@
-import { Type, AlignLeft, ChevronDown, ChevronUp, Circle, CheckSquare, Hash, Mail, Calendar, Star, ToggleLeft, Trash2, Plus, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { QUESTION_TYPES } from '@/lib/applicationTypes';
+import FormToggle from './FormToggle';
 
-const TYPE_ICONS = { Type, AlignLeft, ChevronDown, Circle, CheckSquare, Hash, Mail, Calendar, Star, ToggleLeft };
+const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
+const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No' };
 
-export default function QuestionEditor({ question, index, total, onUpdate, onRemove, onMoveUp, onMoveDown }) {
+export default function QuestionEditor({ question, index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });
+  const opts = question.options || [];
   const hasOptions = ['dropdown', 'radio', 'checkbox'].includes(question.type);
-
-  const addOption = () => update('options', [...(question.options || []), '']);
-  const updateOption = (i, val) => {
-    const opts = [...(question.options || [])];
-    opts[i] = val;
-    update('options', opts);
-  };
-  const removeOption = (i) => update('options', (question.options || []).filter((_, idx) => idx !== i));
+  const OptIcon = question.type === 'checkbox' ? Square : Circle;
+  const setOpt = (i, v) => update('options', opts.map((o, idx) => (idx === i ? v : o)));
 
   return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-300 text-xs font-semibold">{index + 1}</span>
-          <span className="text-sm font-medium text-slate-300">Question {index + 1}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button onClick={onMoveUp} disabled={index === 0} className="p-1.5 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed text-slate-400"><ChevronUp className="h-4 w-4" /></button>
-          <button onClick={onMoveDown} disabled={index === total - 1} className="p-1.5 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed text-slate-400"><ChevronDown className="h-4 w-4" /></button>
-          <button onClick={onRemove} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-400"><Trash2 className="h-4 w-4" /></button>
-        </div>
+    <div onClick={onFocus} className={`relative rounded-xl bg-white/[0.03] border border-white/10 p-5 transition-shadow ${active ? 'shadow-lg shadow-black/30' : ''}`}>
+      {active && <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500" />}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input value={question.text} onChange={(e) => update('text', e.target.value)} placeholder={`Question ${index + 1}`}
+          className={`flex-1 rounded-t-md px-3 ${active ? 'bg-white/5' : ''} ${lineInput} text-base`} />
+        {active && (
+          <select value={question.type} onChange={(e) => update('type', e.target.value)}
+            className="sm:w-52 h-11 rounded-md bg-slate-950 border border-white/10 text-sm text-slate-200 px-3">
+            {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        )}
       </div>
-
-      <Input
-        value={question.text}
-        onChange={(e) => update('text', e.target.value)}
-        placeholder="Question text..."
-        className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-      />
-      <Input
-        value={question.description || ''}
-        onChange={(e) => update('description', e.target.value)}
-        placeholder="Description / help text (optional)"
-        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-sm"
-      />
-
-      <div className="mt-3">
-        <Label className="text-xs text-slate-400 mb-1.5 block">Question Type</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-          {QUESTION_TYPES.map((t) => {
-            const Icon = TYPE_ICONS[t.icon];
-            const active = question.type === t.value;
-            return (
-              <button
-                key={t.value}
-                onClick={() => update('type', t.value)}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${active ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
-              >
-                {Icon && <Icon className="h-3.5 w-3.5" />}
-                <span className="truncate">{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <Label className="text-sm text-slate-300">Required</Label>
-        <button
-          onClick={() => update('required', !question.required)}
-          className={`relative h-6 w-11 rounded-full transition-colors ${question.required ? 'bg-cyan-500' : 'bg-white/10'}`}
-        >
-          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${question.required ? 'translate-x-5' : 'translate-x-0.5'}`} />
-        </button>
-      </div>
-
-      {hasOptions && (
-        <div className="mt-3">
-          <Label className="text-xs text-slate-400 mb-1.5 block">Options</Label>
-          <div className="space-y-1.5">
-            {(question.options || []).map((opt, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input
-                  value={opt}
-                  onChange={(e) => updateOption(i, e.target.value)}
-                  placeholder={`Option ${i + 1}`}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-sm"
-                />
-                <button onClick={() => removeOption(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-400"><X className="h-4 w-4" /></button>
-              </div>
-            ))}
-            <button onClick={addOption} className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 mt-1">
-              <Plus className="h-3.5 w-3.5" /> Add option
-            </button>
-          </div>
-        </div>
+      {(active || question.description) && (
+        <input value={question.description || ''} onChange={(e) => update('description', e.target.value)} placeholder="Description (optional)" className={`${lineInput} text-sm mt-2 px-3`} />
       )}
 
-      {(question.type === 'text' || question.type === 'textarea') && (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-xs text-slate-400 mb-1.5 block">Placeholder</Label>
-            <Input
-              value={question.placeholder || ''}
-              onChange={(e) => update('placeholder', e.target.value)}
-              placeholder="Enter answer..."
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-sm"
-            />
+      <div className="mt-4 px-3">
+        {hasOptions ? (
+          <div className="space-y-1">
+            {opts.map((o, i) => (
+              <div key={i} className="flex items-center gap-3">
+                {question.type === 'dropdown' ? <span className="w-4 text-xs text-slate-500">{i + 1}.</span> : <OptIcon className="h-4 w-4 text-slate-500 shrink-0" />}
+                <input value={o} onChange={(e) => setOpt(i, e.target.value)} placeholder={`Option ${i + 1}`} className={`${lineInput} text-sm`} />
+                {active && <button onClick={() => update('options', opts.filter((_, idx) => idx !== i))} className="p-1 text-slate-500 hover:text-rose-400"><X className="h-4 w-4" /></button>}
+              </div>
+            ))}
+            {active && (
+              <button onClick={() => update('options', [...opts, ''])} className="flex items-center gap-3 py-2 text-sm text-slate-500 hover:text-slate-300">
+                <OptIcon className="h-4 w-4" /> Add option
+              </button>
+            )}
           </div>
-          <div>
-            <Label className="text-xs text-slate-400 mb-1.5 block">Max Length (0 = ∞)</Label>
-            <Input
-              type="number"
-              value={question.maxLength || ''}
-              onChange={(e) => update('maxLength', parseInt(e.target.value) || 0)}
-              placeholder="0"
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-sm"
-            />
-          </div>
+        ) : (
+          <div className="text-sm text-slate-500 border-b border-dotted border-white/10 py-2 w-2/3">{PREVIEW[question.type]}</div>
+        )}
+      </div>
+
+      {active && (
+        <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-end gap-1">
+          <button onClick={onMoveUp} disabled={index === 0} title="Move up" className="p-2 rounded-md text-slate-400 hover:bg-white/5 disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
+          <button onClick={onMoveDown} disabled={index === total - 1} title="Move down" className="p-2 rounded-md text-slate-400 hover:bg-white/5 disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
+          <button onClick={onDuplicate} title="Duplicate" className="p-2 rounded-md text-slate-400 hover:bg-white/5"><Copy className="h-4 w-4" /></button>
+          <button onClick={onRemove} title="Delete" className="p-2 rounded-md text-slate-400 hover:bg-rose-500/10 hover:text-rose-400"><Trash2 className="h-4 w-4" /></button>
+          <span className="mx-2 h-6 w-px bg-white/10" />
+          <span className="text-sm text-slate-300 mr-2">Required</span>
+          <FormToggle checked={question.required} onChange={(v) => update('required', v)} />
         </div>
       )}
     </div>
