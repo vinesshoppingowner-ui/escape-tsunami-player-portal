@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import AppIcon from '@/components/apply/AppIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2 } from 'lucide-react';
@@ -105,7 +106,7 @@ export default function ApplicationsTab() {
         <div className="space-y-2">
           {filtered.map((app) => (
             <div key={app.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 flex items-center gap-4">
-              <span className="text-2xl shrink-0">{app.icon}</span>
+              <AppIcon icon={app.icon} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-white truncate">{app.title}</h3>

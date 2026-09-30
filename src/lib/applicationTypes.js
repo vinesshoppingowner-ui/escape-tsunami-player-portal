@@ -39,7 +39,18 @@ export const defaultSettings = () => ({
   maxAttempts: 3,
   aiReviewEnabled: false,
   aiCriteria: '',
+  restrictToUsers: false,
+  allowedUsers: [],
 });
+
+export const RESPONSE_TAGS = ['Strong', 'Promising', 'Needs interview', 'Low effort', 'Suspicious', 'Duplicate'];
+
+export const FEEDBACK_TEMPLATES = [
+  { label: 'Welcome aboard', status: 'accepted', text: 'Great answers — welcome aboard! Staff will reach out with next steps.' },
+  { label: 'Interview next', status: 'under_review', text: 'Your application stood out. We would like to schedule a short interview.' },
+  { label: 'More detail', status: 'rejected', text: 'Thanks for applying. Please give more detailed answers next time.' },
+  { label: 'Not a fit', status: 'rejected', text: 'Thanks for applying. We have decided not to move forward at this time.' },
+];
 
 export const RESPONSE_STATUS = {
   submitted: { label: 'Submitted', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' },

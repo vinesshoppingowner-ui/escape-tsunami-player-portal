@@ -8,13 +8,19 @@ import { runAIReview } from '@/lib/applicationAI';
 import { downloadCsv } from '@/lib/csv';
 import ResponseListItem from './ResponseListItem';
 import ResponseViewer from './ResponseViewer';
+import ResponseStats from './ResponseStats';
+import ResponseBulkBar from './ResponseBulkBar';
+import AppIcon from '@/components/apply/AppIcon';
+import { RESPONSE_TAGS } from '@/lib/applicationTypes';
 
 const SORTS = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
   { value: 'score', label: 'Highest AI score' },
   { value: 'score_low', label: 'Lowest AI score' },
+  { value: 'rating', label: 'Highest staff rating' },
 ];
+const TAG_OPTS = [{ value: 'all', label: 'All tags' }, { value: 'starred', label: '★ Shortlisted' }, ...RESPONSE_TAGS.map((t) => ({ value: t, label: t }))];
 
 export default function ResponsesBoard({ app, onBack }) {
   const { toast } = useToast();
@@ -24,6 +30,8 @@ export default function ResponsesBoard({ app, onBack }) {
   const [sort, setSort] = useState('newest');
   const [openIdx, setOpenIdx] = useState(null);
   const [bulk, setBulk] = useState(null);
+  const [tag, setTag] = useState('all');
+  const [selected, setSelected] = useState([]);
 
   useEffect(() => {
     base44.entities.ApplicationResponse.filter({ application_id: app.id }, '-created_date', 500).then((r) => setResponses(r || []));
@@ -35,8 +43,10 @@ export default function ResponsesBoard({ app, onBack }) {
   const replace = (u) => setResponses((rs) => rs.map((r) => (r.id === u.id ? u : r)));
   const score = (r) => r.ai_score ?? -1;
   const shown = responses
+    .filter((r) => (tag === 'all' || (tag === 'starred' ? r.starred : (r.tags || []).includes(tag))))
     .filter((r) => (tab === 'all' || r.status === tab) && (!q || [r.roblox_username, r.submitted_by_email, r.answers].some((v) => v?.toLowerCase().includes(q.toLowerCase()))))
     .sort((a, b) => sort === 'oldest' ? new Date(a.created_date) - new Date(b.created_date)
+      : sort === 'rating' ? (b.staff_rating || 0) - (a.staff_rating || 0)
       : sort === 'score' ? score(b) - score(a) : sort === 'score_low' ? score(a) - score(b)
       : new Date(b.created_date) - new Date(a.created_date));
   const unchecked = responses.filter((r) => r.ai_score === undefined || r.ai_score === null);
@@ -63,7 +73,7 @@ export default function ResponsesBoard({ app, onBack }) {
     <div className="space-y-4">
       <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> Back to applications</button>
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-3xl">{app.icon}</span>
+        <AppIcon icon={app.icon} className="h-10 w-10" emojiClass="text-3xl" />
         <div className="flex-1 min-w-0">
           <h3 className="font-display text-lg font-bold text-white">{app.title}</h3>
           <p className="text-xs text-slate-500">{responses.length} responses · {app.category}</p>
@@ -74,6 +84,7 @@ export default function ResponsesBoard({ app, onBack }) {
         <button onClick={exportCsv} disabled={!shown.length} className={`${btn} bg-white/5 border-white/10 text-slate-300 hover:text-white`}><Download className="h-3.5 w-3.5" /> Export CSV</button>
       </div>
 
+      <ResponseStats responses={responses} />
       <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-white/5 border border-white/10 w-fit">
         {[['all', 'All'], ...Object.entries(RESPONSE_STATUS).map(([k, s]) => [k, s.label])].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tab === k ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}>
@@ -87,8 +98,11 @@ export default function ResponsesBoard({ app, onBack }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search applicant or answers…" className="w-full h-9 pl-9 pr-3 rounded-lg bg-slate-900/60 border border-white/15 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50" />
         </div>
+        <CustomDropdown value={tag} onChange={setTag} options={TAG_OPTS} className="w-44" />
         <CustomDropdown value={sort} onChange={setSort} options={SORTS} className="w-48" />
+        {shown.length > 0 && <button onClick={() => setSelected(selected.length === shown.length ? [] : shown.map((r) => r.id))} className="h-9 px-3 rounded-lg border border-white/10 text-xs text-slate-300 hover:text-white">{selected.length === shown.length ? 'Deselect all' : 'Select all'}</button>}
       </div>
+      {selected.length > 0 && <ResponseBulkBar selected={selected} responses={responses} onClear={() => setSelected([])} onDone={(us) => { us.forEach(replace); setSelected([]); toast({ title: `Updated ${us.length} responses` }); }} />}
 
       {shown.length === 0 ? (
         <div className="rounded-2xl bg-white/[0.02] border border-white/10 py-12 text-center">
@@ -96,7 +110,10 @@ export default function ResponsesBoard({ app, onBack }) {
           <p className="text-sm text-slate-500">{responses.length ? 'No responses match.' : 'No responses yet.'}</p>
         </div>
       ) : (
-        <div className="space-y-2">{shown.map((r, i) => <ResponseListItem key={r.id} response={r} onOpen={() => setOpenIdx(i)} />)}</div>
+        <div className="space-y-2">{shown.map((r, i) => <ResponseListItem key={r.id} response={r} onOpen={() => setOpenIdx(i)}
+          selected={selected.includes(r.id)}
+          onSelect={() => setSelected((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))}
+          onStar={async () => replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred }))} />)}</div>
       )}
 
       {openIdx !== null && (

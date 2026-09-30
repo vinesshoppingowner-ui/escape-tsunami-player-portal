@@ -4,7 +4,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Save, RotateCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/AuthContext';
-import { RESPONSE_STATUS } from '@/lib/applicationTypes';
+import { RESPONSE_STATUS, FEEDBACK_TEMPLATES } from '@/lib/applicationTypes';
+import ResponseRatingTags from './ResponseRatingTags';
 
 const fieldCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[70px] text-sm';
 
@@ -16,8 +17,11 @@ export default function ResponseDecisionPanel({ response, application, onUpdate 
   const [feedback, setFeedback] = useState(response.applicant_feedback || '');
   const [retake, setRetake] = useState(!!response.retake_allowed);
   const [saving, setSaving] = useState(false);
+  const [rating, setRating] = useState(response.staff_rating || 0);
+  const [tags, setTags] = useState(response.tags || []);
 
   useEffect(() => {
+    setRating(response.staff_rating || 0); setTags(response.tags || []);
     setStatus(response.status); setNotes(response.staff_notes || '');
     setFeedback(response.applicant_feedback || ''); setRetake(!!response.retake_allowed);
   }, [response.id]);
@@ -25,7 +29,7 @@ export default function ResponseDecisionPanel({ response, application, onUpdate 
   const save = async () => {
     setSaving(true);
     const updated = await base44.entities.ApplicationResponse.update(response.id, {
-      status, staff_notes: notes, applicant_feedback: feedback, retake_allowed: retake,
+      status, staff_notes: notes, applicant_feedback: feedback, retake_allowed: retake, staff_rating: rating, tags,
       reviewed_by: user?.email, reviewed_at: new Date().toISOString(),
     });
     const decided = status !== response.status && (status === 'accepted' || status === 'rejected');
@@ -47,6 +51,12 @@ export default function ResponseDecisionPanel({ response, application, onUpdate 
       <div className="grid grid-cols-2 gap-1.5">
         {Object.entries(RESPONSE_STATUS).map(([k, s]) => (
           <button key={k} onClick={() => setStatus(k)} className={`px-2 py-2 rounded-lg text-xs font-medium border transition-colors ${status === k ? s.cls : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'}`}>{s.label}</button>
+        ))}
+      </div>
+      <ResponseRatingTags rating={rating} setRating={setRating} tags={tags} setTags={setTags} />
+      <div className="flex flex-wrap gap-1">
+        {FEEDBACK_TEMPLATES.map((t) => (
+          <button key={t.label} type="button" onClick={() => { setStatus(t.status); setFeedback(t.text); }} className="px-2 py-1 rounded-md text-[11px] bg-white/5 border border-white/10 text-slate-300 hover:border-slate-600">⚡ {t.label}</button>
         ))}
       </div>
       <div>

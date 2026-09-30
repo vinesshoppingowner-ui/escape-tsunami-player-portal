@@ -7,6 +7,7 @@ import GoogleIcon from '@/components/GoogleIcon';
 import { markJustLoggedIn } from '@/lib/userPrefs';
 import ApplyRegister from '@/components/apply/ApplyRegister';
 import ApplyForgot from '@/components/apply/ApplyForgot';
+import AppIcon from '@/components/apply/AppIcon';
 
 const inp = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500';
 const SUBTITLE = { login: 'Sign in to start your application.', register: 'Create an account to apply.', forgot: 'Reset your password.' };
@@ -38,7 +39,7 @@ export default function ApplyLogin({ app }) {
       <div className="w-full max-w-md rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden">
         <div className="h-2 bg-cyan-500" />
         <div className="p-7">
-          <div className="text-4xl">{app.icon || '📋'}</div>
+          <AppIcon icon={app.icon} className="h-12 w-12" emojiClass="text-4xl" />
           <h1 className="mt-3 font-display text-2xl font-bold">{app.title}</h1>
           {app.description && <p className="mt-1 text-sm text-slate-400 line-clamp-3">{app.description}</p>}
           <p className="mt-5 mb-4 text-sm text-slate-300">{SUBTITLE[mode]}</p>

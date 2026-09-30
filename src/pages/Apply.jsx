@@ -13,6 +13,7 @@ import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
 import { formatAnswer } from '@/lib/applicationTypes';
 import ApplyLogin from '@/components/apply/ApplyLogin';
+import AppIcon from '@/components/apply/AppIcon';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 
@@ -141,6 +142,9 @@ export default function Apply() {
   }
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
   if (!user) return <ApplyLogin app={app} />;
+  const allowed = (settings.allowedUsers || []).map((u) => u.toLowerCase());
+  const me = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
+  if (settings.restrictToUsers && allowed.length && !me.some((v) => allowed.includes(v))) return <ApplyStatusScreen icon={Lock} tone="rose" title="Invite only">"{app.title}" is only open to selected users.</ApplyStatusScreen>;
   const pastClose = app.auto_close_at && new Date(app.auto_close_at) < new Date();
   const limitHit = settings.responseLimit > 0 && (app.response_count || 0) >= settings.responseLimit;
   if (!submitted && (pastClose || limitHit)) return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is no longer accepting responses.</ApplyStatusScreen>;
@@ -190,7 +194,7 @@ export default function Apply() {
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
                 <div className="text-center">
-                  <div className="text-6xl mb-4">{app.icon}</div>
+                  <div className="mb-4 flex justify-center"><AppIcon icon={app.icon} className="h-20 w-20" emojiClass="text-6xl" /></div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-3">{app.category || 'Application'}</div>
                   <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{app.title}</h1>
                   {app.description && <p className="mt-4 text-slate-400 leading-relaxed">{app.description}</p>}

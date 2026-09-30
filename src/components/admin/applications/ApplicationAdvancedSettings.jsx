@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RotateCcw, Sparkles, Settings } from 'lucide-react';
 
 import Toggle from './FormToggle';
+import AllowedUsersSetting from './AllowedUsersSetting';
 
 function Row({ label, desc, checked, onChange }) {
   return (
@@ -22,6 +23,7 @@ const inputCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-5
 export default function ApplicationAdvancedSettings({ settings, update }) {
   return (
     <div className="space-y-4">
+      <AllowedUsersSetting settings={settings} update={update} />
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 space-y-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Settings className="h-4 w-4" /> Submission rules</div>
         <Row label="Require Roblox Verification" desc="Applicant must have a verified Roblox account" checked={settings.requireRobloxVerification} onChange={(v) => update('requireRobloxVerification', v)} />

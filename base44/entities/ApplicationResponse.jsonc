@@ -80,6 +80,22 @@
     "ai_review": {
       "type": "string",
       "description": "JSON with AI strengths, concerns and flags"
+    },
+    "staff_rating": {
+      "type": "number",
+      "description": "Staff rating 1-5 stars"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Staff tags on the response"
+    },
+    "starred": {
+      "type": "boolean",
+      "default": false,
+      "description": "Shortlisted by staff"
     }
   },
   "required": [

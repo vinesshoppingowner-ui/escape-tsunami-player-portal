@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import AppIcon from '@/components/apply/AppIcon';
 import SiteNav from '@/components/SiteNav';
 import { useAuth } from '@/lib/AuthContext';
 import { getRetakeState } from '@/lib/applicationRetake';
@@ -92,7 +93,7 @@ export default function Applications() {
                 return (
                   <Link key={app.id} to={`/apply/${app.id}`} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 p-4 transition-colors">
                     <div className="flex items-start gap-3">
-                      <span className="text-2xl">{app.icon}</span>
+                      <AppIcon icon={app.icon} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-white truncate">{app.title}</h3>
