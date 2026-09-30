@@ -5,6 +5,17 @@ import { emailPlayer } from '@/lib/userEmails';
 import { sendAppealDecisionWebhook } from '@/lib/discordWebhook';
 import { can } from '@/lib/staffPermissions';
 import { rebanOp } from '@/lib/staffUndo';
+import { isWebsiteBanAppeal } from '@/lib/banAppealGuard';
+
+// Clears the account ban flag and any IP ban on the player's last known IP.
+async function liftWebsiteBan(username) {
+  const users = await base44.entities.User.list();
+  const target = users.find((u) => (u.data?.roblox_username || u.roblox_username) === username);
+  if (!target) return;
+  await base44.entities.User.update(target.id, { banned: false });
+  const ip = target.data?.last_ip || target.last_ip;
+  if (ip) await base44.entities.IpBan.deleteMany({ ip_address: ip });
+}
 
 // Saves an appeal decision and runs every side effect (unban, notification, log, email, webhook).
 export async function applyAppealDecision({
@@ -25,7 +36,10 @@ export async function applyAppealDecision({
     op: 'update', entity: 'Appeal', id: appeal.id,
     data: { status: appeal.status, staff_response: appeal.staff_response || '', internal_notes: appeal.internal_notes || '', can_reappeal: appeal.can_reappeal !== false },
   }];
-  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal, reappeal_after: reappeal_after || null, reappeal_guidance });
+  const decided = ['Approved', 'Denied'].includes(status) && status !== appeal.status
+    ? { decided_by: user?.full_name || user?.email || 'Staff', decided_at: new Date().toISOString() } : {};
+  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal, reappeal_after: reappeal_after || null, reappeal_guidance, ...decided });
+  if (status === 'Approved' && isWebsiteBanAppeal(appeal)) await liftWebsiteBan(appeal.roblox_username);
   if (status === 'Approved' && moderation && !moderation.unlisted && moderation.status !== 'Repealed') {
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
     await pushUnban(appeal.roblox_username);

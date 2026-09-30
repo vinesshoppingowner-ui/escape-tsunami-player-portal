@@ -54,6 +54,15 @@
       "type": "string",
       "description": "Private notes shared between staff only, never shown to the player"
     },
+    "decided_by": {
+      "type": "string",
+      "description": "Name of the staff member who approved or denied the appeal"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the appeal was approved or denied"
+    },
     "can_reappeal": {
       "type": "boolean",
       "description": "Whether the player may submit a new appeal after this one is denied",
