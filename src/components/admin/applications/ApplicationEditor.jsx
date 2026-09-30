@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import QuestionEditor from './QuestionEditor';
 import ApplicationAdvancedSettings from './ApplicationAdvancedSettings';
 import ApplicationBasicSettings from './ApplicationBasicSettings';
+import ApplicationFormSettings from './ApplicationFormSettings';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 
 export default function ApplicationEditor({ open, onClose, application, onSave }) {
@@ -127,6 +128,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
         ) : (
           <div className="space-y-4">
             <ApplicationBasicSettings form={form} setField={setField} />
+            <ApplicationFormSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} />
             <ApplicationAdvancedSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} />
           </div>
         )}

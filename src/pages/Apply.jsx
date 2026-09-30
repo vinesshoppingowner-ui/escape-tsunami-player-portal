@@ -11,6 +11,7 @@ import ApplyField from '@/components/apply/ApplyField';
 import ApplyReview from '@/components/apply/ApplyReview';
 import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
+import { formatAnswer } from '@/lib/applicationTypes';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 
@@ -29,6 +30,7 @@ export default function Apply() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [myResponses, setMyResponses] = useState([]);
   const retake = getRetakeState(settings, myResponses);
 
@@ -53,11 +55,12 @@ export default function Apply() {
 
   const draftKey = `apply-draft-${id}-${user?.id || 'anon'}`;
   useEffect(() => {
+    if (settings.disableAutosave) return;
     const saved = localStorage.getItem(draftKey);
     if (saved) setAnswers(JSON.parse(saved));
-  }, [draftKey]);
+  }, [draftKey, settings.disableAutosave]);
   useEffect(() => {
-    if (Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
+    if (!settings.disableAutosave && !editingId && Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
   }, [answers, draftKey]);
 
   const total = questions.length;
@@ -90,17 +93,25 @@ export default function Apply() {
         // AI screening is optional — never block a submission if it fails.
         ai = await runAIReview(app, answers).catch(() => ({}));
       }
+      if (editingId) {
+        await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answers), ...ai });
+      } else {
       await base44.entities.ApplicationResponse.create({
         application_id: id,
         application_title: app.title,
         roblox_username: user?.roblox_username || user?.data?.roblox_username || '',
-        submitted_by_email: user?.email || '',
+        submitted_by_email: settings.collectEmail === false ? '' : (user?.email || ''),
         answers: JSON.stringify(answers),
         status: 'submitted',
         attempt: retake.attempt,
         ...ai,
       });
       await base44.entities.Application.update(id, { response_count: (app.response_count || 0) + 1 });
+      }
+      if (settings.sendCopy && user?.email) {
+        const body = questions.map((q) => `<p><b>${q.text}</b><br/>${formatAnswer(q, answers[q.id]) || '—'}</p>`).join('');
+        base44.integrations.Core.SendEmail({ to: user.email, subject: `Your response: ${app.title}`, body }).catch(() => {});
+      }
       localStorage.removeItem(draftKey);
       setSubmitted(true);
     } catch (e) {
@@ -135,14 +146,20 @@ export default function Apply() {
   const ageDays = user?.created_date ? (Date.now() - new Date(user.created_date)) / 86400000 : 0;
   if (settings.minAccountAgeDays > 0 && ageDays < settings.minAccountAgeDays) return <ApplyStatusScreen icon={Clock} tone="cyan" title="Account too new">Your account must be at least {settings.minAccountAgeDays} days old to apply to "{app.title}".</ApplyStatusScreen>;
   if (app.status !== 'open') return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is not currently accepting responses.</ApplyStatusScreen>;
-  if (submitted) return <ApplyStatusScreen icon={CheckCircle2} tone="emerald" title="Application submitted!">{app.success_message || 'Thank you for applying. Our team will review your application and get back to you.'}</ApplyStatusScreen>;
-  if (!retake.canApply) {
+  if (submitted) return <ApplyStatusScreen icon={CheckCircle2} tone="emerald" title="Application submitted!">{app.success_message || 'Your response has been recorded.'}
+    {settings.showResultsSummary && <p className="mt-3 text-sm text-slate-500">{(app.response_count || 0) + (editingId ? 0 : 1)} responses submitted so far.</p>}
+    {settings.showSubmitAnother && !settings.oneResponsePerUser && <button onClick={() => { setAnswers({}); setEditingId(null); setSubmitted(false); }} className="mt-4 text-sm text-cyan-300 hover:underline">Submit another response</button>}
+  </ApplyStatusScreen>;
+  if (!retake.canApply && !editingId && !submitted) {
     const status = <span className="text-cyan-300 capitalize">{retake.latest.status.replace('_', ' ')}</span>;
     return (
       <ApplyStatusScreen icon={Clock} tone="cyan" title={retake.reason === 'cooldown' ? 'Retake on cooldown' : retake.reason === 'max' ? 'No attempts left' : "You've already applied"}>
         {retake.reason === 'cooldown' && <>You can retake "{app.title}" on <span className="text-cyan-300">{retake.availableAt.toLocaleString()}</span>.</>}
         {retake.reason === 'max' && <>You've used all {settings.maxAttempts} attempts for "{app.title}".</>}
         {retake.reason === 'applied' && <>Your response to "{app.title}" is {status}. Check the Applications page for status updates.</>}
+        {settings.allowEditing && retake.latest.status === 'submitted' && (
+          <button onClick={() => { setAnswers(JSON.parse(retake.latest.answers || '{}')); setEditingId(retake.latest.id); }} className="mt-4 block mx-auto px-4 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-200 text-sm">Edit your response</button>
+        )}
         {retake.latest.applicant_feedback && <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Staff feedback: </span>{retake.latest.applicant_feedback}</p>}
       </ApplyStatusScreen>
     );

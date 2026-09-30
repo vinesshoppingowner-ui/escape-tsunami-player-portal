@@ -24,10 +24,7 @@ export default function ApplicationAdvancedSettings({ settings, update }) {
     <div className="space-y-4">
       <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 space-y-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Settings className="h-4 w-4" /> Submission rules</div>
-        <Row label="One Response Per User" desc="Prevent users from submitting multiple times" checked={settings.oneResponsePerUser} onChange={(v) => update('oneResponsePerUser', v)} />
         <Row label="Require Roblox Verification" desc="Applicant must have a verified Roblox account" checked={settings.requireRobloxVerification} onChange={(v) => update('requireRobloxVerification', v)} />
-        <Row label="Show Progress Bar" desc="Display completion progress to applicants" checked={settings.showProgressBar} onChange={(v) => update('showProgressBar', v)} />
-        <Row label="Shuffle Question Order" desc="Each applicant sees the questions in a random order" checked={settings.shuffleQuestions} onChange={(v) => update('shuffleQuestions', v)} />
         <div className="grid grid-cols-2 gap-3 pt-1">
           <div>
             <Label className="text-xs text-slate-400 mb-1.5 block">Response limit (0 = unlimited)</Label>
