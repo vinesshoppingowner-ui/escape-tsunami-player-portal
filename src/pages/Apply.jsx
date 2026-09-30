@@ -12,6 +12,7 @@ import ApplyReview from '@/components/apply/ApplyReview';
 import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
 import { formatAnswer } from '@/lib/applicationTypes';
+import ApplyLogin from '@/components/apply/ApplyLogin';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 
@@ -139,6 +140,7 @@ export default function Apply() {
     );
   }
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
+  if (!user) return <ApplyLogin app={app} />;
   const pastClose = app.auto_close_at && new Date(app.auto_close_at) < new Date();
   const limitHit = settings.responseLimit > 0 && (app.response_count || 0) >= settings.responseLimit;
   if (!submitted && (pastClose || limitHit)) return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is no longer accepting responses.</ApplyStatusScreen>;

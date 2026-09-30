@@ -65,13 +65,13 @@ const AuthenticatedApp = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
         <Route path="/portal" element={<Portal />} />
+        <Route path="/apply/:id" element={<Apply />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
-          <Route path="/apply/:id" element={<Apply />} />
           <Route path="/moderation-popout" element={<ModerationPopOut />} />
           <Route path="/admin/player/:username" element={<PlayerProfile />} />
           <Route path="/roblox-callback" element={<RobloxCallback />} />
