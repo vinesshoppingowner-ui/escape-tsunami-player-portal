@@ -9,6 +9,7 @@ import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, L
 import { useToast } from '@/components/ui/use-toast';
 import ApplyField from '@/components/apply/ApplyField';
 import ApplyReview from '@/components/apply/ApplyReview';
+import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
@@ -47,6 +48,15 @@ export default function Apply() {
       }
     })();
   }, [id, user?.id]);
+
+  const draftKey = `apply-draft-${id}-${user?.id || 'anon'}`;
+  useEffect(() => {
+    const saved = localStorage.getItem(draftKey);
+    if (saved) setAnswers(JSON.parse(saved));
+  }, [draftKey]);
+  useEffect(() => {
+    if (Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
+  }, [answers, draftKey]);
 
   const total = questions.length;
   const current = step >= 0 && step < total ? questions[step] : null;
@@ -89,6 +99,7 @@ export default function Apply() {
         ...ai,
       });
       await base44.entities.Application.update(id, { response_count: (app.response_count || 0) + 1 });
+      localStorage.removeItem(draftKey);
       setSubmitted(true);
     } catch (e) {
       toast({ title: 'Failed to submit', description: e.message, variant: 'destructive' });
@@ -138,14 +149,16 @@ export default function Apply() {
       <main className="max-w-2xl mx-auto px-5 pt-28 pb-24">
         <div className="flex items-center justify-between mb-4">
           <Link to="/applications" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> All applications</Link>
-          <div className="text-xs text-slate-500">{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
+          <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
         </div>
 
-        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-8">
-          <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500" style={{ width: `${progress}%` }} />
-        </div>
+        {step < 0 ? (
+          <div className="h-1.5 rounded-full bg-white/5 mb-8" />
+        ) : (
+          <ApplyStepper questions={questions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
+        )}
 
-        <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-6 sm:p-8 shadow-2xl shadow-cyan-950/20 overflow-hidden">
+        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
@@ -163,7 +176,7 @@ export default function Apply() {
                   {retake.latest?.applicant_feedback && (
                     <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Feedback from last attempt: </span>{retake.latest.applicant_feedback}</p>
                   )}
-                  <Button onClick={goNext} size="lg" className="mt-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-12 px-8">Start application <ChevronRight className="h-4 w-4 ml-1" /></Button>
+                  <Button onClick={goNext} size="lg" className="mt-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-12 px-8">{Object.keys(answers).length ? 'Continue application' : 'Start application'} <ChevronRight className="h-4 w-4 ml-1" /></Button>
                 </div>
               )}
 
