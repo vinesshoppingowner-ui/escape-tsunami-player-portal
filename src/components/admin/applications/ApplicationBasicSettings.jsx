@@ -2,8 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Settings } from 'lucide-react';
 import moment from 'moment';
-import IconUpload from './IconUpload';
-import AppIcon from '@/components/apply/AppIcon';
+import { APP_ICONS } from '@/lib/appIcons';
 
 const ICONS = ['📋', '📝', '🎯', '🏆', '⭐', '🎤', '🎨', '🎮', '🛡️', '💬', '📢', '🎪', '🎓', '💼', '🚀', '⚡', '🔥', '💎', '🌟', '🎭'];
 const STATUS_CLS = { open: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', closed: 'bg-rose-500/15 text-rose-300 border-rose-500/30', draft: 'bg-slate-500/15 text-slate-300 border-slate-500/30' };
@@ -25,11 +24,12 @@ export default function ApplicationBasicSettings({ form, setField }) {
       <div>
         <Label className="text-xs text-slate-400 mb-1.5 block">Icon</Label>
         <div className="flex flex-wrap gap-1">
-          {ICONS.map((emo) => (
-            <button key={emo} type="button" onClick={() => setField('icon', emo)} className={`h-8 w-8 rounded-lg text-lg flex items-center justify-center border ${form.icon === emo ? 'bg-cyan-500/20 border-cyan-500/40' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>{emo}</button>
-          ))}
-          <IconUpload onUploaded={(url) => setField('icon', url)} />
-          {/^https?:\/\//.test(form.icon || '') && <span className="p-0.5 rounded-lg border border-cyan-500/40 bg-cyan-500/20"><AppIcon icon={form.icon} className="h-7 w-7" /></span>}
+          {Object.entries(APP_ICONS).map(([name, Icon]) => {
+            const val = `lucide:${name}`;
+            return (
+              <button key={name} type="button" title={name} onClick={() => setField('icon', val)} className={`h-9 w-9 rounded-lg flex items-center justify-center border ${form.icon === val ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white'}`}><Icon className="h-4 w-4" /></button>
+            );
+          })}
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">

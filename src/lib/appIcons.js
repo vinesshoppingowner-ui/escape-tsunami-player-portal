@@ -1,0 +1,3 @@
+import { ClipboardList, FileText, Target, Trophy, Star, Mic, Palette, Gamepad2, Shield, MessageSquare, Megaphone, GraduationCap, Briefcase, Rocket, Zap, Flame, Gem, Crown, Hammer, Code, Camera, Music, Video, Users, Heart, Wrench, Bug, Waves, BookOpen, Headphones } from 'lucide-react';
+
+export const APP_ICONS = { ClipboardList, FileText, Target, Trophy, Star, Mic, Palette, Gamepad2, Shield, MessageSquare, Megaphone, GraduationCap, Briefcase, Rocket, Zap, Flame, Gem, Crown, Hammer, Code, Camera, Music, Video, Users, Heart, Wrench, Bug, Waves, BookOpen, Headphones };
