@@ -32,7 +32,7 @@ const Pill = ({ cls, children }) => (
 export default function ModerationRow({ moderation: m, appeal, onAppeal, appealsLocked }) {
   const [open, setOpen] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
-  const hasEvidence = (m.evidence_type === 'chat_log' && m.evidence_text) || (m.evidence_type === 'screenshot' && m.evidence_image_url);
+  const hasEvidence = (m.evidence_type === 'chat_log' && m.evidence_text) || (m.evidence_type === 'screenshot' && m.evidence_image_url) || m.evidence_files?.length > 0;
   const date = m.moderation_date ? new Date(m.moderation_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const isDenied = appeal?.status === 'Denied';
   const canAppeal = !appealsLocked && (!appeal || (isDenied && appeal.can_reappeal !== false && !(appeal.reappeal_after && new Date(appeal.reappeal_after) > new Date())));

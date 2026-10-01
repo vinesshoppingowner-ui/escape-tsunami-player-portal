@@ -29,7 +29,8 @@ export default function ModerationCard({ moderation, appeal, onAppeal, appealsLo
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const hasEvidence =
     (moderation.evidence_type === 'chat_log' && moderation.evidence_text) ||
-    (moderation.evidence_type === 'screenshot' && moderation.evidence_image_url);
+    (moderation.evidence_type === 'screenshot' && moderation.evidence_image_url) ||
+    moderation.evidence_files?.length > 0;
   const date = moderation.moderation_date
     ? new Date(moderation.moderation_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : '—';

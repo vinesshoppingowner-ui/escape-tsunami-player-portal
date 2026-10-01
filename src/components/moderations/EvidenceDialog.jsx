@@ -1,12 +1,14 @@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { ScrollText, ImageIcon, Inbox } from 'lucide-react';
+import SignedEvidenceImage from '@/components/moderations/SignedEvidenceImage';
 
 export default function EvidenceDialog({ open, onClose, moderation }) {
   const type = moderation?.evidence_type;
   const hasChat = type === 'chat_log' && moderation?.evidence_text;
   const hasShot = type === 'screenshot' && moderation?.evidence_image_url;
-  const hasAny = hasChat || hasShot;
+  const files = moderation?.evidence_files || [];
+  const hasAny = hasChat || hasShot || files.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -30,6 +32,14 @@ export default function EvidenceDialog({ open, onClose, moderation }) {
         {hasShot && (
           <div className="mt-4 rounded-lg overflow-hidden border border-white/10 bg-slate-900/40">
             <Image src={moderation.evidence_image_url} alt="Evidence screenshot" className="w-full" fittingType="fit" />
+          </div>
+        )}
+
+        {files.length > 0 && (
+          <div className="mt-4 space-y-3 max-h-96 overflow-auto">
+            {files.map((uri) => (
+              <div key={uri} className="rounded-lg overflow-hidden border border-white/10 bg-slate-900/40"><SignedEvidenceImage uri={uri} /></div>
+            ))}
           </div>
         )}
 

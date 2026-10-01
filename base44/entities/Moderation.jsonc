@@ -66,6 +66,18 @@
     "evidence_image_url": {
       "type": "string",
       "description": "URL of a screenshot shown as evidence, when evidence_type is screenshot"
+    },
+    "evidence_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Private file URIs of uploaded evidence images"
+    },
+    "player_notified": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the player was notified when this was issued"
     }
   },
   "required": [

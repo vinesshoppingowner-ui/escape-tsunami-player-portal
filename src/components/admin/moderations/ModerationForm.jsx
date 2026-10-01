@@ -19,6 +19,9 @@ import EscalationHint from '@/components/admin/moderations/EscalationHint';
 import TemplatePicker from '@/components/admin/moderations/TemplatePicker';
 import SectionLabel from '@/components/SectionLabel';
 import PlayerPreviewPanel from '@/components/admin/moderations/PlayerPreviewPanel';
+import DuplicateWarning from '@/components/admin/moderations/DuplicateWarning';
+import EvidenceUploader from '@/components/admin/moderations/EvidenceUploader';
+import { Switch } from '@/components/ui/switch';
 
 const TYPES = ['Warning', 'Mute', 'Kick', 'Temporary Ban', 'Permanent Ban'];
 const STATUSES = ['Active', 'Expired', 'Repealed'];
@@ -67,6 +70,8 @@ const empty = {
   evidence_type: 'none',
   evidence_text: '',
   evidence_image_url: '',
+  evidence_files: [],
+  player_notified: true,
   discord_user_id: '',
   discord_username: '',
   action_type: 'timeout',
@@ -113,9 +118,10 @@ export default function ModerationForm({ open, onClose, onCreated }) {
           return;
         }
         const resolvedUsername = match.name;
-        const modData = { ...form, roblox_username: resolvedUsername, moderation_date: new Date().toISOString() };
+        const { platform, discord_user_id, discord_username, action_type, duration_minutes, ...robloxFields } = form;
+        const modData = { ...robloxFields, roblox_username: resolvedUsername, moderation_date: new Date().toISOString() };
         const created = await base44.entities.Moderation.create(modData);
-        base44.entities.Notification.create({
+        if (form.player_notified) base44.entities.Notification.create({
           roblox_username: resolvedUsername,
           title: `New ${form.moderation_type} issued`,
           body: form.reason || 'A moderation action has been added to your account.',
@@ -124,7 +130,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
         });
         logStaffAction(user, 'moderation_issued', resolvedUsername, `Issued ${form.moderation_type} — ${form.reason}`,
           [{ op: 'delete', entity: 'Moderation', id: created.id }, ...(isBanType(form.moderation_type) ? [{ op: 'unban', username: resolvedUsername }] : [])]);
-        emailModerationIssued(modData);
+        if (form.player_notified) emailModerationIssued(modData);
 
         if (form.moderation_type === 'Permanent Ban' || form.moderation_type === 'Temporary Ban') {
           try {
@@ -281,6 +287,7 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                     ))}
                   </div>
                 </div>
+                <DuplicateWarning username={form.roblox_username} type={form.moderation_type} />
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-slate-400">Reason *</Label>
@@ -359,7 +366,13 @@ export default function ModerationForm({ open, onClose, onCreated }) {
                     <Input value={form.evidence_image_url} onChange={(e) => set('evidence_image_url')(e.target.value)} placeholder="https://… image URL" className="bg-slate-950/50 border-slate-800 text-white hover:border-slate-700 focus-visible:border-cyan-500 focus-visible:ring-1 focus-visible:ring-cyan-500 mt-1" />
                   </div>
                 )}
+                <EvidenceUploader files={form.evidence_files} onChange={set('evidence_files')} />
               </div>
+
+              <label className="flex items-center justify-between rounded-lg border border-slate-800 px-3 py-2.5">
+                <span className="text-sm text-slate-300">Notify player <span className="block text-xs text-slate-500">Send an in-app notification and email</span></span>
+                <Switch checked={form.player_notified} onCheckedChange={set('player_notified')} />
+              </label>
 
               {/* Preview */}
               <div className="rounded-xl bg-gradient-to-br from-slate-950/80 to-slate-900/40 border border-white/10 p-4 space-y-3">
