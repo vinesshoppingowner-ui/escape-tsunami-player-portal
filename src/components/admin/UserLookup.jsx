@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Search, User as UserIcon, Bot, Shield, Calendar, FileText, Users, Gavel, Clock, AlertTriangle, MessageSquare, RefreshCw, Info, Mail, Globe, ShieldBan, Link2 } from 'lucide-react';
 import BloxlinkLookup from '@/components/admin/BloxlinkLookup';
 import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
+import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import { useToast } from '@/components/ui/use-toast';
 import { findUserByRobloxUsername } from '@/lib/userLookup';
 
@@ -443,6 +444,7 @@ function RobloxResult({ profile, onReload }) {
                 Ban IP Address
               </Button>
             )}
+            <DeleteAccountButton account={profile.websiteAccount} currentUser={currentUser} />
           </div>
         ) : (
           <p className="text-sm text-slate-500">This Roblox user has not created an account on the portal.</p>
