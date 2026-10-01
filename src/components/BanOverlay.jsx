@@ -4,6 +4,7 @@ import { UNLISTED_ID } from '@/lib/unlistedAppeal';
 import { WEBSITE_BAN_TYPE } from '@/lib/banAppealGuard';
 import BanAppealForm from '@/components/BanAppealForm';
 import BanAppealStatus from '@/components/BanAppealStatus';
+import { getBanStart, appealCoversBan } from '@/lib/banStart';
 
 export default function BanOverlay({ user }) {
   const [reporting, setReporting] = useState(false);
@@ -15,7 +16,12 @@ export default function BanOverlay({ user }) {
   useEffect(() => {
     if (!username) return;
     base44.entities.Appeal.filter({ roblox_username: username, moderation_id: UNLISTED_ID, unlisted_type: WEBSITE_BAN_TYPE }, { sort: '-created_date', limit: 1 })
-      .then((r) => setLatest(r.items?.[0] || null));
+      .then(async (r) => {
+        const a = r.items?.[0] || null;
+        // An old approval from before this ban is spent — don't let it reactivate the new ban.
+        if (a?.status === 'Approved' && !appealCoversBan(a, await getBanStart(user))) setLatest(null);
+        else setLatest(a);
+      });
   }, [username, reporting]);
 
   return (

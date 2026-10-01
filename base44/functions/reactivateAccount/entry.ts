@@ -16,11 +16,19 @@ export default async function(req) {
       { sort: '-created_date', limit: 20 },
     );
     const items = page.items || page;
-    const ok = items.some((a) => /website/i.test(a.unlisted_type || ''));
+    // The approval must be newer than the current ban, so an old approval can't undo a new ban.
+    const ips = [ip, user.data?.last_ip || user.last_ip].filter(Boolean);
+    let banStart = user.data?.banned_at ? new Date(user.data.banned_at).getTime() : 0;
+    for (const addr of ips) {
+      const bans = await sr.entities.IpBan.filter({ ip_address: addr }, { sort: '-created_date', limit: 1 });
+      const d = (bans.items || bans)[0]?.created_date;
+      if (d) banStart = Math.max(banStart, new Date(d).getTime());
+    }
+    const ok = items.some((a) => /website/i.test(a.unlisted_type || '')
+      && new Date(a.decided_at || a.updated_date).getTime() > banStart);
     if (!ok) return Response.json({ error: 'No accepted appeal found' }, { status: 403 });
 
     await sr.entities.User.update(user.id, { banned: false, banned_reason: null });
-    const ips = [ip, user.data?.last_ip || user.last_ip].filter(Boolean);
     for (const addr of ips) await sr.entities.IpBan.deleteMany({ ip_address: addr });
     return Response.json({ ok: true });
   } catch (error) {
