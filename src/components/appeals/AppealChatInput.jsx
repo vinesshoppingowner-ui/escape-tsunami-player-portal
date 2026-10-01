@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Loader2, Send, ImagePlus, X, Zap } from 'lucide-react';
+import { Loader2, Send, ImagePlus, X, Zap, Lock } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CHAT_QUICK_REPLIES } from '@/lib/chatQuickReplies';
 
@@ -7,13 +7,14 @@ export default function AppealChatInput({ isStaff, onSend, onTyping }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [sending, setSending] = useState(false);
+  const [note, setNote] = useState(false);
   const fileRef = useRef(null);
 
   const submit = async (e) => {
     e.preventDefault();
     if ((!text.trim() && !file) || sending) return;
     setSending(true);
-    await onSend(text.trim(), file);
+    await onSend(text.trim(), file, note);
     setText('');
     setFile(null);
     setSending(false);
@@ -49,10 +50,16 @@ export default function AppealChatInput({ isStaff, onSend, onTyping }) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        {isStaff && (
+          <button type="button" onClick={() => setNote(!note)} title="Staff-only note (player can't see)"
+            className={`h-9 w-9 shrink-0 rounded-full border flex items-center justify-center ${note ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'border-white/15 text-slate-300 hover:bg-white/10'}`}>
+            <Lock className="h-4 w-4" />
+          </button>
+        )}
         <input
           value={text}
-          onChange={(e) => { setText(e.target.value); onTyping(); }}
-          placeholder="Type a message…"
+          onChange={(e) => { setText(e.target.value); if (!note) onTyping(); }}
+          placeholder={note ? 'Staff-only note — player can’t see this…' : 'Type a message…'}
           maxLength={1000}
           className="flex-1 min-w-0 bg-slate-950/60 border border-white/15 rounded-full px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
         />

@@ -112,6 +112,11 @@
       "type": "string",
       "format": "date-time",
       "description": "When the appeal was assigned"
+    },
+    "chat_locked": {
+      "type": "boolean",
+      "description": "When true, the player can no longer send messages in the appeal chat",
+      "default": false
     }
   },
   "required": [

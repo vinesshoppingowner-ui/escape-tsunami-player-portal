@@ -26,6 +26,11 @@
     "image_uri": {
       "type": "string",
       "description": "Private file URI of an attached image"
+    },
+    "internal": {
+      "type": "boolean",
+      "description": "Staff-only note, never visible to the player",
+      "default": false
     }
   },
   "required": [
@@ -36,7 +41,16 @@
     "read": {
       "$or": [
         {
-          "data.roblox_username": "{{user.data.roblox_username}}"
+          "$and": [
+            {
+              "data.roblox_username": "{{user.data.roblox_username}}"
+            },
+            {
+              "data.internal": {
+                "$ne": true
+              }
+            }
+          ]
         },
         {
           "user_condition": {
@@ -64,6 +78,11 @@
             },
             {
               "data.sender_is_staff": {
+                "$ne": true
+              }
+            },
+            {
+              "data.internal": {
                 "$ne": true
               }
             }
