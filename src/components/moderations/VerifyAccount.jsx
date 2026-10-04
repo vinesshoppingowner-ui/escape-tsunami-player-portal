@@ -5,6 +5,8 @@ import { Loader2, ShieldCheck, AlertCircle, Fingerprint, LogIn } from 'lucide-re
 import { useAuth } from '@/lib/AuthContext';
 import { startRobloxLogin } from '@/lib/robloxOAuth';
 import BioCodeVerify from '@/components/moderations/BioCodeVerify';
+import AdminVerifyButton from '@/components/moderations/AdminVerifyButton';
+import { isOwner } from '@/lib/isOwner';
 
 export default function VerifyAccount() {
   const { user } = useAuth();
@@ -58,6 +60,8 @@ export default function VerifyAccount() {
       )}
 
       {user && <BioCodeVerify />}
+
+      {user && isOwner(user) && <AdminVerifyButton onVerified={() => setTimeout(() => window.location.reload(), 800)} />}
 
       {error && (
         <div className="mt-4 rounded-lg flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 p-3">
