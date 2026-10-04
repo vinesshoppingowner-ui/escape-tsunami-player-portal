@@ -8,16 +8,32 @@ function playClick() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const ctx = audioCtx;
     if (ctx.state === 'suspended') ctx.resume();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(420, ctx.currentTime + 0.04);
-    gain.gain.setValueAtTime(0.06, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.06);
+    const t = ctx.currentTime;
+    // Two-layer click: a soft pop + a subtle tick for depth
+    const pop = ctx.createOscillator();
+    const popGain = ctx.createGain();
+    pop.connect(popGain);
+    popGain.connect(ctx.destination);
+    pop.type = 'sine';
+    pop.frequency.setValueAtTime(620, t);
+    pop.frequency.exponentialRampToValueAtTime(280, t + 0.05);
+    popGain.gain.setValueAtTime(0.0001, t);
+    popGain.gain.exponentialRampToValueAtTime(0.08, t + 0.005);
+    popGain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    pop.start(t);
+    pop.stop(t + 0.08);
+
+    const tick = ctx.createOscillator();
+    const tickGain = ctx.createGain();
+    tick.connect(tickGain);
+    tickGain.connect(ctx.destination);
+    tick.type = 'triangle';
+    tick.frequency.setValueAtTime(1500, t);
+    tickGain.gain.setValueAtTime(0.0001, t);
+    tickGain.gain.exponentialRampToValueAtTime(0.03, t + 0.002);
+    tickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+    tick.start(t);
+    tick.stop(t + 0.04);
   } catch { /* audio not available */ }
 }
 

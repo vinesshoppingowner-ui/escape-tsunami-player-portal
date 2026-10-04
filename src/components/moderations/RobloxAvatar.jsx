@@ -56,12 +56,12 @@ export default function RobloxAvatar({ username, size = 40 }) {
   return (
     <div
       style={{ width: size, height: size }}
-      className="rounded-full overflow-hidden bg-white/5 border border-white/15 flex items-center justify-center shrink-0"
+      className="rounded-full overflow-hidden bg-slate-800/60 border border-white/[0.06] flex items-center justify-center shrink-0"
     >
       {url ? (
         <img src={url} alt={username} className="w-full h-full object-cover" />
       ) : (
-        <User className="text-slate-500" style={{ height: size * 0.5, width: size * 0.5 }} />
+        <User className="text-slate-600" style={{ height: size * 0.45, width: size * 0.45 }} />
       )}
     </div>
   );
