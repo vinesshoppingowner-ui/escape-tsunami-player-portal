@@ -4,6 +4,22 @@ import { logStaffAction } from '@/lib/staffLog';
 import { pushUnban } from '@/lib/renderBridge';
 import { snapshot, rebanOp } from '@/lib/staffUndo';
 
+// Issue the same new moderation to each username
+export async function bulkIssueModeration(usernames, { moderation_type, reason, duration }, user) {
+  const { pushBan } = await import('@/lib/renderBridge');
+  const { emailModerationIssued } = await import('@/lib/moderationEmails');
+  for (const roblox_username of usernames) {
+    const modData = { roblox_username, moderation_type, reason, duration, status: 'Active', staff_member: user?.full_name, moderation_date: new Date().toISOString(), player_notified: true };
+    const created = await base44.entities.Moderation.create(modData);
+    await base44.entities.Notification.create({ roblox_username, title: `New ${moderation_type} issued`, body: reason, type: 'moderation_issued', read: false });
+    emailModerationIssued(modData);
+    const isBan = moderation_type.includes('Ban');
+    await logStaffAction(user, 'moderation_issued', roblox_username, `Bulk issued ${moderation_type} — ${reason}`,
+      [{ op: 'delete', entity: 'Moderation', id: created.id }, ...(isBan ? [{ op: 'unban', username: roblox_username }] : [])]);
+    if (isBan) { try { await pushBan(modData); } catch { /* game server offline */ } }
+  }
+}
+
 // action: 'Repealed' | 'Expired' | 'delete'
 export async function bulkModerationAction(items, action, user) {
   for (const m of items) {

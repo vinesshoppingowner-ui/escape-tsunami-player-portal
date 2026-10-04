@@ -15,7 +15,8 @@ import ModerationTable from '@/components/admin/moderations/ModerationTable';
 import DeleteConfirmDialog from '@/components/admin/moderations/DeleteConfirmDialog';
 import ModerationBulkBar from '@/components/admin/moderations/ModerationBulkBar';
 import ModerationEditDialog from '@/components/admin/moderations/ModerationEditDialog';
-import { bulkModerationAction } from '@/lib/moderationBulk';
+import { bulkModerationAction, bulkIssueModeration } from '@/lib/moderationBulk';
+import BulkIssueDialog from '@/components/admin/moderations/BulkIssueDialog';
 import { downloadCsv } from '@/lib/csv';
 import { isOwner } from '@/lib/isOwner';
 import { Download } from 'lucide-react';
@@ -79,6 +80,16 @@ export default function ModerationsTab() {
   const [editTarget, setEditTarget] = useState(null);
 
   const toggleSelect = (id) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  const [bulkIssueOpen, setBulkIssueOpen] = useState(false);
+  const selectedUsernames = [...new Set(list.filter((m) => selected.has(m.id)).map((m) => m.roblox_username))];
+  const runBulkIssue = async (data) => {
+    await bulkIssueModeration(selectedUsernames, data, user);
+    setBulkIssueOpen(false);
+    setSelected(new Set());
+    toast({ title: `${data.moderation_type} issued to ${selectedUsernames.length} player(s)` });
+    await load();
+  };
 
   const runBulk = async (action) => {
     const items = list.filter((m) => selected.has(m.id));
@@ -269,7 +280,8 @@ export default function ModerationsTab() {
         </div>
       ) : (
         <>
-          {isAdmin && <ModerationBulkBar count={selected.size} running={bulkRunning} onAction={runBulk} onClear={() => setSelected(new Set())} />}
+          {isAdmin && <ModerationBulkBar count={selected.size} running={bulkRunning} onAction={runBulk} onClear={() => setSelected(new Set())} onIssue={() => setBulkIssueOpen(true)} />}
+          {bulkIssueOpen && <BulkIssueDialog usernames={selectedUsernames} onClose={() => setBulkIssueOpen(false)} onSubmit={runBulkIssue} />}
           <ModerationTable
             items={filtered}
             onDelete={setDeleteTarget}
