@@ -37,11 +37,11 @@ export default function MyAppeals() {
       setLoading(true);
       try {
         const [apps, mods] = await Promise.all([
-          base44.entities.Appeal.filter({ roblox_username: savedUsername }, '-created_date', 100),
-          base44.entities.Moderation.filter({ roblox_username: savedUsername }, '-moderation_date', 100),
+          base44.entities.Appeal.filter({ roblox_username: savedUsername }, { sort: '-created_date', limit: 100 }),
+          base44.entities.Moderation.filter({ roblox_username: savedUsername }, { sort: '-moderation_date', limit: 100 }),
         ]);
-        setAppeals(apps || []);
-        setModerations(mods || []);
+        setAppeals(apps?.items || []);
+        setModerations(mods?.items || []);
       } finally {
         setLoading(false);
       }
