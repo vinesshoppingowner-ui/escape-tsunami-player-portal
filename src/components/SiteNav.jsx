@@ -99,7 +99,7 @@ export default function SiteNav() {
 
   return (
     <>
-    <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-[#0B0D13]/70 border-b border-white/[0.06] transition-transform duration-300 ${navHidden && !open ? '-translate-y-full' : ''}`}>
+    <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-gradient-to-b from-[#0B0D13]/90 to-[#0B0D13]/60 border-b border-white/[0.08] transition-transform duration-300 ${navHidden && !open ? '-translate-y-full' : ''}`}>
       {showEmergency && (
         <div className="bg-rose-600 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -137,12 +137,13 @@ export default function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg inline-flex items-center gap-1.5 ${
-                  active ? 'text-white bg-white/[0.06]' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                className={`relative px-3.5 py-2 text-sm font-medium transition-all duration-150 rounded-lg inline-flex items-center gap-1.5 ${
+                  active ? 'text-white bg-white/[0.08]' : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
                 }`}
               >
                 {l.icon && <l.icon className="h-3.5 w-3.5" />}
                 {l.label}
+                {active && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
               </Link>
             );
           })}
@@ -150,7 +151,7 @@ export default function SiteNav() {
           {dropdownLinks.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/[0.04]">
+              <button className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-slate-400 hover:text-white transition-all duration-150 rounded-lg hover:bg-white/[0.05]">
                 <Menu className="h-4 w-4" />
                 More
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -193,7 +194,7 @@ export default function SiteNav() {
         <div className="md:hidden flex items-center gap-1">
           <ProfileMenu />
           <button
-            className="text-white p-2"
+            className="text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle menu"
           >
@@ -203,22 +204,27 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-white/[0.06] bg-[#0B0D13]/95 px-5 py-4 space-y-1">
-          {mobileLinks.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/[0.04] hover:text-white text-sm"
-            >
-              {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
-              {l.label}
-              {l.showDot && (
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
-              )}
-            </Link>
-          ))}
-          <a href={GAME_URL} target="_blank" rel="noreferrer" className="block px-3 py-2.5 rounded-lg text-cyan-300 text-sm">
+        <div className="md:hidden border-t border-white/[0.06] bg-[#0B0D13]/95 backdrop-blur-xl px-5 py-4 space-y-0.5">
+          {mobileLinks.map((l) => {
+            const active = location.pathname === l.to;
+            return (
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  active ? 'text-white bg-white/[0.08]' : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
+                }`}
+              >
+                {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
+                {l.label}
+                {l.showDot && (
+                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
+                )}
+              </Link>
+            );
+          })}
+          <a href={GAME_URL} target="_blank" rel="noreferrer" className="block px-3 py-2.5 rounded-lg text-cyan-300 text-sm hover:bg-white/[0.04] transition-colors">
             Play on Roblox ↗
           </a>
         </div>

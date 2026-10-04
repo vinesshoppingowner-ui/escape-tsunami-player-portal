@@ -8,6 +8,7 @@ import AppealChatMessage from '@/components/appeals/AppealChatMessage';
 import AppealChatInput from '@/components/appeals/AppealChatInput';
 import { useAppealMessages } from '@/hooks/useAppealMessages';
 import { useAppealPresence } from '@/hooks/useAppealPresence';
+import { censorMessage } from '@/lib/profanity';
 
 export default function AppealChat({ appeal }) {
   const { user } = useAuth();
@@ -34,13 +35,14 @@ export default function AppealChat({ appeal }) {
   }, [lastId, presence.ready]);
 
   const send = async (message, file, internal = false) => {
+    const cleanMsg = (!isStaff || internal) ? censorMessage(message) : message;
     const image_uri = file ? (await base44.integrations.Core.UploadPrivateFile({ file })).file_uri : undefined;
     const created = await base44.entities.AppealMessage.create({
       appeal_id: appeal.id,
       roblox_username: appeal.roblox_username,
       sender_name: isStaff ? (user?.full_name || 'Staff') : appeal.roblox_username,
       sender_is_staff: isStaff,
-      message,
+      message: cleanMsg,
       image_uri,
       internal: isStaff && internal,
     });

@@ -96,6 +96,33 @@ export function screenChat(record = {}) {
   };
 }
 
+/**
+ * Censors profanity in a message by replacing matched words (and common
+ * l33t-speak variants) with asterisks. Keeps the first letter visible.
+ */
+export function censorMessage(message) {
+  if (!message) return message;
+  const { matches } = screenMessage(message);
+  if (!matches.length) return message;
+  const leetMap = {
+    a: 'a4@', e: 'e3', i: 'i1!|', o: 'o0', s: 's5$', t: 't7+',
+    b: 'b8', c: 'c(]', g: 'g6', z: 'z2', u: 'u',
+  };
+  let result = message;
+  for (const word of matches) {
+    const pattern = word.split('').map((c) => {
+      const sub = leetMap[c];
+      if (!sub) return c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return `[${sub.replace(']', '\\]')}]`;
+    }).join('');
+    try {
+      const regex = new RegExp(pattern, 'gi');
+      result = result.replace(regex, (match) => match[0] + '*'.repeat(Math.max(match.length - 1, 1)));
+    } catch {}
+  }
+  return result;
+}
+
 export const SEVERITY_STYLES = {
   mild: {
     label: 'Mild',

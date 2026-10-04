@@ -38,7 +38,12 @@ export async function applyAppealDecision({
   }];
   const decided = ['Approved', 'Denied'].includes(status) && status !== appeal.status
     ? { decided_by: user?.full_name || user?.email || 'Staff', decided_at: new Date().toISOString() } : {};
-  await base44.entities.Appeal.update(appeal.id, { status, staff_response, internal_notes, can_reappeal, reappeal_after: reappeal_after || null, reappeal_guidance, ...decided });
+  const isDecided = ['Approved', 'Denied'].includes(status);
+  await base44.entities.Appeal.update(appeal.id, {
+    status, staff_response, internal_notes, can_reappeal, reappeal_after: reappeal_after || null, reappeal_guidance,
+    ...(isDecided ? { removed: true, chat_locked: true } : {}),
+    ...decided,
+  });
   if (status === 'Approved' && isWebsiteBanAppeal(appeal)) await liftWebsiteBan(appeal.roblox_username);
   if (status === 'Approved' && moderation && !moderation.unlisted && moderation.status !== 'Repealed') {
     await base44.entities.Moderation.update(moderation.id, { status: 'Repealed' });
