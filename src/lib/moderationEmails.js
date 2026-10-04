@@ -11,7 +11,7 @@ export function emailModerationIssued(m) {
     subject: `New ${m.moderation_type} on your account`,
     title: `${ICON[m.moderation_type] || '⚠️'} ${m.moderation_type} issued`,
     accent: ACCENT[m.moderation_type],
-    body: `Hi ${m.roblox_username},\n\nA ${m.moderation_type.toLowerCase()} has been issued on your Escape Tsunami account. If you believe this was a mistake, you can submit an appeal from the Member Portal.`,
+    body: `Hey ${m.roblox_username},\n\nYou just got a ${m.moderation_type.toLowerCase()} on Escape Tsunami. If you think this was a mistake, you can appeal it from the Member Portal.`,
     fields: [
       { name: 'Action', value: m.moderation_type },
       { name: 'Reason', value: m.reason },
@@ -35,8 +35,8 @@ export function emailModerationChanged(before, after) {
     title: lifted ? `✅ ${before.moderation_type} ${after.status.toLowerCase()}` : '✏️ Moderation updated',
     accent: lifted ? '#22c55e' : '#8b5cf6',
     body: lifted
-      ? `Hi ${before.roblox_username},\n\nGood news — your ${before.moderation_type.toLowerCase()} is no longer active.`
-      : `Hi ${before.roblox_username},\n\nA staff member updated a moderation on your account. Here's what changed.`,
+      ? `Hey ${before.roblox_username},\n\nGood news — your ${before.moderation_type.toLowerCase()} was lifted. You're all set.`
+      : `Hey ${before.roblox_username},\n\nA staff member updated a moderation on your account. Here's what changed:`,
     fields: [
       { name: 'Action', value: typeChanged ? `${before.moderation_type} → ${type}` : type },
       ...(durationChanged ? [{ name: 'Duration', value: `${before.duration || 'None'} → ${after.duration || 'None'}` }] : []),
@@ -53,7 +53,7 @@ export function emailAppealAssigned(appeal) {
     subject: 'A staff member is reviewing your appeal',
     title: '🔍 Your appeal is being reviewed',
     accent: '#8b5cf6',
-    body: `Hi ${appeal.roblox_username},\n\nA staff member has picked up your appeal and is reviewing it now. You'll get another email once a decision is made. You can chat with staff from your appeal in the Member Portal.`,
+    body: `Hey ${appeal.roblox_username},\n\nA staff member picked up your appeal and is looking into it now. We'll email you once there's a decision. You can also chat with staff from your appeal in the Member Portal.`,
     fields: [{ name: 'Status', value: 'Under review' }, { name: 'Updated', value: fmt() }],
     ctaLabel: 'Open my appeal',
     ctaUrl: `${window.location.origin}/my-appeals`,

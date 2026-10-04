@@ -58,7 +58,11 @@ export async function applyAppealDecision({
     subject: `Your appeal has been ${status.toLowerCase()}`,
     title: { Approved: '✅ Appeal approved', Denied: '❌ Appeal denied', 'Under Review': '🔍 Appeal under review', Pending: '⏳ Appeal pending' }[status] || `Appeal ${status}`,
     accent: { Approved: '#22c55e', Denied: '#ef4444', 'Under Review': '#8b5cf6', Pending: '#f59e0b' }[status],
-    body: `Hi ${appeal.roblox_username},\n\nYour appeal for "${moderation?.moderation_type || 'your moderation'}" has been ${status.toLowerCase()}.${status === 'Approved' ? ' Your moderation has been lifted.' : ''}`,
+    body: status === 'Approved'
+      ? `Hey ${appeal.roblox_username},\n\nGood news — your appeal was approved and the action on your account has been lifted.`
+      : status === 'Denied'
+      ? `Hey ${appeal.roblox_username},\n\nYour appeal was denied. You can reach out to staff in the Member Portal if you'd like to talk about it further.`
+      : `Hey ${appeal.roblox_username},\n\nYour appeal is now under review. We'll let you know once there's a decision.`,
     fields: [
       { name: 'Decision', value: status },
       { name: 'Moderation', value: moderation?.moderation_type },

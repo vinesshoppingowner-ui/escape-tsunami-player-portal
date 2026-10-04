@@ -81,14 +81,14 @@ const empty = {
 const SectionHeader = ({ label }) => <SectionLabel className="mt-6">{label}</SectionLabel>;
 const stickyFooter = 'sticky -bottom-6 -mx-6 -mb-6 px-6 py-3 bg-slate-900 border-t border-slate-800 flex justify-end gap-2 z-10';
 
-export default function ModerationForm({ open, onClose, onCreated }) {
+export default function ModerationForm({ open, onClose, onCreated, defaultUsername }) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [form, setForm] = useState(empty);
+  const [form, setForm] = useState(defaultUsername ? { ...empty, roblox_username: defaultUsername } : empty);
   const [saving, setSaving] = useState(false);
   const [durationMode, setDurationMode] = useState('');
 
-  const reset = () => { setForm(empty); setDurationMode(''); };
+  const reset = () => { setForm(defaultUsername ? { ...empty, roblox_username: defaultUsername } : empty); setDurationMode(''); };
 
   const handleClose = () => { reset(); onClose(); };
 

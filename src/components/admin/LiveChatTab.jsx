@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { MessageSquare, Search, Pause, Play, X, ArrowDown, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Search, Pause, Play, X, ArrowDown, AlertTriangle, ShieldAlert } from 'lucide-react';
 import LiveChatMessage from '@/components/admin/livechat/LiveChatMessage';
 import LiveChatStats from '@/components/admin/livechat/LiveChatStats';
 import PlayerChatModal from '@/components/admin/livechat/PlayerChatModal';
@@ -13,7 +13,7 @@ export default function LiveChatTab() {
   const [search, setSearch] = useState('');
   const [paused, setPaused] = useState(false);
   const [unseen, setUnseen] = useState(0);
-  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const [sevFilter, setSevFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const bottomRef = useRef(null);
   const scrollRef = useRef(null);
@@ -41,7 +41,9 @@ export default function LiveChatTab() {
           m.server_name?.toLowerCase().includes(q)
       )
     : messages;
-  if (flaggedOnly) visible = visible.filter((m) => screenChat(m).severity);
+  if (sevFilter === 'flagged') visible = visible.filter((m) => screenChat(m).severity);
+  else if (sevFilter === 'roblox') visible = visible.filter((m) => screenChat(m).robloxFlagged);
+  else if (sevFilter !== 'all') visible = visible.filter((m) => screenChat(m).severity === sevFilter);
 
   return (
     <>
@@ -80,16 +82,42 @@ export default function LiveChatTab() {
               </button>
             )}
           </div>
-          <button
-            onClick={() => setFlaggedOnly((f) => !f)}
-            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-colors ${
-              flaggedOnly
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-200 hover:bg-rose-500/25'
-                : 'bg-white/5 border-white/10 text-slate-200 hover:bg-white/10'
-            }`}
-          >
-            <AlertTriangle className="h-3.5 w-3.5" /> Flagged
-          </button>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'flagged', label: 'Flagged', icon: AlertTriangle },
+              { key: 'mild', label: 'Mild' },
+              { key: 'medium', label: 'Medium' },
+              { key: 'extreme', label: 'Extreme' },
+              { key: 'roblox', label: 'Roblox filtered', icon: ShieldAlert },
+            ].map((f) => {
+              const Icon = f.icon;
+              const active = sevFilter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setSevFilter(f.key)}
+                  className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-colors ${
+                    active
+                      ? f.key === 'extreme'
+                        ? 'bg-rose-500/15 border-rose-500/30 text-rose-200'
+                        : f.key === 'medium'
+                        ? 'bg-orange-500/15 border-orange-500/30 text-orange-200'
+                        : f.key === 'mild'
+                        ? 'bg-yellow-500/15 border-yellow-500/30 text-yellow-200'
+                        : f.key === 'roblox'
+                        ? 'bg-rose-500/15 border-rose-500/30 text-rose-200'
+                        : f.key === 'flagged'
+                        ? 'bg-rose-500/15 border-rose-500/30 text-rose-200'
+                        : 'bg-cyan-500/15 border-cyan-500/30 text-cyan-200'
+                      : 'bg-white/5 border-white/10 text-slate-200 hover:bg-white/10'
+                  }`}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" />} {f.label}
+                </button>
+              );
+            })}
+          </div>
           <button
             onClick={() => setPaused((p) => !p)}
             className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-colors ${

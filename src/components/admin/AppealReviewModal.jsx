@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Gavel, Lock, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { fetchChatLogs, fetchExploitLogs } from '@/lib/renderBridge';
 import AppealAISummary from '@/components/admin/AppealAISummary';
+import ModerationForm from '@/components/admin/moderations/ModerationForm';
+import { Gavel as GavelIcon, Zap } from 'lucide-react';
 
 const STATUS_STYLES = {
   'Pending': { cls: 'bg-amber-500/10 text-amber-300 border-amber-500/20', icon: Clock },
@@ -40,6 +42,7 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
   const [exploitLogs, setExploitLogs] = useState([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsError, setLogsError] = useState('');
+  const [modFormOpen, setModFormOpen] = useState(false);
 
   useEffect(() => {
     if (appeal) {
@@ -126,6 +129,18 @@ export default function AppealReviewModal({ open, onClose, appeal, moderation, o
                 <p className="text-xs text-slate-400">An admin has turned off your permission to approve or deny appeals. You can still move it to Under Review, chat, and add notes.</p>
               )}
               {isAdmin && <AppealAssign appeal={appeal} user={user} onChanged={() => onSaved?.()} />}
+              {can(user, 'edit_moderations') && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium text-white flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-amber-400" /> Quick moderate</div>
+                    <div className="text-xs text-slate-400">Issue a new moderation to {appeal.roblox_username} without leaving this review.</div>
+                  </div>
+                  <Button size="sm" onClick={() => setModFormOpen(true)} className="bg-white/5 border border-white/10 text-slate-200 hover:bg-white/10">
+                    <GavelIcon className="h-3.5 w-3.5" /> Moderate
+                  </Button>
+                </div>
+              )}
+              <ModerationForm open={modFormOpen} onClose={() => setModFormOpen(false)} defaultUsername={appeal.roblox_username} onCreated={() => { setModFormOpen(false); onSaved?.(); }} />
               <ReviewModerationSummary moderation={moderation} appeal={appeal} />
               {moderation && !moderation.unlisted && can(user, 'edit_moderations') && <ReviewModerationAdjust moderation={moderation} user={user} onChanged={() => onSaved?.()} />}
               <ReviewAppealAnswers appeal={appeal} />
