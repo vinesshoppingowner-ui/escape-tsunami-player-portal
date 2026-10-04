@@ -3,6 +3,7 @@ import { UserCog, Download, RotateCcw, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import SettingsSection from '@/components/profile/SettingsSection';
 import { DEFAULT_PREFS } from '@/lib/userPrefs';
+import LoginOptions from '@/components/profile/LoginOptions';
 
 const btn = 'inline-flex items-center gap-2 h-9 px-3 rounded-md border border-white/10 text-sm text-slate-200 hover:bg-white/5 hover:border-white/20 disabled:opacity-40';
 
@@ -41,6 +42,7 @@ export default function AccountSettings({ user, set }) {
         </button>
       </div>
       {!username && <p className="text-xs text-slate-500">Verify your Roblox account to export your moderation history.</p>}
+      <LoginOptions user={user} />
     </SettingsSection>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { loadCredentials, saveCredentials } from "@/lib/savedLogin";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn } from "lucide-react";
@@ -17,12 +18,21 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const returnTo = safeReturnTo();
 
+  useEffect(() => {
+    loadCredentials().then((c) => {
+      if (!c) return;
+      setEmail(c.email || "");
+      if (c.password) setPassword(c.password);
+    });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      await saveCredentials(email, password);
       markJustLoggedIn();
       window.location.href = returnTo;
     } catch (err) {
