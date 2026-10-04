@@ -406,10 +406,12 @@ html[data-bg] .min-h-screen.bg-slate-950 { background: transparent !important; }
 }
 .bg-white\/\[0\.03\],
 .bg-white\/\[0\.04\],
-.bg-white\/\[0\.05\] { background-color: #131722; }
-.rounded-2xl { border-radius: 10px; }
-.rounded-xl { border-radius: 8px; }
-.border-white\/10 { border-color: rgba(255, 255, 255, 0.08); }
+.bg-white\/\[0\.05\] { background-color: #111521; }
+.rounded-2xl { border-radius: 12px; }
+.rounded-xl { border-radius: 10px; }
+.border-white\/10 { border-color: rgba(255, 255, 255, 0.06); }
+.border-white\/15 { border-color: rgba(255, 255, 255, 0.08); }
+.border-white\/5 { border-color: rgba(255, 255, 255, 0.04); }
 
 h1, h2, h3 { font-family: var(--font-heading); }
 

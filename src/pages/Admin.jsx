@@ -38,7 +38,7 @@ const ADMIN_TOOLS = [
   { value: 'reports', label: 'Reports & Export', icon: FileDown },
 ];
 
-const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm data-[state=active]:bg-white/10 data-[state=active]:text-white rounded-lg';
+const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm text-slate-400 data-[state=active]:bg-white/[0.06] data-[state=active]:text-white rounded-lg transition-colors';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -49,10 +49,10 @@ export default function Admin() {
       <div className="min-h-screen bg-slate-950 text-white">
         <SiteNav />
         <main className="max-w-3xl mx-auto px-5 pt-28 pb-20 text-center">
-          <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4">
+          <div className="h-14 w-14 rounded-xl bg-rose-500/10 border border-rose-500/15 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="h-7 w-7 text-rose-400" />
           </div>
-          <h1 className="font-display text-2xl font-bold">Staff only</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Staff only</h1>
           <p className="mt-2 text-slate-400">You need a staff or admin account to access this dashboard.</p>
         </main>
       </div>
@@ -62,18 +62,16 @@ export default function Admin() {
   const isAdmin = isOwner(user);
 
   return (
-    <div className={`min-h-screen text-white ${isAdmin ? 'bg-gradient-to-b from-amber-950/30 via-slate-950 to-slate-950 bg-slate-950' : 'bg-slate-950'}`}>
+    <div className="min-h-screen text-white bg-slate-950">
       <SiteNav />
       <main className="max-w-5xl mx-auto px-5 pt-28 pb-24">
-        {isAdmin ? (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-semibold text-amber-200 mb-4">
-            <Crown className="h-3.5 w-3.5" /> Administrator
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-medium text-rose-300 mb-4">
-            <ShieldAlert className="h-3.5 w-3.5" /> Staff Dashboard
-          </div>
-        )}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs font-medium text-slate-300 mb-4">
+          {isAdmin ? (
+            <><Crown className="h-3.5 w-3.5 text-amber-400" /> Administrator</>
+          ) : (
+            <><ShieldAlert className="h-3.5 w-3.5 text-rose-400" /> Staff Dashboard</>
+          )}
+        </div>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           {isAdmin ? 'Admin command center' : 'Moderation console'}
         </h1>
@@ -84,7 +82,7 @@ export default function Admin() {
         {isAdmin && <AdminOverview />}
 
         <Tabs value={tab} onValueChange={setTab} className="mt-8">
-          <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/5 border border-white/10 h-auto rounded-xl">
+          <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/[0.02] border border-white/[0.06] h-auto rounded-xl">
             <TabsTrigger value="appeals" className={tabCls}><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>

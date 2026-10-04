@@ -82,31 +82,31 @@ export default function MyAppeals() {
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-4">
-            <Gavel className="h-3.5 w-3.5" /> My Appeals
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs font-medium text-slate-300 mb-4">
+            <Gavel className="h-3.5 w-3.5 text-cyan-400" /> My Appeals
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Manage your appeals</h1>
           <p className="mt-2 text-slate-400">Track the status of every appeal you've submitted for <span className="text-cyan-300 font-medium">{savedUsername}</span>.</p>
         </motion.div>
 
         {/* Summary stats */}
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden border border-white/[0.06]">
           {[
             { label: 'Total', value: appeals.length, icon: Gavel, cls: 'text-white', accent: 'text-cyan-400' },
             { label: 'Pending', value: appeals.filter(a => a.status === 'Pending').length, icon: Clock, cls: 'text-amber-300', accent: 'text-amber-400' },
             { label: 'Approved', value: appeals.filter(a => a.status === 'Approved').length, icon: CheckCircle2, cls: 'text-emerald-300', accent: 'text-emerald-400' },
             { label: 'Denied', value: appeals.filter(a => a.status === 'Denied').length, icon: XCircle, cls: 'text-rose-300', accent: 'text-rose-400' },
           ].map((s) => (
-            <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 sm:p-4 text-center hover:border-cyan-500/20 transition-colors">
+            <div key={s.label} className="bg-[#0B0D13] p-3 sm:p-4 text-center">
               <s.icon className={`h-4 w-4 mx-auto mb-1.5 ${s.accent}`} />
               <div className={`text-xl sm:text-2xl font-bold ${s.cls}`}>{s.value}</div>
-              <div className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{s.label}</div>
+              <div className="text-[11px] sm:text-xs text-slate-500 mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
 
         {!locked && (
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
             <div>
               <div className="text-sm font-semibold text-white">Punishment not shown?</div>
               <div className="text-xs text-slate-400">If you were punished in-game but it isn't in your history, you can still appeal it.</div>
@@ -125,8 +125,8 @@ export default function MyAppeals() {
               <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading your appeals…
             </div>
           ) : appeals.length === 0 ? (
-            <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-20 text-center">
-              <div className="h-14 w-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
+            <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] py-20 text-center">
+              <div className="h-14 w-14 rounded-xl bg-cyan-500/10 border border-cyan-500/15 flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="h-7 w-7 text-cyan-400" />
               </div>
               <h3 className="font-semibold text-lg text-white">No appeals yet</h3>
@@ -150,7 +150,7 @@ export default function MyAppeals() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: i * 0.04 }}
-                  className="rounded-2xl bg-white/[0.03] border border-white/10 p-5"
+                  className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">

@@ -147,12 +147,12 @@ export default function Portal() {
       <main className="max-w-4xl mx-auto px-5 pt-28 pb-20">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="flex items-center gap-4 rounded-lg bg-panel border border-white/[0.08] p-5">
-            {savedUsername ? <RobloxAvatar username={savedUsername} size={52} /> : (
-              <div className="h-[52px] w-[52px] rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-cyan-300" /></div>
+          <div className="flex items-center gap-4 rounded-xl bg-white/[0.02] border border-white/[0.06] p-5">
+            {savedUsername ? <RobloxAvatar username={savedUsername} size={48} /> : (
+              <div className="h-12 w-12 rounded-xl bg-cyan-500/10 border border-cyan-500/15 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-cyan-300" /></div>
             )}
             <div>
-              <div className="text-xs uppercase tracking-wider text-slate-500">Member Portal</div>
+              <div className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Member Portal</div>
               <h1 className="font-heading text-2xl font-semibold tracking-tight">
                 {savedUsername ? `Welcome back, ${savedUsername}` : 'Welcome back'}
               </h1>
@@ -223,14 +223,14 @@ export default function Portal() {
                 <button
                   key={s.label}
                   onClick={s.onClick}
-                  className={`rounded-2xl border p-3 sm:p-4 text-left transition-all cursor-pointer ${
+                  className={`rounded-xl border p-3 sm:p-4 text-left transition-all cursor-pointer ${
                     s.healthy
-                      ? 'bg-emerald-500/[0.06] border-emerald-500/20 hover:bg-emerald-500/[0.1] hover:border-emerald-500/30'
-                      : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-cyan-500/30'
+                      ? 'bg-emerald-500/[0.06] border-emerald-500/15 hover:bg-emerald-500/[0.1] hover:border-emerald-500/25'
+                      : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-cyan-500/20'
                   }`}
                 >
                   <div className={`text-xl sm:text-2xl font-bold ${s.healthy ? 'text-emerald-300' : 'text-white'}`}>{s.value}</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{s.label}</div>
+                  <div className="text-[11px] sm:text-xs text-slate-500 mt-0.5">{s.label}</div>
                 </button>
               ))}
             </div>
@@ -288,8 +288,8 @@ export default function Portal() {
                   <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading your moderations…
                 </div>
               ) : moderations.length === 0 ? (
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-20 text-center">
-                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] py-20 text-center">
+                  <div className="h-14 w-14 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center mx-auto mb-4">
                     <ShieldCheck className="h-7 w-7 text-emerald-400" />
                   </div>
                   <h3 className="font-semibold text-lg text-white">Clean record</h3>

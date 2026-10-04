@@ -110,15 +110,15 @@ export default function Home() {
       </section>
 
       <section className="px-5 pb-20">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden border border-white/[0.06]">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-white/[0.04] border border-white/10 px-5 py-5 hover:border-cyan-500/30 transition-colors">
-              <s.icon className="h-4 w-4 text-cyan-400 mb-2" />
+            <div key={s.label} className="bg-[#0B0D13] px-5 py-5 flex flex-col gap-2">
+              <s.icon className="h-4 w-4 text-cyan-400" />
               <div className="text-2xl font-bold text-white flex items-center gap-2">
                 {s.live && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
                 {s.value}
               </div>
-              <div className="text-xs uppercase tracking-wider text-slate-400 mt-0.5">{s.label}</div>
+              <div className="text-xs uppercase tracking-wider text-slate-500">{s.label}</div>
             </div>
           ))}
         </div>

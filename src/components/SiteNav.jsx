@@ -99,7 +99,7 @@ export default function SiteNav() {
 
   return (
     <>
-    <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-slate-950/60 border-b border-white/10 transition-transform duration-300 ${navHidden && !open ? '-translate-y-full' : ''}`}>
+    <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-[#0B0D13]/70 border-b border-white/[0.06] transition-transform duration-300 ${navHidden && !open ? '-translate-y-full' : ''}`}>
       {showEmergency && (
         <div className="bg-rose-600 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -130,7 +130,7 @@ export default function SiteNav() {
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-6">
         <div className="md:w-40 shrink-0"><SiteBrand /></div>
 
-        <nav className="hidden md:flex flex-1 justify-center items-center gap-1">
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-0.5">
           {directLinks.map((l) => {
             const active = location.pathname === l.to;
             return (
@@ -138,7 +138,7 @@ export default function SiteNav() {
                 key={l.to}
                 to={l.to}
                 className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg inline-flex items-center gap-1.5 ${
-                  active ? 'text-white bg-white/5' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  active ? 'text-white bg-white/[0.06]' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 {l.icon && <l.icon className="h-3.5 w-3.5" />}
@@ -150,13 +150,13 @@ export default function SiteNav() {
           {dropdownLinks.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/[0.04]">
                 <Menu className="h-4 w-4" />
                 More
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-52 bg-slate-900/95 backdrop-blur-xl border-white/10 text-white">
+            <DropdownMenuContent align="start" className="w-52 bg-[#0B0D13]/95 backdrop-blur-xl border-white/[0.08] text-white">
               {dropdownLinks.map((l) => {
                 const active = location.pathname === l.to;
                 return (
@@ -203,13 +203,13 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-white/10 bg-slate-950/95 px-5 py-4 space-y-1">
+        <div className="md:hidden border-t border-white/[0.06] bg-[#0B0D13]/95 px-5 py-4 space-y-1">
           {mobileLinks.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/5 text-sm"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/[0.04] hover:text-white text-sm"
             >
               {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
               {l.label}
