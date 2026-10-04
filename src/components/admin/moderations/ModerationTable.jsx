@@ -29,12 +29,12 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
   if (items.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-white/10 overflow-x-auto bg-[#131722]">
+    <div className="rounded-xl border border-white/[0.07] overflow-x-auto bg-[#0B0D13]">
       <table className="w-full text-sm min-w-[640px]">
         <thead>
-          <tr className="bg-white/[0.04] text-slate-400 text-xs uppercase tracking-wide border-b border-white/10">
+          <tr className="bg-white/[0.02] text-slate-500 text-[10px] uppercase tracking-wider border-b border-white/[0.07]">
             {isAdmin && (
-              <th className="pl-4 py-3.5 w-8">
+              <th className="pl-4 py-3 w-8">
                 <Checkbox
                   checked={items.length > 0 && items.every((m) => selected.has(m.id))}
                   onCheckedChange={(on) => onToggleAll(items.map((m) => m.id), !!on)}
@@ -42,13 +42,13 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
                 />
               </th>
             )}
-            <th className="text-left font-semibold px-3 py-3.5">User</th>
-            <th className="text-left font-semibold px-3 py-3.5">Type</th>
-            <th className="text-left font-semibold px-3 py-3.5 max-w-[200px]">Reason</th>
-            <th className="text-left font-semibold px-3 py-3.5 hidden md:table-cell whitespace-nowrap">Moderator</th>
-            <th className="text-left font-semibold px-3 py-3.5 hidden lg:table-cell whitespace-nowrap">Date</th>
-            <th className="text-left font-semibold px-3 py-3.5 whitespace-nowrap">Status</th>
-            <th className="text-right font-semibold px-3 py-3.5 whitespace-nowrap">Actions</th>
+            <th className="text-left font-medium px-3 py-3">User</th>
+            <th className="text-left font-medium px-3 py-3">Type</th>
+            <th className="text-left font-medium px-3 py-3 max-w-[200px]">Reason</th>
+            <th className="text-left font-medium px-3 py-3 hidden md:table-cell whitespace-nowrap">Moderator</th>
+            <th className="text-left font-medium px-3 py-3 hidden lg:table-cell whitespace-nowrap">Date</th>
+            <th className="text-left font-medium px-3 py-3 whitespace-nowrap">Status</th>
+            <th className="text-right font-medium px-3 py-3 whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -56,7 +56,7 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
             const isLong = (m.reason || '').length > 60;
             const isExpanded = expanded === m.id;
             return (
-              <tr key={m.id} className={`border-t border-white/5 hover:bg-white/[0.03] transition-colors group ${selected.has(m.id) ? 'bg-cyan-500/[0.05]' : ''}`}>
+              <tr key={m.id} className={`border-t border-white/[0.04] hover:bg-white/[0.025] transition-colors group ${selected.has(m.id) ? 'bg-cyan-500/[0.04]' : ''}`}>
                 {isAdmin && (
                   <td className="pl-4 py-3">
                     <Checkbox checked={selected.has(m.id)} onCheckedChange={() => onToggle(m.id)} className="border-white/30" />
@@ -127,7 +127,7 @@ export default function ModerationTable({ items, onDelete, isAdmin, selected = n
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-3 border-t border-white/10 bg-white/[0.02]">
+        <div className="flex items-center justify-between px-3 py-3 border-t border-white/[0.07] bg-white/[0.02]">
           <span className="text-xs text-slate-400">
             {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, items.length)} of {items.length}
           </span>

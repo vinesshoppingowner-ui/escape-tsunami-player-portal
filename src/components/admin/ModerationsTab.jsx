@@ -187,10 +187,10 @@ export default function ModerationsTab() {
     <div>
       <QuickStats list={list} />
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-lg font-semibold text-white">All moderations</h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">
+          <h2 className="text-lg font-semibold text-white tracking-tight">Moderations</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400 tabular-nums">
             {filtered.length}{hasFilters ? ` of ${list.length}` : ''}
           </span>
         </div>
@@ -200,39 +200,39 @@ export default function ModerationsTab() {
               size="sm"
               variant="outline"
               onClick={() => downloadCsv(`moderations-${new Date().toISOString().slice(0, 10)}.csv`, filtered, CSV_COLUMNS)}
-              className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
+              className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800/60 hover:text-white"
             >
-              <Download className="h-4 w-4 mr-1.5" /> Export CSV
+              <Download className="h-4 w-4 mr-1.5" /> Export
             </Button>
           )}
           <Button
             size="sm"
             variant="outline"
             onClick={() => window.open('/moderation-popout', '_blank', 'noopener,noreferrer,width=1200,height=800')}
-            className="bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
+            className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800/60 hover:text-white"
           >
-            <ExternalLink className="h-4 w-4 mr-1.5" /> Open Pop Out
+            <ExternalLink className="h-4 w-4 mr-1.5" /> Pop Out
           </Button>
           <Button
             size="sm"
             onClick={() => setShowForm(true)}
             className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0"
           >
-            <Plus className="h-4 w-4 mr-1.5" /> New moderation
+            <Plus className="h-4 w-4 mr-1.5" /> New
           </Button>
         </div>
       </div>
 
       {/* Search + filters */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3 space-y-3 mb-4">
-        <div className="relative">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] p-3 mb-4">
+        <div className="relative mb-2.5">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search a Roblox username to see their history…"
             list="mod-usernames"
-            className="bg-slate-950/60 border-white/15 text-white pl-9"
+            className="bg-slate-950/60 border-white/10 text-white pl-9 h-10"
           />
           <datalist id="mod-usernames">
             {usernames.map((u) => <option key={u} value={u} />)}
@@ -246,26 +246,26 @@ export default function ModerationsTab() {
       </div>
 
       {profile && (
-        <div className="mb-4 rounded-2xl bg-white/[0.03] border border-white/10 p-5">
-          <div className="flex items-center gap-3">
-            <RobloxAvatar username={profile.username} size={48} />
+        <div className="mb-4 rounded-xl bg-white/[0.02] border border-white/[0.07] overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/[0.06]">
+            <RobloxAvatar username={profile.username} size={44} />
             <div>
-              <div className="text-white font-semibold">{profile.username}</div>
+              <div className="text-white font-semibold leading-tight">{profile.username}</div>
               <div className="text-xs text-slate-500">First moderation: {profile.since}</div>
             </div>
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">{profile.active} active</span>
           </div>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-5">
             {[
               { label: 'Total', value: profile.total, cls: 'text-white' },
               { label: 'Bans', value: profile.bans, cls: 'text-rose-300' },
               { label: 'Mutes', value: profile.mutes, cls: 'text-slate-300' },
               { label: 'Kicks', value: profile.kicks, cls: 'text-orange-300' },
               { label: 'Warnings', value: profile.warnings, cls: 'text-amber-300' },
-            ].map((s) => (
-              <div key={s.label} className="rounded-lg bg-slate-950/40 border border-white/5 p-2.5 text-center">
-                <div className={`text-lg font-bold ${s.cls}`}>{s.value}</div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wide">{s.label}</div>
+            ].map((s, i) => (
+              <div key={s.label} className={`p-3 text-center ${i > 0 ? 'border-l border-white/[0.06]' : ''}`}>
+                <div className={`text-xl font-bold ${s.cls}`}>{s.value}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">{s.label}</div>
               </div>
             ))}
           </div>
@@ -273,9 +273,9 @@ export default function ModerationsTab() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16 text-slate-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <div className="flex justify-center py-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-16 text-center text-slate-400">
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] py-20 text-center text-slate-500">
           {hasFilters ? 'No moderations match your filters.' : 'No moderations issued yet.'}
         </div>
       ) : (
@@ -301,15 +301,15 @@ export default function ModerationsTab() {
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
             <Bot className="h-4 w-4 text-indigo-400" />
-            <h3 className="text-sm font-semibold text-white">Discord actions</h3>
-            <span className="text-xs text-slate-500">({discordList.length})</span>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Discord Actions</h3>
+            <span className="text-xs text-slate-600">({discordList.length})</span>
           </div>
-          <div className="space-y-2">
+          <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] divide-y divide-white/[0.05] overflow-hidden">
             {discordList.map((a) => {
               const st = DISCORD_STATUS_STYLES[a.status] || DISCORD_STATUS_STYLES.pending;
               const StatusIcon = st.icon;
               return (
-                <div key={a.id} className="flex items-start justify-between gap-3 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
+                <div key={a.id} className="flex items-start justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
                     <div className="text-sm">
                       <span className="text-indigo-300 font-medium">{a.discord_username || a.discord_user_id}</span>

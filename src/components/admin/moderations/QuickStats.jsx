@@ -13,25 +13,25 @@ export default function QuickStats({ list }) {
   const total = list.length;
 
   const stats = [
-    { label: 'Active Bans', value: activeBans, icon: ShieldBan, cls: 'text-rose-300', bg: 'bg-rose-500/10 border-rose-500/20', ring: 'group-hover:border-rose-500/40' },
-    { label: 'Warnings', value: totalWarnings, icon: AlertTriangle, cls: 'text-amber-300', bg: 'bg-amber-500/10 border-amber-500/20', ring: 'group-hover:border-amber-500/40' },
-    { label: 'Actions (24h)', value: last24h, icon: Activity, cls: 'text-cyan-300', bg: 'bg-cyan-500/10 border-cyan-500/20', ring: 'group-hover:border-cyan-500/40' },
-    { label: 'Total Records', value: total, icon: Layers, cls: 'text-white', bg: 'bg-white/5 border-white/10', ring: 'group-hover:border-white/20' },
+    { label: 'Active Bans', value: activeBans, icon: ShieldBan, cls: 'text-rose-300' },
+    { label: 'Warnings', value: totalWarnings, icon: AlertTriangle, cls: 'text-amber-300' },
+    { label: 'Actions · 24h', value: last24h, icon: Activity, cls: 'text-cyan-300' },
+    { label: 'Total Records', value: total, icon: Layers, cls: 'text-white' },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden mb-5 border border-white/[0.06]">
       {stats.map((s) => {
         const Icon = s.icon;
         return (
-          <div key={s.label} className={`group rounded-2xl border p-4 transition-all ${s.bg} ${s.ring}`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold">{s.label}</span>
-              <div className="h-7 w-7 rounded-lg bg-white/5 flex items-center justify-center">
-                <Icon className={`h-3.5 w-3.5 ${s.cls}`} />
-              </div>
+          <div key={s.label} className="bg-[#0B0D13] p-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
+              <Icon className={`h-4 w-4 ${s.cls}`} />
             </div>
-            <div className={`text-3xl font-bold ${s.cls}`}>{s.value}</div>
+            <div className="min-w-0">
+              <div className={`text-2xl font-bold leading-tight ${s.cls}`}>{s.value}</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium truncate">{s.label}</div>
+            </div>
           </div>
         );
       })}
