@@ -20,6 +20,7 @@ export default function DisplaySettings({ prefs, set }) {
       </div>
       <SettingToggle label="Compact mode" hint="Tighter spacing to fit more on screen" checked={prefs.compact_mode} onChange={(v) => set({ compact_mode: v })} />
       <SettingToggle label="Reduce motion" hint="Turns off animations and seasonal effects" checked={prefs.reduce_motion} onChange={(v) => set({ reduce_motion: v })} />
+      <SettingToggle label="Click sounds" hint="Play a subtle sound when you click buttons and links" checked={prefs.click_sounds !== false} onChange={(v) => set({ click_sounds: v })} />
     </SettingsSection>
   );
 }

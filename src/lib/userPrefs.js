@@ -32,6 +32,7 @@ export const DEFAULT_PREFS = {
   notify_moderations: true,
   notify_staff_messages: true,
   notification_sound: true,
+  click_sounds: true,
   hide_online_status: false,
 };
 

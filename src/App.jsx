@@ -35,6 +35,7 @@ import AccentApplier from '@/components/AccentApplier';
 import LandingRedirect from '@/components/LandingRedirect';
 import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
+import ClickSound from '@/components/ClickSound';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
 
@@ -89,6 +90,7 @@ const AuthenticatedApp = () => {
         {!isLoading && <LandingRedirect />}
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
+        <ClickSound />
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />
         {content}
