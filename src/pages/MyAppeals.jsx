@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle, MessageSquare, ArrowLeft, Plus } from 'lucide-react';
+import { Loader2, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle, MessageSquare, ArrowLeft, Plus, MessagesSquare, ChevronDown } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 import VerifyAccount from '@/components/moderations/VerifyAccount';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import UnlistedAppealDialog from '@/components/appeals/UnlistedAppealDialog';
+import AppealChat from '@/components/appeals/AppealChat';
 import { UNLISTED_ID, unlistedModeration } from '@/lib/unlistedAppeal';
 
 const STATUS_STYLES = {
@@ -25,6 +26,7 @@ export default function MyAppeals() {
   const [moderations, setModerations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unlistedOpen, setUnlistedOpen] = useState(false);
+  const [chatOpenId, setChatOpenId] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -205,6 +207,22 @@ export default function MyAppeals() {
                   )}
                   {a.status === 'Denied' && a.can_reappeal === false && (
                     <div className="mt-3 text-xs text-rose-400/80">This appeal was denied and you are not eligible to submit a new one for this moderation.</div>
+                  )}
+
+                  {a.status !== 'Approved' && a.status !== 'Denied' && (
+                    <>
+                      <button
+                        onClick={() => setChatOpenId(chatOpenId === a.id ? null : a.id)}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        <MessagesSquare className="h-3.5 w-3.5" />
+                        {chatOpenId === a.id ? 'Hide chat' : 'Chat with staff'}
+                        <ChevronDown className={`h-3 w-3 transition-transform ${chatOpenId === a.id ? 'rotate-180' : ''}`} />
+                      </button>
+                      {chatOpenId === a.id && (
+                        <div className="mt-3"><AppealChat appeal={a} /></div>
+                      )}
+                    </>
                   )}
                 </motion.div>
               );
