@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 
 const WORDS = ['wave', 'tide', 'surf', 'coral', 'reef', 'shell', 'storm', 'ocean', 'pearl', 'drift', 'shore', 'foam'];
 const makeCode = () => 'ET-' + Array.from({ length: 4 }, () => WORDS[Math.floor(Math.random() * WORDS.length)]).join('-');
@@ -9,18 +9,22 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Please sign in first.' }, { status: 401 });
     const { action, username } = await req.json();
-    const db = base44.asServiceRole.entities.VerificationRequest;
+
+    // User-scoped client: RLS auto-sets created_by_id on create and auto-filters on read.
+    const userDb = base44.entities.VerificationRequest;
+    // Service-role client: bypasses RLS for status updates (only admins/staff can update).
+    const adminDb = base44.asServiceRole.entities.VerificationRequest;
 
     if (action === 'start') {
       const name = String(username || '').trim();
       if (!/^[A-Za-z0-9_]{3,20}$/.test(name)) return Response.json({ error: 'Enter a valid Roblox username.' }, { status: 400 });
       const code = makeCode();
-      await db.create({ roblox_username: name, code, status: 'pending', created_by_id: user.id });
+      await userDb.create({ roblox_username: name, code, status: 'pending' });
       return Response.json({ code });
     }
 
     if (action === 'check') {
-      const page = await db.filter({ created_by_id: user.id, status: 'pending' }, { sort: '-created_date', limit: 1 });
+      const page = await userDb.filter({ status: 'pending' }, { sort: '-created_date', limit: 1 });
       const reqRec = page.items?.[0];
       if (!reqRec) return Response.json({ error: 'Start verification first.' }, { status: 400 });
 
@@ -37,8 +41,8 @@ export default async function(req) {
         return Response.json({ error: 'Code not found in your Roblox bio yet. Save your bio and try again (it can take a minute).' }, { status: 400 });
       }
 
-      await db.update(reqRec.id, { status: 'approved', reviewer_note: 'Auto-verified via bio code' });
-      await base44.asServiceRole.entities.User.update(user.id, { roblox_username: rbx.name, roblox_user_id: String(rbx.id) });
+      await adminDb.update(reqRec.id, { status: 'approved', reviewer_note: 'Auto-verified via bio code' });
+      await base44.auth.updateMe({ roblox_username: rbx.name, roblox_user_id: String(rbx.id) });
       return Response.json({ username: rbx.name });
     }
 
