@@ -17,6 +17,10 @@ export default function AppealChat({ appeal }) {
   const messages = isStaff ? all : all.filter((m) => !m.internal);
   const [locked, setLocked] = useState(!!appeal.chat_locked);
 
+  // Check if the player is muted
+  const mutedUntil = user?.data?.muted_until || user?.muted_until;
+  const isMuted = !isStaff && mutedUntil && new Date(mutedUntil) > new Date();
+
   useEffect(() => base44.entities.Appeal.subscribe((e) => {
     if (e.id === appeal.id && e.data) setLocked(!!e.data.chat_locked);
   }), [appeal.id]);
@@ -90,6 +94,8 @@ export default function AppealChat({ appeal }) {
       </div>
       {!isStaff && locked ? (
         <div className="border-t border-white/10 p-3 text-center text-xs text-slate-400">Staff have locked this chat.</div>
+      ) : !isStaff && isMuted ? (
+        <div className="border-t border-white/10 p-3 text-center text-xs text-amber-300">You are muted until {new Date(mutedUntil).toLocaleString()}.</div>
       ) : (
         <AppealChatInput isStaff={isStaff} onSend={send} onTyping={presence.markTyping} />
       )}

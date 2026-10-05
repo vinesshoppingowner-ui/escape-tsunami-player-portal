@@ -91,6 +91,10 @@ export default function Portal() {
   const appealFor = (moderationId) => appeals.find((a) => a.moderation_id === moderationId);
 
   const openAppeal = (moderation) => {
+    if (user?.data?.appeals_locked || user?.appeals_locked) {
+      alert('Your ability to submit appeals has been locked by staff. Contact an administrator if you believe this is a mistake.');
+      return;
+    }
     setActiveModeration(moderation);
     setDialogOpen(true);
   };

@@ -13,10 +13,12 @@ export default function BanAppealForm({ user, reason, onCancel }) {
   const [error, setError] = useState('');
   const [used, setUsed] = useState(null);
   const username = user?.data?.roblox_username || user?.roblox_username;
+  const appealsLocked = user?.data?.appeals_locked || user?.appeals_locked;
 
   useEffect(() => { if (username) countWebsiteAppeals(username).then(setUsed); }, [username]);
 
   if (!username) return <p className="text-sm text-slate-400">Sign in with your verified Roblox account to report a mistake.</p>;
+  if (appealsLocked) return <p className="text-sm text-rose-300">Your ability to submit appeals has been locked by staff. Contact an administrator if you believe this is a mistake.</p>;
   if (done) return <div className="flex items-center gap-2 text-sm text-emerald-300"><CheckCircle2 className="h-4 w-4" /> Report sent — staff will review your ban.</div>;
   if (used === null) return <Loader2 className="h-4 w-4 animate-spin text-slate-400" />;
   if (used >= MAX_WEBSITE_APPEALS) return <p className="text-sm text-amber-300">You've used all {MAX_WEBSITE_APPEALS} ban reports. Staff will review what you've already sent.</p>;

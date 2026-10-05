@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -51,6 +53,43 @@
       "description": "When true, the user cannot submit new appeals",
       "default": false
     },
+    "has_password": {
+      "type": "boolean",
+      "description": "Whether the user has set a password (true for email/password registrants, false for Google-only users)",
+      "default": false
+    },
+    "suspended": {
+      "type": "boolean",
+      "description": "When true, the user is suspended from all portal activity but can still log in to view their status",
+      "default": false
+    },
+    "suspended_reason": {
+      "type": "string",
+      "description": "Reason for the suspension"
+    },
+    "suspended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the suspension was issued"
+    },
+    "suspended_by": {
+      "type": "string",
+      "description": "Email of the staff member who suspended this account"
+    },
+    "muted_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user's mute expires (prevents appeal chat messages)"
+    },
+    "roblox_verified": {
+      "type": "boolean",
+      "description": "Whether the user's Roblox account has been verified",
+      "default": false
+    },
+    "staff_notes_private": {
+      "type": "string",
+      "description": "Private admin-only notes about this user account"
+    },
     "last_ip": {
       "type": "string",
       "description": "The last IP address the user logged in from"
@@ -66,11 +105,14 @@
         "type": "string"
       },
       "description": "Staff powers an admin has switched off for this user"
+    },
+    "login_attempts": {
+      "type": "number",
+      "description": "Count of failed login attempts",
+      "default": 0
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }

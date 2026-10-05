@@ -47,6 +47,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
+      await base44.auth.updateMe({ has_password: true }).catch(() => {});
       markJustLoggedIn();
       window.location.href = safeReturnTo();
     } catch (err) {

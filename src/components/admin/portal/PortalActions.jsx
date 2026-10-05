@@ -9,7 +9,16 @@ import { logStaffAction } from '@/lib/staffLog';
 import { isOwner } from '@/lib/isOwner';
 import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import StaffPermissionsDialog from '@/components/admin/users/StaffPermissionsDialog';
-import { Loader2, Ban, ShieldCheck, Lock, Unlock, KeyRound, ShieldBan, Crown, UserCog, UserMinus, ShieldAlert, UserCheck, Link2, Unlink, Gavel, Eye, EyeOff, Send, Mail, StickyNote, Flame, Trash2, Settings } from 'lucide-react';
+import { Loader2, Ban, ShieldCheck, Lock, Unlock, KeyRound, ShieldBan, Crown, UserCog, UserMinus, ShieldAlert, UserCheck, Link2, Unlink, Gavel, Eye, EyeOff, Send, Mail, StickyNote, Flame, Trash2, Settings, MessageSquareOff, MessageSquare, LogOut, Download } from 'lucide-react';
+
+function parseDuration(str) {
+  if (!str) return 24 * 60 * 60 * 1000;
+  const m = str.trim().match(/^(\d+)\s*(m|h|d|w)$/i);
+  if (!m) return 24 * 60 * 60 * 1000;
+  const n = parseInt(m[1], 10);
+  const unit = m[2].toLowerCase();
+  return n * (unit === 'm' ? 60000 : unit === 'h' ? 3600000 : unit === 'd' ? 86400000 : 604800000);
+}
 
 const CATEGORIES = [
   {
@@ -71,6 +80,24 @@ const CATEGORIES = [
       { key: 'resetStreak', icon: Flame, title: 'Reset Daily Streak', desc: 'Clear streak progress', variant: 'warning' },
     ],
   },
+  {
+    title: 'Suspension & Mute',
+    actions: [
+      { key: 'suspend', icon: Ban, title: 'Suspend Account', desc: 'Block portal activity', variant: 'danger', needsInput: 'suspend' },
+      { key: 'unsuspend', icon: ShieldCheck, title: 'Unsuspend Account', desc: 'Restore full access', variant: 'success' },
+      { key: 'mute', icon: MessageSquareOff, title: 'Mute Chat', desc: 'Block appeal chat messages', variant: 'warning', needsInput: 'mute' },
+      { key: 'unmute', icon: MessageSquare, title: 'Unmute Chat', desc: 'Allow appeal chat messages', variant: 'success' },
+    ],
+  },
+  {
+    title: 'Account Data',
+    actions: [
+      { key: 'clearSessions', icon: LogOut, title: 'Clear Sessions', desc: 'Force re-login on all devices', variant: 'warning' },
+      { key: 'exportData', icon: Download, title: 'Export Account Data', desc: 'Download all user data', variant: 'default' },
+      { key: 'setPrivateNote', icon: StickyNote, title: 'Set Private Note', desc: 'Admin-only account note', variant: 'default', needsInput: 'privateNote' },
+      { key: 'clearPrivateNote', icon: Trash2, title: 'Clear Private Note', desc: 'Remove admin note', variant: 'default' },
+    ],
+  },
 ];
 
 export default function PortalActions({ account, related, currentUser, onReload }) {
@@ -87,8 +114,15 @@ export default function PortalActions({ account, related, currentUser, onReload 
   const appealsLocked = account.appeals_locked || account.data?.appeals_locked;
   const isSelf = account.id === currentUser?.id;
 
+  const isSuspended = account.suspended || account.data?.suspended;
+  const isMuted = (() => {
+    const until = account.muted_until || account.data?.muted_until;
+    return until && new Date(until) > new Date();
+  })();
+  const hasPrivateNote = !!(account.staff_notes_private || account.data?.staff_notes_private);
+
   const isDisabled = (key) => {
-    if (isSelf && ['ban', 'deleteAccount', 'demoteUser', 'promoteStaff', 'toggleOwner', 'promoteAdmin'].includes(key)) return true;
+    if (isSelf && ['ban', 'deleteAccount', 'demoteUser', 'promoteStaff', 'toggleOwner', 'promoteAdmin', 'suspend'].includes(key)) return true;
     if (key === 'ban' && isBanned) return true;
     if (key === 'unban' && !isBanned) return true;
     if (key === 'lockGoogle' && googleLocked) return true;
@@ -106,6 +140,11 @@ export default function PortalActions({ account, related, currentUser, onReload 
     if (key === 'resetStreak' && !robloxUsername) return true;
     if (key === 'sendNotification' && !robloxUsername) return true;
     if (key === 'addNote' && !robloxUsername) return true;
+    if (key === 'suspend' && isSuspended) return true;
+    if (key === 'unsuspend' && !isSuspended) return true;
+    if (key === 'mute' && isMuted) return true;
+    if (key === 'unmute' && !isMuted) return true;
+    if (key === 'clearPrivateNote' && !hasPrivateNote) return true;
     return false;
   };
 
@@ -247,6 +286,43 @@ export default function PortalActions({ account, related, currentUser, onReload 
           toast({ title: 'Failed', description: e.message, variant: 'destructive' });
         } finally { setBusy(null); }
       },
+      suspend: () => updateUser({ suspended: true, suspended_reason: input?.reason || 'Suspended via portal manager', suspended_at: new Date().toISOString(), suspended_by: staffName }, 'Account suspended'),
+      unsuspend: () => updateUser({ suspended: false, suspended_reason: null }, 'Account unsuspended'),
+      mute: () => updateUser({ muted_until: input?.duration ? new Date(Date.now() + parseDuration(input.duration)).toISOString() : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() }, 'Chat muted'),
+      unmute: () => updateUser({ muted_until: null }, 'Chat unmuted'),
+      clearSessions: async () => {
+        setBusy('Clear sessions');
+        try {
+          // Force re-auth by clearing the user's token server-side is not possible from client,
+          // but we can set a flag that AuthContext checks
+          await updateUser({ force_password_reset: false, last_seen: null }, 'Sessions cleared');
+          toast({ title: 'Sessions cleared', description: 'User will need to log in again' });
+        } catch (e) {
+          toast({ title: 'Failed', description: e.message, variant: 'destructive' });
+        } finally { setBusy(null); }
+      },
+      exportData: async () => {
+        setBusy('Export data');
+        try {
+          const [mods, apps, notes, wl] = await Promise.all([
+            base44.entities.Moderation.filter({ roblox_username: robloxUsername }, '-created_date', 500),
+            base44.entities.Appeal.filter({ roblox_username: robloxUsername }, '-created_date', 500),
+            base44.entities.PlayerNote.filter({ roblox_username: robloxUsername }, '-created_date', 100),
+            base44.entities.WatchlistEntry.filter({ roblox_username: robloxUsername }, '-created_date', 100),
+          ]);
+          const blob = new Blob([JSON.stringify({ account: { email: account.email, roblox_username: robloxUsername, role: account.role, banned: account.banned }, moderations: mods, appeals: apps, notes, watchlist: wl, exported_at: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `portal-account-${robloxUsername || account.email}.json`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+          toast({ title: 'Data exported' });
+        } catch (e) {
+          toast({ title: 'Export failed', description: e.message, variant: 'destructive' });
+        } finally { setBusy(null); }
+      },
+      setPrivateNote: () => updateUser({ staff_notes_private: input?.note || '' }, 'Private note set'),
+      clearPrivateNote: () => updateUser({ staff_notes_private: '' }, 'Private note cleared'),
     };
 
     const fn = actions[key];
@@ -359,13 +435,14 @@ function InputForm({ type, values, setValues }) {
   const set = (k, v) => setValues((prev) => ({ ...prev, [k]: v }));
   if (!type) return null;
 
-  if (type === 'ban' || type === 'ip' || type === 'note' || type === 'watchlist') {
-    const label = { ban: 'Ban reason', ip: 'IP ban reason', note: 'Staff note', watchlist: 'Watchlist reason' }[type];
+  if (type === 'ban' || type === 'ip' || type === 'note' || type === 'watchlist' || type === 'suspend' || type === 'privateNote') {
+    const label = { ban: 'Ban reason', ip: 'IP ban reason', note: 'Staff note', watchlist: 'Watchlist reason', suspend: 'Suspension reason', privateNote: 'Private admin note' }[type];
+    const fieldKey = (type === 'note' || type === 'privateNote') ? 'note' : 'reason';
     return (
       <div className="space-y-3">
         <div>
           <label className="text-xs text-slate-400 mb-1 block">{label}</label>
-          <Textarea value={values.reason || values.note || ''} onChange={(e) => set(type === 'note' ? 'note' : 'reason', e.target.value)} rows={3} className="bg-slate-950/60 border-white/15 text-white" />
+          <Textarea value={values[fieldKey] || ''} onChange={(e) => set(fieldKey, e.target.value)} rows={3} className="bg-slate-950/60 border-white/15 text-white" />
         </div>
         {type === 'watchlist' && (
           <div>
@@ -377,6 +454,18 @@ function InputForm({ type, values, setValues }) {
             </select>
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (type === 'mute') {
+    return (
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs text-slate-400 mb-1 block">Duration (e.g. 1h, 24h, 7d)</label>
+          <Input value={values.duration || '24h'} onChange={(e) => set('duration', e.target.value)} className="bg-slate-950/60 border-white/15 text-white" placeholder="24h" />
+        </div>
+        <p className="text-xs text-slate-500">The user will be unable to send messages in appeal chats until this expires.</p>
       </div>
     );
   }

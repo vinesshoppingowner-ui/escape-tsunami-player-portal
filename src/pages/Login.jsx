@@ -19,6 +19,12 @@ export default function Login() {
   const returnTo = safeReturnTo();
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('banned') === '1') setError('Your portal account has been banned. Contact staff if you believe this is a mistake.');
+    else if (params.get('google_locked') === '1') setError('Google login is locked for your account. Use email and password to log in.');
+  }, []);
+
+  useEffect(() => {
     loadCredentials().then((c) => {
       if (!c) return;
       setEmail(c.email || "");
@@ -32,6 +38,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      await base44.auth.updateMe({ has_password: true }).catch(() => {});
       await saveCredentials(email, password);
       markJustLoggedIn();
       window.location.href = returnTo;
