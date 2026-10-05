@@ -71,9 +71,11 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
+    const r = safeReturnTo();
+    const sep = r.includes('?') ? '&' : '?';
+    base44.auth.loginWithProvider("google", `${r}${sep}login_method=google`);
     localStorage.setItem('login_method', 'google');
     markJustLoggedIn();
-    base44.auth.loginWithProvider("google", safeReturnTo());
   };
 
   if (showOtp) {

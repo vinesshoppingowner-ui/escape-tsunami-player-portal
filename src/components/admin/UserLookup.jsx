@@ -11,6 +11,7 @@ import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import PortalAccountManager from '@/components/admin/portal/PortalAccountManager';
 import { useToast } from '@/components/ui/use-toast';
 import { findUserByRobloxUsername } from '@/lib/userLookup';
+import { isOwner } from '@/lib/isOwner';
 
 
 const MOD_TYPE_STYLES = {
@@ -255,21 +256,23 @@ export default function UserLookup() {
         >
           <Link2 className="h-4 w-4 inline mr-1.5" /> Bloxlink
         </button>
-        <button
-          type="button"
-          onClick={() => { setPlatform('portal'); setRobloxProfile(null); setDiscordData(null); setError(null); }}
-          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-            platform === 'portal'
-              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-              : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
-          }`}
-        >
-          <Mail className="h-4 w-4 inline mr-1.5" /> Portal
-        </button>
+        {isOwner(user) && (
+          <button
+            type="button"
+            onClick={() => { setPlatform('portal'); setRobloxProfile(null); setDiscordData(null); setError(null); }}
+            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              platform === 'portal'
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                : 'bg-slate-950/60 border-white/15 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Mail className="h-4 w-4 inline mr-1.5" /> Portal
+          </button>
+        )}
       </div>
 
       {platform === 'bloxlink' && <BloxlinkLookup />}
-      {platform === 'portal' && <PortalAccountManager />}
+      {platform === 'portal' && isOwner(user) && <PortalAccountManager />}
       {platform !== 'bloxlink' && platform !== 'portal' && (<>
 
       <div className="flex gap-2 mb-4">

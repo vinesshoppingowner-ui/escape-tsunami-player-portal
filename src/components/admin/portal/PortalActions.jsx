@@ -9,7 +9,7 @@ import { logStaffAction } from '@/lib/staffLog';
 import { isOwner } from '@/lib/isOwner';
 import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import StaffPermissionsDialog from '@/components/admin/users/StaffPermissionsDialog';
-import { Loader2, Ban, ShieldCheck, Lock, Unlock, KeyRound, ShieldBan, Crown, UserCog, UserMinus, ShieldAlert, UserCheck, Link2, Unlink, Gavel, Eye, EyeOff, Send, Mail, StickyNote, Flame, Trash2, Settings, MessageSquareOff, MessageSquare, LogOut, Download } from 'lucide-react';
+import { Loader2, Ban, ShieldCheck, Lock, Unlock, KeyRound, ShieldBan, Crown, UserCog, UserMinus, ShieldAlert, UserCheck, Link2, Unlink, Gavel, Eye, EyeOff, Send, Mail, StickyNote, Flame, Trash2, Settings, MessageSquareOff, MessageSquare, LogOut, Download, Clock, MailCheck, MapPinOff, RefreshCw, ShieldX } from 'lucide-react';
 
 function parseDuration(str) {
   if (!str) return 24 * 60 * 60 * 1000;
@@ -98,6 +98,16 @@ const CATEGORIES = [
       { key: 'clearPrivateNote', icon: Trash2, title: 'Clear Private Note', desc: 'Remove admin note', variant: 'default' },
     ],
   },
+  {
+    title: 'Advanced Controls',
+    actions: [
+      { key: 'tempBan', icon: Clock, title: 'Temporary Ban', desc: 'Ban with expiry date', variant: 'danger', needsInput: 'tempBan' },
+      { key: 'resetLoginAttempts', icon: RefreshCw, title: 'Reset Login Attempts', desc: 'Clear failed login counter', variant: 'default' },
+      { key: 'sendPasswordReset', icon: MailCheck, title: 'Send Password Reset', desc: 'Email a reset link', variant: 'default' },
+      { key: 'clearRobloxVerify', icon: ShieldX, title: 'Clear Roblox Verify', desc: 'Remove verification status', variant: 'warning' },
+      { key: 'resetTracking', icon: MapPinOff, title: 'Reset IP Tracking', desc: 'Clear last IP and seen', variant: 'default' },
+    ],
+  },
 ];
 
 export default function PortalActions({ account, related, currentUser, onReload }) {
@@ -122,8 +132,9 @@ export default function PortalActions({ account, related, currentUser, onReload 
   const hasPrivateNote = !!(account.staff_notes_private || account.data?.staff_notes_private);
 
   const isDisabled = (key) => {
-    if (isSelf && ['ban', 'deleteAccount', 'demoteUser', 'promoteStaff', 'toggleOwner', 'promoteAdmin', 'suspend'].includes(key)) return true;
+    if (isSelf && ['ban', 'tempBan', 'deleteAccount', 'demoteUser', 'promoteStaff', 'toggleOwner', 'promoteAdmin', 'suspend'].includes(key)) return true;
     if (key === 'ban' && isBanned) return true;
+    if (key === 'tempBan' && isBanned) return true;
     if (key === 'unban' && !isBanned) return true;
     if (key === 'lockGoogle' && googleLocked) return true;
     if (key === 'unlockGoogle' && !googleLocked) return true;
@@ -323,6 +334,19 @@ export default function PortalActions({ account, related, currentUser, onReload 
       },
       setPrivateNote: () => updateUser({ staff_notes_private: input?.note || '' }, 'Private note set'),
       clearPrivateNote: () => updateUser({ staff_notes_private: '' }, 'Private note cleared'),
+      tempBan: () => updateUser({ banned: true, banned_reason: input?.reason || 'Temporary ban', banned_at: new Date().toISOString(), banned_by: staffName, banned_until: input?.duration ? new Date(Date.now() + parseDuration(input.duration)).toISOString() : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() }, 'Temporarily banned'),
+      resetLoginAttempts: () => updateUser({ login_attempts: 0 }, 'Login attempts reset'),
+      sendPasswordReset: async () => {
+        setBusy('Send password reset');
+        try {
+          await base44.auth.resetPasswordRequest(account.email);
+          toast({ title: 'Password reset email sent', description: account.email });
+        } catch (e) {
+          toast({ title: 'Failed to send reset email', description: e.message, variant: 'destructive' });
+        } finally { setBusy(null); }
+      },
+      clearRobloxVerify: () => updateUser({ roblox_verified: false }, 'Roblox verification cleared'),
+      resetTracking: () => updateUser({ last_ip: null, last_seen: null }, 'IP tracking reset'),
     };
 
     const fn = actions[key];
@@ -466,6 +490,22 @@ function InputForm({ type, values, setValues }) {
           <Input value={values.duration || '24h'} onChange={(e) => set('duration', e.target.value)} className="bg-slate-950/60 border-white/15 text-white" placeholder="24h" />
         </div>
         <p className="text-xs text-slate-500">The user will be unable to send messages in appeal chats until this expires.</p>
+      </div>
+    );
+  }
+
+  if (type === 'tempBan') {
+    return (
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs text-slate-400 mb-1 block">Ban reason</label>
+          <Textarea value={values.reason || ''} onChange={(e) => set('reason', e.target.value)} rows={2} className="bg-slate-950/60 border-white/15 text-white" placeholder="Reason for temporary ban" />
+        </div>
+        <div>
+          <label className="text-xs text-slate-400 mb-1 block">Duration (e.g. 1h, 24h, 7d, 30d)</label>
+          <Input value={values.duration || '24h'} onChange={(e) => set('duration', e.target.value)} className="bg-slate-950/60 border-white/15 text-white" placeholder="24h" />
+        </div>
+        <p className="text-xs text-slate-500">The user will be banned from the portal until this expires. Use a permanent ban for no expiry.</p>
       </div>
     );
   }

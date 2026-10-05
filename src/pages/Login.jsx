@@ -50,9 +50,11 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    const sep = returnTo.includes('?') ? '&' : '?';
+    const googleReturnTo = `${returnTo}${sep}login_method=google`;
     localStorage.setItem('login_method', 'google');
     markJustLoggedIn();
-    base44.auth.loginWithProvider("google", returnTo);
+    base44.auth.loginWithProvider("google", googleReturnTo);
   };
 
   return (

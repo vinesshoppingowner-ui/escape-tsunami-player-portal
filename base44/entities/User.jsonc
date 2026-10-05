@@ -38,6 +38,11 @@
       "type": "string",
       "description": "Email of the staff member who banned this account"
     },
+    "banned_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a temporary ban expires (null for permanent bans)"
+    },
     "google_locked": {
       "type": "boolean",
       "description": "When true, the user cannot log in via Google OAuth",

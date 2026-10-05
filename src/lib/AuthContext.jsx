@@ -122,7 +122,8 @@ export const AuthProvider = ({ children }) => {
       }
       // Enforce portal-level account flags
       const ud = currentUser.data || {};
-      const loginMethod = localStorage.getItem('login_method') || 'unknown';
+      const urlParams = new URLSearchParams(window.location.search);
+      const loginMethod = urlParams.get('login_method') || localStorage.getItem('login_method') || 'unknown';
 
       if (ud.banned === true) {
         await base44.auth.logout();
@@ -138,8 +139,8 @@ export const AuthProvider = ({ children }) => {
         setAuthChecked(true);
         return;
       }
-      // Google lock: only blocks Google OAuth logins, not email/password
-      if (ud.google_locked === true && loginMethod === 'google') {
+      // Google lock: block Google OAuth logins (URL param or localStorage) OR Google-only users (no password set)
+      if (ud.google_locked === true && (loginMethod === 'google' || ud.has_password !== true)) {
         await base44.auth.logout();
         localStorage.removeItem('login_method');
         window.location.href = '/login?google_locked=1';
