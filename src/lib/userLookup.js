@@ -33,3 +33,27 @@ export async function findUserByRobloxUsername(username) {
 
   return null;
 }
+
+// Search for a portal account by email or Roblox username.
+// If the query contains '@', searches by email; otherwise by Roblox username.
+export async function findUserByEmailOrUsername(query) {
+  if (!query) return null;
+  const isEmail = query.includes('@');
+
+  if (isEmail) {
+    // Exact email match (fast path)
+    try {
+      const users = await base44.entities.User.filter({ email: query }, '-created_date', 5);
+      if (users.length > 0) return users[0];
+    } catch {}
+    // Case-insensitive fallback
+    try {
+      const allUsers = await base44.entities.User.list('-created_date', 1000);
+      const lower = query.toLowerCase();
+      return allUsers.find((u) => u.email?.toLowerCase() === lower) || null;
+    } catch {}
+    return null;
+  }
+
+  return findUserByRobloxUsername(query);
+}

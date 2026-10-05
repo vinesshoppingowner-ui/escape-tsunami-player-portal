@@ -23,6 +23,34 @@
       "description": "Whether this user account has been banned from the portal",
       "default": false
     },
+    "banned_reason": {
+      "type": "string",
+      "description": "Reason for the portal ban"
+    },
+    "banned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the portal ban was issued"
+    },
+    "banned_by": {
+      "type": "string",
+      "description": "Email of the staff member who banned this account"
+    },
+    "google_locked": {
+      "type": "boolean",
+      "description": "When true, the user cannot log in via Google OAuth",
+      "default": false
+    },
+    "force_password_reset": {
+      "type": "boolean",
+      "description": "When true, the user must reset their password on next login",
+      "default": false
+    },
+    "appeals_locked": {
+      "type": "boolean",
+      "description": "When true, the user cannot submit new appeals",
+      "default": false
+    },
     "last_ip": {
       "type": "string",
       "description": "The last IP address the user logged in from"
