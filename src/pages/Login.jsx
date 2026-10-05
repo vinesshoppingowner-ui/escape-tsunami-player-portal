@@ -38,7 +38,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      await base44.auth.updateMe({ has_password: true }).catch(() => {});
+      localStorage.setItem('login_method', 'password');
       await saveCredentials(email, password);
       markJustLoggedIn();
       window.location.href = returnTo;
@@ -50,6 +50,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    localStorage.setItem('login_method', 'google');
     markJustLoggedIn();
     base44.auth.loginWithProvider("google", returnTo);
   };

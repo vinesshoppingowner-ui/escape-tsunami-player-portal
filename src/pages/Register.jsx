@@ -47,7 +47,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      await base44.auth.updateMe({ has_password: true }).catch(() => {});
+      localStorage.setItem('login_method', 'password');
       markJustLoggedIn();
       window.location.href = safeReturnTo();
     } catch (err) {
@@ -71,6 +71,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
+    localStorage.setItem('login_method', 'google');
     markJustLoggedIn();
     base44.auth.loginWithProvider("google", safeReturnTo());
   };

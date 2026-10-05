@@ -122,36 +122,36 @@ export const AuthProvider = ({ children }) => {
       }
       // Enforce portal-level account flags
       const ud = currentUser.data || {};
-      const isGoogleOnly = ud.google_locked === true && ud.has_password !== true;
+      const loginMethod = localStorage.getItem('login_method') || 'unknown';
 
       if (ud.banned === true) {
         await base44.auth.logout();
+        localStorage.removeItem('login_method');
         window.location.href = '/login?banned=1';
         return;
       }
       if (ud.suspended === true) {
-        // Suspended users can still log in but see a restricted view
+        localStorage.removeItem('login_method');
         setUser({ ...currentUser, _suspended: true });
         setIsAuthenticated(true);
         setIsLoadingAuth(false);
         setAuthChecked(true);
         return;
       }
-      if (isGoogleOnly) {
+      // Google lock: only blocks Google OAuth logins, not email/password
+      if (ud.google_locked === true && loginMethod === 'google') {
         await base44.auth.logout();
+        localStorage.removeItem('login_method');
         window.location.href = '/login?google_locked=1';
         return;
       }
-      if (ud.force_password_reset === true) {
+      if (ud.force_password_reset === true && loginMethod !== 'google') {
+        localStorage.removeItem('login_method');
         window.location.href = '/reset-password?force=1&token=';
         return;
       }
 
-      // Mark has_password for users who logged in via email/password (not Google-only)
-      if (ud.has_password !== true && !ud.google_locked) {
-        try { await base44.auth.updateMe({ ...ud, has_password: true }); } catch {}
-      }
-
+      localStorage.removeItem('login_method');
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
