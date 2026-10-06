@@ -22,6 +22,10 @@ import StaffPerformanceTab from '@/components/admin/performance/StaffPerformance
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
 import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
 import AdminOverview from '@/components/admin/AdminOverview';
+import MusicTab from '@/components/admin/MusicTab';
+import { Music as MusicIcon } from 'lucide-react';
+
+const MUSIC_EMAILS = ['vinesshoppingowner@gmail.com', 'codm75094@gmail.com'];
 
 const ADMIN_TOOLS = [
   { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -87,6 +91,9 @@ export default function Admin() {
             <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>
             <TabsTrigger value="livechat" className={tabCls}><MessageSquare className="h-3.5 w-3.5" /> Live Chat</TabsTrigger>
+            {user?.email && MUSIC_EMAILS.includes(user.email.toLowerCase()) && (
+              <TabsTrigger value="music" className={tabCls}><MusicIcon className="h-3.5 w-3.5" /> Music</TabsTrigger>
+            )}
             {isAdmin && <AdminMoreMenu items={ADMIN_TOOLS} value={tab} onSelect={setTab} />}
           </TabsList>
 
@@ -94,6 +101,9 @@ export default function Admin() {
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           <TabsContent value="lookup"><UserLookup /></TabsContent>
           <TabsContent value="livechat"><LiveChatTab /></TabsContent>
+          {user?.email && MUSIC_EMAILS.includes(user.email.toLowerCase()) && (
+            <TabsContent value="music"><MusicTab /></TabsContent>
+          )}
           {isAdmin && (
             <>
               <TabsContent value="users"><UsersTab /></TabsContent>
