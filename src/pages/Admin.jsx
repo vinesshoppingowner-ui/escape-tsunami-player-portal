@@ -86,7 +86,7 @@ export default function Admin() {
         {isAdmin && <AdminOverview />}
 
         <Tabs value={tab} onValueChange={setTab} className="mt-8">
-          <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/[0.02] border border-white/[0.06] h-auto rounded-xl">
+          <TabsList className="flex w-full justify-start gap-1 p-1.5 bg-white/[0.02] border border-white/[0.06] h-auto rounded-xl overflow-x-auto flex-nowrap overscroll-x-contain">
             <TabsTrigger value="appeals" className={tabCls}><Gavel className="h-3.5 w-3.5" /> Appeals</TabsTrigger>
             <TabsTrigger value="moderations" className={tabCls}><Shield className="h-3.5 w-3.5" /> Moderations</TabsTrigger>
             <TabsTrigger value="lookup" className={tabCls}><Search className="h-3.5 w-3.5" /> User Lookup</TabsTrigger>

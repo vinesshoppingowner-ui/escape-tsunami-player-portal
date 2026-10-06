@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, Music, Play, Pause, Loader2, AlertCircle, Zap, X } from 'lucide-react';
+import { Search, Music, Play, Pause, Loader2, AlertCircle, Zap, X, Volume2 } from 'lucide-react';
 
 const formatDuration = (ms) => {
   if (!ms) return '';
@@ -52,6 +52,7 @@ export default function MusicTab() {
   const [videoId, setVideoId] = useState(null);
   const [loadingVideo, setLoadingVideo] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [volume, setVolume] = useState(1);
   const searchTimer = useRef(null);
   const audioRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -88,6 +89,7 @@ export default function MusicTab() {
           videoId,
           playerVars: { autoplay: 1, controls: 0, modestbranding: 1 },
           events: {
+            onReady: (e) => { try { e.target.setVolume(volume * 100); } catch {} },
             onStateChange: (e) => setIsPlaying(e.data === 1),
           },
         });
@@ -108,6 +110,27 @@ export default function MusicTab() {
       bassFilterRef.current.gain.value = bassBoost ? 15 : 0;
     }
   }, [bassBoost]);
+
+  // Resume playback when page becomes visible again (mobile background fix)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden || !currentTrack) return;
+      if (audioCtxRef.current?.state === 'suspended') audioCtxRef.current.resume();
+      if (bassBoost && audioRef.current?.paused && isPlaying) {
+        audioRef.current.play().catch(() => {});
+      } else if (!bassBoost && ytPlayerRef.current && isPlaying) {
+        try { if (ytPlayerRef.current.getPlayerState() !== 1) ytPlayerRef.current.playVideo(); } catch {}
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [currentTrack, isPlaying, bassBoost]);
+
+  const handleVolumeChange = (v) => {
+    setVolume(v);
+    if (ytPlayerRef.current && !bassBoost) { try { ytPlayerRef.current.setVolume(v * 100); } catch {} }
+    if (audioRef.current) audioRef.current.volume = v;
+  };
 
   // Media Session API — shows on iPhone Dynamic Island + lock screen
   const setupMediaSession = useCallback((track) => {
@@ -327,41 +350,67 @@ export default function MusicTab() {
 
       {/* Sticky player */}
       {currentTrack && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-white/10 px-4 py-3">
-          <div className="max-w-5xl mx-auto flex items-center gap-3">
-            {currentTrack.albumArt && (
-              <img src={currentTrack.albumArt} alt="" className="h-10 w-10 rounded-md object-cover shrink-0" />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-white truncate">{currentTrack.name}</div>
-              <div className="text-xs text-slate-400 truncate">{currentTrack.artist}</div>
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-white/10">
+          <div className="max-w-5xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3">
+              {currentTrack.albumArt && (
+                <img src={currentTrack.albumArt} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-white truncate">{currentTrack.name}</div>
+                <div className="text-xs text-slate-400 truncate">{currentTrack.artist}</div>
+              </div>
+              {loadingVideo && <Loader2 className="h-4 w-4 text-slate-400 animate-spin shrink-0" />}
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <Volume2 className="h-4 w-4 text-slate-400 shrink-0" />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="w-24 accent-emerald-500"
+                />
+              </div>
+              <button
+                onClick={toggleBassBoost}
+                className={`flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 ${
+                  bassBoost ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                }`}
+                title="Bass Boost (uses 30s preview)"
+              >
+                <Zap className="h-3.5 w-3.5" fill="currentColor" />
+                <span className="hidden sm:inline">Bass</span>
+              </button>
+              <button
+                onClick={togglePlayPause}
+                className="h-9 w-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 hover:bg-emerald-400 transition-colors"
+              >
+                {isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4 ml-0.5" fill="currentColor" />}
+              </button>
+              <button onClick={closePlayer} className="text-slate-400 hover:text-white transition-colors px-2 shrink-0">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            {loadingVideo && <Loader2 className="h-4 w-4 text-slate-400 animate-spin shrink-0" />}
-            <button
-              onClick={toggleBassBoost}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 ${
-                bassBoost ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
-              }`}
-              title="Bass Boost (uses 30s preview)"
-            >
-              <Zap className="h-3.5 w-3.5" fill="currentColor" />
-              Bass
-            </button>
-            <button
-              onClick={togglePlayPause}
-              className="h-9 w-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 hover:bg-emerald-400 transition-colors"
-            >
-              {isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4 ml-0.5" fill="currentColor" />}
-            </button>
-            <button onClick={closePlayer} className="text-slate-400 hover:text-white transition-colors px-2">
-              <X className="h-4 w-4" />
-            </button>
+            <div className="sm:hidden mt-2 flex items-center gap-2">
+              <Volume2 className="h-4 w-4 text-slate-400 shrink-0" />
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                className="flex-1 accent-emerald-500"
+              />
+            </div>
+            {bassBoost && (
+              <p className="mt-1 text-[10px] text-amber-400/70 text-center">
+                Bass Boost uses 30-second previews
+              </p>
+            )}
           </div>
-          {bassBoost && (
-            <p className="mt-1 max-w-5xl mx-auto text-[10px] text-amber-400/70 text-center">
-              Bass Boost uses 30-second previews
-            </p>
-          )}
         </div>
       )}
     </div>
