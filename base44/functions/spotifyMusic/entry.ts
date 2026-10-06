@@ -1,20 +1,24 @@
+import { secrets } from "base44:runtime";
+
 export default async function spotifyMusic(req) {
-  const { action, query } = req.body || {};
-
-  const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-  const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
-
-  if (!clientId || !clientSecret) {
-    return { error: "Spotify credentials not configured. Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in the Secrets page." };
-  }
-
-  // Determine which token flow to use
-  const useUserToken = action === "recent" && refreshToken;
-
-  // Get access token
-  let accessToken;
   try {
+    const body = await req.json().catch(() => ({}));
+    const { action, query } = body;
+
+    const clientId = secrets.get("SPOTIFY_CLIENT_ID");
+    const clientSecret = secrets.get("SPOTIFY_CLIENT_SECRET");
+    const refreshToken = secrets.get("SPOTIFY_REFRESH_TOKEN");
+
+    if (!clientId || !clientSecret) {
+      return Response.json({
+        error: "Spotify credentials not configured. Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in the Secrets page.",
+      });
+    }
+
+    const useUserToken = action === "recent" && refreshToken;
+
+    // Get access token
+    let accessToken;
     const tokenBody = useUserToken
       ? {
           grant_type: "refresh_token",
@@ -32,34 +36,31 @@ export default async function spotifyMusic(req) {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams(tokenBody).toString(),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();
-      return { error: `Spotify token error: ${tokenRes.status} — ${errText}` };
+      return Response.json({ error: `Spotify token error: ${tokenRes.status} — ${errText}` });
     }
 
     const tokenData = await tokenRes.json();
     accessToken = tokenData.access_token;
-  } catch (e) {
-    return { error: `Failed to get Spotify access token: ${e.message}` };
-  }
 
-  // Search for tracks
-  if (action === "search") {
-    if (!query || query.trim().length < 1) {
-      return { error: "Search query is required" };
-    }
-    try {
+    // Search for tracks
+    if (action === "search") {
+      if (!query || query.trim().length < 1) {
+        return Response.json({ error: "Search query is required" });
+      }
       const searchRes = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=24`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(10000) }
       );
       if (!searchRes.ok) {
-        return { error: `Spotify search failed: ${searchRes.status}` };
+        return Response.json({ error: `Spotify search failed: ${searchRes.status}` });
       }
       const searchData = await searchRes.json();
-      return {
+      return Response.json({
         tracks:
           searchData.tracks?.items?.map((t) => ({
             id: t.id,
@@ -71,28 +72,26 @@ export default async function spotifyMusic(req) {
             uri: t.uri,
             explicit: t.explicit,
           })) || [],
-      };
-    } catch (e) {
-      return { error: `Search error: ${e.message}` };
+      });
     }
-  }
 
-  // Recently played (requires user token)
-  if (action === "recent") {
-    if (!refreshToken) {
-      return { error: "Recently played requires SPOTIFY_REFRESH_TOKEN. Set it in the Secrets page." };
-    }
-    try {
+    // Recently played (requires user token)
+    if (action === "recent") {
+      if (!refreshToken) {
+        return Response.json({
+          error: "Recently played requires SPOTIFY_REFRESH_TOKEN. Set it in the Secrets page.",
+        });
+      }
       const recentRes = await fetch(
         "https://api.spotify.com/v1/me/player/recently-played?limit=24",
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(10000) }
       );
       if (!recentRes.ok) {
         const errText = await recentRes.text();
-        return { error: `Recently played failed: ${recentRes.status} — ${errText}` };
+        return Response.json({ error: `Recently played failed: ${recentRes.status} — ${errText}` });
       }
       const recentData = await recentRes.json();
-      return {
+      return Response.json({
         tracks:
           recentData.items?.map((item) => ({
             id: item.track.id,
@@ -105,11 +104,11 @@ export default async function spotifyMusic(req) {
             uri: item.track.uri,
             explicit: item.track.explicit,
           })) || [],
-      };
-    } catch (e) {
-      return { error: `Recently played error: ${e.message}` };
+      });
     }
-  }
 
-  return { error: "Invalid action. Use 'search' or 'recent'." };
+    return Response.json({ error: "Invalid action. Use 'search' or 'recent'." });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 }
