@@ -78,10 +78,11 @@ export default function MusicTab() {
     setLoadingRecent(true);
     try {
       const res = await base44.functions.invoke('spotifyMusic', { action: 'recent' });
-      if (res.error) {
-        setError(res.error);
+      const data = res.data || res;
+      if (data.error) {
+        setError(data.error);
       } else {
-        setRecentTracks(res.tracks || []);
+        setRecentTracks(data.tracks || []);
         setError('');
       }
     } catch (e) {
@@ -104,11 +105,12 @@ export default function MusicTab() {
       setError('');
       try {
         const res = await base44.functions.invoke('spotifyMusic', { action: 'search', query: value });
-        if (res.error) {
-          setError(res.error);
+        const data = res.data || res;
+        if (data.error) {
+          setError(data.error);
           setSearchResults([]);
         } else {
-          setSearchResults(res.tracks || []);
+          setSearchResults(data.tracks || []);
         }
       } catch (e) {
         setError(e.message || 'Search failed');
