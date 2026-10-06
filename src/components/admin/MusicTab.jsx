@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, Music, Clock, Play, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Music, Clock, Play, Loader2, AlertCircle, Pause } from 'lucide-react';
 
 const formatDuration = (ms) => {
   const m = Math.floor(ms / 60000);
@@ -121,7 +121,11 @@ export default function MusicTab() {
   }, []);
 
   const playTrack = (track) => {
-    setCurrentTrack(track);
+    if (currentTrack?.id === track.id) {
+      setCurrentTrack(null);
+    } else {
+      setCurrentTrack(track);
+    }
   };
 
   const showingSearch = searchQuery.trim().length > 0;
@@ -213,7 +217,7 @@ export default function MusicTab() {
         </div>
       )}
 
-      {/* Sticky embed player */}
+      {/* Sticky preview player */}
       {currentTrack && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-white/10 px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-center gap-3">
@@ -225,6 +229,12 @@ export default function MusicTab() {
               <div className="text-xs text-slate-400 truncate">{currentTrack.artist}</div>
             </div>
             <button
+              onClick={() => playTrack(currentTrack)}
+              className="h-9 w-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 hover:bg-emerald-400 transition-colors"
+            >
+              <Pause className="h-4 w-4" fill="currentColor" />
+            </button>
+            <button
               onClick={() => setCurrentTrack(null)}
               className="text-xs text-slate-400 hover:text-white transition-colors px-2"
             >
@@ -232,15 +242,11 @@ export default function MusicTab() {
             </button>
           </div>
           <div className="mt-2 max-w-5xl mx-auto">
-            <iframe
-              src={`https://open.spotify.com/embed/track/${currentTrack.id}`}
-              width="100%"
-              height="80"
-              frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              title="Spotify Player"
-            />
+            {currentTrack.previewUrl ? (
+              <audio src={currentTrack.previewUrl} controls autoPlay className="w-full h-10" />
+            ) : (
+              <p className="text-xs text-slate-500 text-center">No preview available for this track.</p>
+            )}
           </div>
         </div>
       )}
