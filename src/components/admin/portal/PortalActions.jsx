@@ -25,6 +25,7 @@ const CATEGORIES = [
     title: 'Account Control',
     actions: [
       { key: 'ban', icon: Ban, title: 'Ban from Portal', desc: 'Block all portal access', variant: 'danger', needsInput: 'ban' },
+      { key: 'quickBan', icon: Ban, title: 'Quick Ban', desc: 'Instant ban with preset reason', variant: 'danger', needsInput: 'quickBan' },
       { key: 'unban', icon: ShieldCheck, title: 'Unban from Portal', desc: 'Restore portal access', variant: 'success' },
       { key: 'lockGoogle', icon: Lock, title: 'Lock Google Login', desc: 'Prevent Google OAuth login', variant: 'warning' },
       { key: 'unlockGoogle', icon: Unlock, title: 'Unlock Google Login', desc: 'Restore Google OAuth login', variant: 'success' },
@@ -190,6 +191,7 @@ export default function PortalActions({ account, related, currentUser, onReload 
 
     const actions = {
       ban: () => updateUser({ banned: true, banned_reason: input?.reason || 'Banned via portal manager', banned_at: new Date().toISOString(), banned_by: staffName }, 'Portal ban'),
+      quickBan: () => updateUser({ banned: true, banned_reason: input?.reason || 'Violation of website rules', banned_at: new Date().toISOString(), banned_by: staffName }, 'Quick ban'),
       unban: () => updateUser({ banned: false, banned_reason: null }, 'Portal unban'),
       lockGoogle: () => updateUser({ google_locked: true }, 'Google login locked'),
       unlockGoogle: () => updateUser({ google_locked: false }, 'Google login unlocked'),
@@ -458,6 +460,35 @@ export default function PortalActions({ account, related, currentUser, onReload 
 function InputForm({ type, values, setValues }) {
   const set = (k, v) => setValues((prev) => ({ ...prev, [k]: v }));
   if (!type) return null;
+
+  if (type === 'quickBan') {
+    const presets = [
+      'Violation of website rules',
+      'Ban evasion',
+      'Harassment of staff',
+      'Inappropriate behavior',
+      'Spamming',
+      'Alt account abuse',
+    ];
+    return (
+      <div className="space-y-3">
+        <p className="text-xs text-slate-400">Pick a preset reason or type a custom one:</p>
+        <div className="flex flex-wrap gap-1.5">
+          {presets.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => set('reason', p)}
+              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${values.reason === p ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+        <Textarea value={values.reason || ''} onChange={(e) => set('reason', e.target.value)} rows={2} className="bg-slate-950/60 border-white/15 text-white" placeholder="Custom reason…" />
+      </div>
+    );
+  }
 
   if (type === 'ban' || type === 'ip' || type === 'note' || type === 'watchlist' || type === 'suspend' || type === 'privateNote') {
     const label = { ban: 'Ban reason', ip: 'IP ban reason', note: 'Staff note', watchlist: 'Watchlist reason', suspend: 'Suspension reason', privateNote: 'Private admin note' }[type];
