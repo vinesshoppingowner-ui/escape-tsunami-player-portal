@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
+import MicrosoftIcon from "@/components/MicrosoftIcon";
+import AppleIcon from "@/components/AppleIcon";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { markJustLoggedIn } from "@/lib/userPrefs";
@@ -57,6 +59,22 @@ export default function Login() {
     base44.auth.loginWithProvider("google", googleReturnTo);
   };
 
+  const handleMicrosoft = () => {
+    const sep = returnTo.includes('?') ? '&' : '?';
+    const microsoftReturnTo = `${returnTo}${sep}login_method=microsoft`;
+    localStorage.setItem('login_method', 'microsoft');
+    markJustLoggedIn();
+    base44.auth.loginWithProvider("microsoft", microsoftReturnTo);
+  };
+
+  const handleApple = () => {
+    const sep = returnTo.includes('?') ? '&' : '?';
+    const appleReturnTo = `${returnTo}${sep}login_method=apple`;
+    localStorage.setItem('login_method', 'apple');
+    markJustLoggedIn();
+    base44.auth.loginWithProvider("apple", appleReturnTo);
+  };
+
   return (
     <AuthLayout
       icon={LogIn}
@@ -82,6 +100,25 @@ export default function Login() {
         <GoogleIcon className="w-5 h-5" />
         Continue with Google
       </button>
+
+      <div className="grid grid-cols-2 gap-2.5 mt-2.5">
+        <button
+          type="button"
+          onClick={handleMicrosoft}
+          className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium flex items-center justify-center gap-2 hover:bg-neutral-100 transition-colors"
+        >
+          <MicrosoftIcon className="w-4 h-4" />
+          Microsoft
+        </button>
+        <button
+          type="button"
+          onClick={handleApple}
+          className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium flex items-center justify-center gap-2 hover:bg-neutral-100 transition-colors"
+        >
+          <AppleIcon className="w-4 h-4" />
+          Apple
+        </button>
+      </div>
 
       <div className="flex items-center gap-3 my-5">
         <div className="h-px flex-1 bg-white/10" />
