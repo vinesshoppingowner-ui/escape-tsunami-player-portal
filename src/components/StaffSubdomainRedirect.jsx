@@ -7,8 +7,16 @@ export default function StaffSubdomainRedirect() {
 
   useEffect(() => {
     const host = window.location.hostname;
-    if (host.startsWith('staff.') && window.location.pathname === '/') {
+    const path = window.location.pathname;
+    // Staff subdomain root → admin console
+    if (host.startsWith('staff.') && path === '/') {
       navigate('/admin', { replace: true });
+      return;
+    }
+    // Main domain /admin → bounce to staff subdomain so the main domain stays clean
+    if (!host.startsWith('staff.') && path === '/admin') {
+      const staffUrl = `https://staff.${host.replace(/^www\./, '')}${window.location.search}`;
+      window.location.href = staffUrl;
     }
   }, []);
 
