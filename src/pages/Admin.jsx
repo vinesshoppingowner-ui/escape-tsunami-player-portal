@@ -3,8 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Eye, ScanSearch, Trophy, Megaphone, Crown, UserRound, FileDown, Send } from 'lucide-react';
-import DiscordMessageTab from '@/components/admin/discord/DiscordMessageTab';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Trophy, Megaphone, Crown, UserRound, FileDown } from 'lucide-react';
 import PlayersTab from '@/components/admin/players/PlayersTab';
 import ReportsTab from '@/components/admin/reports/ReportsTab';
 import LiveChatTab from '@/components/admin/LiveChatTab';
@@ -16,8 +15,6 @@ import UserLookup from '@/components/admin/UserLookup';
 import WebsiteBansTab from '@/components/admin/WebsiteBansTab';
 import DashboardTab from '@/components/admin/DashboardTab';
 import ApplicationsTab from '@/components/admin/ApplicationsTab';
-import WatchlistTab from '@/components/admin/watchlist/WatchlistTab';
-import BanEvasionTab from '@/components/admin/evasion/BanEvasionTab';
 import StaffPerformanceTab from '@/components/admin/performance/StaffPerformanceTab';
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
 import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
@@ -32,10 +29,7 @@ const ADMIN_TOOLS = [
   { value: 'users', label: 'Users', icon: Users },
   { value: 'performance', label: 'Staff Performance', icon: Trophy },
   { value: 'logs', label: 'Staff Logs', icon: ScrollText },
-  { value: 'watchlist', label: 'Watchlist', icon: Eye },
-  { value: 'evasion', label: 'Ban Evasion', icon: ScanSearch },
   { value: 'message', label: 'Message Players', icon: Megaphone },
-  { value: 'discord', label: 'Discord Messages', icon: Send },
   { value: 'bans', label: 'Website Bans', icon: Ban },
   { value: 'applications', label: 'Applications', icon: FileText },
   { value: 'players', label: 'Player Profiles', icon: UserRound },
@@ -111,11 +105,8 @@ export default function Admin() {
               <TabsContent value="logs"><StaffLogsTab /></TabsContent>
               <TabsContent value="applications"><ApplicationsTab /></TabsContent>
               <TabsContent value="dashboard"><DashboardTab /></TabsContent>
-              <TabsContent value="watchlist"><WatchlistTab /></TabsContent>
-              <TabsContent value="evasion"><BanEvasionTab /></TabsContent>
               <TabsContent value="performance"><StaffPerformanceTab /></TabsContent>
               <TabsContent value="message"><MassMessageTab /></TabsContent>
-              <TabsContent value="discord"><DiscordMessageTab /></TabsContent>
               <TabsContent value="players"><PlayersTab /></TabsContent>
               <TabsContent value="reports"><ReportsTab /></TabsContent>
             </>
