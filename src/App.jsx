@@ -33,6 +33,7 @@ import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
 import AccentApplier from '@/components/AccentApplier';
 import LandingRedirect from '@/components/LandingRedirect';
+import StaffSubdomainRedirect from '@/components/StaffSubdomainRedirect';
 import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
 import ClickSound from '@/components/ClickSound';
@@ -88,6 +89,7 @@ const AuthenticatedApp = () => {
         <AccentApplier />
         <BackgroundEffectLayer />
         {!isLoading && <LandingRedirect />}
+        <StaffSubdomainRedirect />
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         <ClickSound />
