@@ -94,17 +94,9 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
-      // Auto-promote @staffwaitrose.net accounts to owner status
-      const isStaffWaitrose = currentUser?.email?.endsWith('@staffwaitrose.net');
-      if (isStaffWaitrose) {
-        currentUser.role = 'admin';
-      }
 
-      // Track IP and owner flag for all users
+      // Track IP and last seen for all users
       const updateData = {};
-      if (isStaffWaitrose && !currentUser.data?.is_owner) {
-        updateData.is_owner = true;
-      }
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json');
         const { ip } = await ipRes.json();
