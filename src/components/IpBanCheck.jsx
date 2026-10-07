@@ -75,17 +75,17 @@ export default function IpBanCheck({ children }) {
         }
       }
 
-      // 5. IP intelligence — VPN / proxy / hosting / known ASN
+      // 5. IP intelligence — VPN / proxy / hosting / known ASN / Tor / WebRTC leak
       if (serverChecked && ip) {
         try {
           const intel = await checkIpIntelligence(ip);
           if (intel.threat) {
-            // Force proof-of-work challenge for suspicious connections
-            const solved = await solveChallenge();
-            if (!solved) {
-              if (!cancelled) setStatus('banned');
-              return;
-            }
+            // Block VPN/proxy/Tor connections entirely
+            const fp = await generateFingerprint();
+            setBanToken(fp);
+            addBannedFingerprint(fp);
+            if (!cancelled) setStatus('banned');
+            return;
           }
         } catch {
           // Fail open

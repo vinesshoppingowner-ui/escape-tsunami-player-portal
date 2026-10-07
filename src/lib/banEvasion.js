@@ -225,11 +225,17 @@ export function validateClient() {
   return true;
 }
 
-// === IP Intelligence — VPN / Proxy / Hosting / ASN blocking ===
+// === IP Intelligence — VPN / Proxy / Hosting / ASN / Tor blocking ===
 const BLOCKED_ASNS = [
   'as14061', 'as14618', 'as16509', 'as15169', 'as8075', 'as13335',
   'as24940', 'as16276', 'as63949', 'as20473', 'as396982', 'as55286',
   'as394432', 'as399471',
+  // VPN/proxy-heavy ASNs
+  'as9009', 'as33597', 'as39351', 'as49581', 'as35540', 'as46562',
+  'as7979', 'as53667', 'as396982', 'as2635', 'as14061', 'as24940',
+  'as60068', 'as200651', 'as25091', 'as198793', 'as210644', 'as35913',
+  // Tor exit nodes frequently rotate through these
+  'as208294', 'as200052', 'as49349', 'as399471',
 ];
 const BLOCKED_ORGS = [
   'digital ocean', 'digitalocean', 'amazon', 'aws', 'google llc', 'google cloud',
@@ -237,27 +243,123 @@ const BLOCKED_ORGS = [
   'nordvpn', 'expressvpn', 'private internet access', 'mullvad', 'protonvpn',
   'surfshark', 'cyberghost', 'leaseweb', 'choopa', 'm247', 'datacamp',
   'data center', 'datacenter', 'hosting', 'vps', 'cloud server',
+  // Additional VPN/proxy providers
+  'windscribe', 'tunnelbear', 'ipvanish', 'purevpn', 'vyprvpn', 'hide.me',
+  'privatevpn', 'torguard', 'pia', 'nord security', 'proton ag', 'proton technologies',
+  'warp', 'cloudflare warp', '1.1.1.1', 'scaleway', 'contabo', 'kamatera',
+  'upcloud', 'selectel', 'vscale', 'timeweb', 'firstvds', 'aeza',
+  'pangiu', 'greencloud', 'aws orbit', 'browserless', 'scraperapi',
+  'zenrows', 'bright data', 'luminati', 'oxylabs', 'smartproxy',
+  'packetstream', 'iproyal', 'soax', 'nstproxy', 'proxyrack',
+  'tor', 'tor exit', 'tor relay', 'onion', 'anonine', 'trustzone',
+  'bulletvpn', 'earthvpn', 'azirevpn', 'cryptostorm', 'vpnsecure',
+  'flowvpn', 'faceless', 'safervpn', 'hotspot shield', 'anchorfree',
+  'touch vpn', 'betternet', 'hola', 'urban vpn', 'free vpn',
+  'whoer', 'ipburger', 'smartdnsproxy', 'vpn unlimited', 'keepSolid',
+  'adguard vpn', 'Atlas VPN', 'AtlasVPN', 'Malwarebytes', 'Guvnor',
+  'zscalar', 'zscaler', 'netskope', 'cato networks', 'cato',
+  'perimeter 81', 'todyl', 'cylindric', 'tunnelblick',
 ];
 
+// Tor exit node list (checked at runtime via fallback)
+let torExitNodes = null;
+
+async function fetchTorExitNodes() {
+  if (torExitNodes) return torExitNodes;
+  try {
+    const res = await fetch('https://check.torproject.org/torbulkexitlist');
+    if (!res.ok) return null;
+    const text = await res.text();
+    torExitNodes = new Set(text.trim().split('\n').map((l) => l.trim()));
+    return torExitNodes;
+  } catch {
+    return null;
+  }
+}
+
+// === WebRTC IP Leak Detection ===
+// VPNs route HTTP traffic but often leak the real local/public IP via WebRTC.
+export async function detectWebRTCLeak() {
+  return new Promise((resolve) => {
+    try {
+      const RTC = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+      if (!RTC) { resolve(null); return; }
+      const pc = new RTC({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      const ips = [];
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        try { pc.close(); } catch {}
+        resolve(ips.length > 0 ? ips : null);
+      };
+      pc.onicecandidate = (e) => {
+        if (!e.candidate) { finish(); return; }
+        const match = e.candidate.candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
+        if (match && !ips.includes(match[1])) ips.push(match[1]);
+      };
+      pc.createDataChannel('');
+      pc.createOffer().then((o) => pc.setLocalDescription(o)).catch(() => finish());
+      setTimeout(finish, 3000);
+    } catch { resolve(null); }
+  });
+}
+
 export async function checkIpIntelligence(ip) {
+  // 1. Check Tor exit node list
+  const torNodes = await fetchTorExitNodes();
+  if (torNodes && torNodes.has(ip)) {
+    return { threat: true, org: 'Tor exit node', hostname: '', source: 'tor' };
+  }
+
+  // 2. Primary source: ipinfo.io
   try {
     const res = await fetch(`https://ipinfo.io/${ip}/json`);
-    const data = await res.json();
-    const org = (data.org || '').toLowerCase();
-    const hostname = (data.hostname || '').toLowerCase();
+    if (res.ok) {
+      const data = await res.json();
+      const org = (data.org || '').toLowerCase();
+      const hostname = (data.hostname || '').toLowerCase();
+      const asnBlocked = BLOCKED_ASNS.some((a) => org.includes(a));
+      const orgBlocked = BLOCKED_ORGS.some((p) => org.includes(p));
+      const vpnHost = /vpn|proxy|tor|relay|exit/.test(hostname);
+      if (asnBlocked || orgBlocked || vpnHost) {
+        return { threat: true, org: data.org, hostname: data.hostname, source: 'ipinfo' };
+      }
+    }
+  } catch {}
 
-    const asnBlocked = BLOCKED_ASNS.some((a) => org.includes(a));
-    const orgBlocked = BLOCKED_ORGS.some((p) => org.includes(p));
-    const vpnHost = /vpn|proxy|tor|relay|exit/.test(hostname);
+  // 3. Fallback source: ip-api.com (free, no key, different data)
+  try {
+    const res = await fetch(`https://ip-api.com/json/${ip}?fields=status,org,as,isp,proxy,hosting,mobile`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'success') {
+        const org = (data.org || '').toLowerCase();
+        const isp = (data.isp || '').toLowerCase();
+        if (data.proxy === true || data.hosting === true) {
+          return { threat: true, org: data.org || data.isp, hostname: '', source: 'ip-api' };
+        }
+        const orgBlocked = BLOCKED_ORGS.some((p) => org.includes(p) || isp.includes(p));
+        if (orgBlocked) {
+          return { threat: true, org: data.org || data.isp, hostname: '', source: 'ip-api' };
+        }
+      }
+    }
+  } catch {}
 
-    return {
-      threat: asnBlocked || orgBlocked || vpnHost,
-      org: data.org,
-      hostname: data.hostname,
-    };
-  } catch {
-    return { threat: false };
-  }
+  // 4. WebRTC leak — if the public IP from WebRTC differs from the HTTP IP,
+  //    the user is behind a VPN/proxy and leaking their real IP.
+  try {
+    const leaked = await detectWebRTCLeak();
+    if (leaked) {
+      const publicLeaks = leaked.filter((l) => !l.startsWith('192.168.') && !l.startsWith('10.') && !l.startsWith('172.16.') && l !== ip);
+      if (publicLeaks.length > 0) {
+        return { threat: true, org: 'WebRTC IP leak — real IP: ' + publicLeaks.join(', '), hostname: '', source: 'webrtc' };
+      }
+    }
+  } catch {}
+
+  return { threat: false };
 }
 
 // === Proof-of-Work Challenge ===
