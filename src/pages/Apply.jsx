@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import SiteNav from '@/components/SiteNav';
 import { Button } from '@/components/ui/button';
 import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -135,8 +134,7 @@ export default function Apply() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
-        <SiteNav />
-        <div className="flex items-center justify-center pt-32 text-slate-400"><Loader2 className="h-6 w-6 animate-spin text-cyan-400 mr-2" /> Loading application…</div>
+        <div className="flex items-center justify-center pt-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin text-cyan-400 mr-2" /> Loading application…</div>
       </div>
     );
   }
@@ -176,8 +174,7 @@ export default function Apply() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <SiteNav />
-      <main className="max-w-2xl mx-auto px-5 pt-28 pb-24">
+      <main className="max-w-2xl mx-auto px-5 pt-16 pb-24">
         <div className="flex items-center justify-between mb-4">
           <Link to="/applications" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> All applications</Link>
           <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>

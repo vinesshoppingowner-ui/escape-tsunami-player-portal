@@ -6,7 +6,8 @@ export default function StaffSubdomainRedirect() {
     const host = window.location.hostname;
     if (host.startsWith('staff.')) {
       const mainHost = host.replace(/^staff\./, '');
-      window.location.href = `https://${mainHost}${window.location.pathname}${window.location.search}`;
+      const path = window.location.pathname === '/' ? '/admin' : window.location.pathname;
+      window.location.href = `https://${mainHost}${path}${window.location.search}`;
     }
   }, []);
 
