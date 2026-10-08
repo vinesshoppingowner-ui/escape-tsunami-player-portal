@@ -11,14 +11,8 @@ import { Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Portal from './pages/Portal';
 import MyAppeals from './pages/MyAppeals';
-import Admin from './pages/Admin';
-import Analytics from './pages/Analytics';
-import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
 import Apply from './pages/Apply';
-import ModerationPopOut from './pages/ModerationPopOut';
-import KnowledgeBase from './pages/KnowledgeBase';
-import PlayerProfile from './pages/PlayerProfile';
 import RobloxCallback from './pages/RobloxCallback';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -34,7 +28,6 @@ import IpBanCheck from '@/components/IpBanCheck';
 import MaintenanceGuard from '@/components/site/MaintenanceGuard';
 import AccentApplier from '@/components/AccentApplier';
 import LandingRedirect from '@/components/LandingRedirect';
-import StaffSubdomainRedirect from '@/components/StaffSubdomainRedirect';
 import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
 import ClickSound from '@/components/ClickSound';
@@ -71,13 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/apply/:id" element={<Apply />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppeals />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
-          <Route path="/moderation-popout" element={<ModerationPopOut />} />
-          <Route path="/knowledge-base" element={<KnowledgeBase />} />
-          <Route path="/admin/player/:username" element={<PlayerProfile />} />
           <Route path="/roblox-callback" element={<RobloxCallback />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
@@ -91,7 +78,6 @@ const AuthenticatedApp = () => {
         <AccentApplier />
         <BackgroundEffectLayer />
         {!isLoading && <LandingRedirect />}
-        <StaffSubdomainRedirect />
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         <ClickSound />

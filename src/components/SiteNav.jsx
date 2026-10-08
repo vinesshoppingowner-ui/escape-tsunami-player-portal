@@ -1,12 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown, BookOpen } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, AlertTriangle, Megaphone, FileText, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { isOwner } from '@/lib/isOwner';
 import { useDesktopApp } from '@/hooks/useDesktopApp';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { useUserPrefs } from '@/lib/userPrefs';
@@ -22,28 +21,10 @@ export default function SiteNav() {
   const navHidden = useAutoHideNav(prefs.auto_hide_nav);
   const isDesktopApp = useDesktopApp();
   const isDesktopLayout = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
-  const [hasNewActivity, setHasNewActivity] = useState(false);
   const [siteSettings, setSiteSettings] = useState(null);
   const [topAnnouncement, setTopAnnouncement] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
-
-  useEffect(() => {
-    if (!isOwner(user)) return;
-    (async () => {
-      try {
-        const [latestMod, latestAppeal] = await Promise.all([
-          base44.entities.Moderation.list('-created_date', 1),
-          base44.entities.Appeal.list('-created_date', 1),
-        ]);
-        const lastVisited = localStorage.getItem('analytics_last_visited');
-        const lastVisitedTime = lastVisited ? new Date(lastVisited).getTime() : 0;
-        const modTime = latestMod?.[0]?.created_date ? new Date(latestMod[0].created_date).getTime() : 0;
-        const appealTime = latestAppeal?.[0]?.created_date ? new Date(latestAppeal[0].created_date).getTime() : 0;
-        setHasNewActivity(modTime > lastVisitedTime || appealTime > lastVisitedTime);
-      } catch {}
-    })();
-  }, [user, location.pathname]);
 
   useEffect(() => {
     (async () => {
@@ -70,20 +51,12 @@ export default function SiteNav() {
   ];
   const dropdownLinks = [
     { label: 'Applications', to: '/applications', icon: FileText },
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Knowledge Base', to: '/knowledge-base', icon: BookOpen, showNew: true }] : []),
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
-    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
-    ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
   const mobileLinks = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Knowledge Base', to: '/knowledge-base', icon: BookOpen, showNew: true }] : []),
-    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
-    ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
-    ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
   ];
 
   const BANNER_COLORS = {
