@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, ShieldCheck, BarChart3, AlertTriangle, Megaphone, LayoutDashboard, FileText, ChevronDown, BookOpen } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,7 @@ export default function SiteNav() {
   ];
   const dropdownLinks = [
     { label: 'Applications', to: '/applications', icon: FileText },
+    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Knowledge Base', to: '/knowledge-base', icon: BookOpen, showNew: true }] : []),
     ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
@@ -79,6 +80,7 @@ export default function SiteNav() {
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
+    ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Knowledge Base', to: '/knowledge-base', icon: BookOpen, showNew: true }] : []),
     ...((isOwner(user) || user?.role === 'staff' || user?.role === 'admin') ? [{ label: 'Staff', to: '/admin', icon: ShieldCheck }] : []),
     ...(isOwner(user) ? [{ label: 'Analytics', to: '/analytics', icon: BarChart3, showDot: hasNewActivity }] : []),
     ...(isOwner(user) ? [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }] : []),
@@ -170,6 +172,9 @@ export default function SiteNav() {
                     >
                       {l.icon && <l.icon className="h-4 w-4" />}
                       {l.label}
+                      {l.showNew && (
+                        <span className="ml-auto px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-bold uppercase tracking-wider leading-none border border-cyan-500/30">New</span>
+                      )}
                       {l.showDot && (
                         <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
                       )}
@@ -218,6 +223,9 @@ export default function SiteNav() {
               >
                 {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
                 {l.label}
+                {l.showNew && (
+                  <span className="ml-auto px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-bold uppercase tracking-wider leading-none border border-cyan-500/30">New</span>
+                )}
                 {l.showDot && (
                   <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
                 )}

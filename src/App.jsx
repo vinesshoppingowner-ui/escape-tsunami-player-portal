@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
 import Apply from './pages/Apply';
 import ModerationPopOut from './pages/ModerationPopOut';
+import KnowledgeBase from './pages/KnowledgeBase';
 import PlayerProfile from './pages/PlayerProfile';
 import RobloxCallback from './pages/RobloxCallback';
 import Login from '@/pages/Login';
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/moderation-popout" element={<ModerationPopOut />} />
+          <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/admin/player/:username" element={<PlayerProfile />} />
           <Route path="/roblox-callback" element={<RobloxCallback />} />
         </Route>
