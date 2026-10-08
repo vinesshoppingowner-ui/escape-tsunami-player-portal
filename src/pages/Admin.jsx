@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Trophy, Megaphone, Crown, UserRound, FileDown } from 'lucide-react';
+import { ShieldAlert, Gavel, Shield, Users, Search, Ban, ScrollText, LayoutDashboard, FileText, MessageSquare, Trophy, Megaphone, Crown, UserRound, FileDown, BookOpen } from 'lucide-react';
 import PlayersTab from '@/components/admin/players/PlayersTab';
 import ReportsTab from '@/components/admin/reports/ReportsTab';
 import LiveChatTab from '@/components/admin/LiveChatTab';
@@ -18,6 +18,7 @@ import ApplicationsTab from '@/components/admin/ApplicationsTab';
 import StaffPerformanceTab from '@/components/admin/performance/StaffPerformanceTab';
 import MassMessageTab from '@/components/admin/messaging/MassMessageTab';
 import AdminMoreMenu from '@/components/admin/AdminMoreMenu';
+import KnowledgeBaseTab from '@/components/admin/KnowledgeBaseTab';
 import AdminOverview from '@/components/admin/AdminOverview';
 import MusicTab from '@/components/admin/MusicTab';
 import { Music as MusicIcon } from 'lucide-react';
@@ -34,6 +35,10 @@ const ADMIN_TOOLS = [
   { value: 'applications', label: 'Applications', icon: FileText },
   { value: 'players', label: 'Player Profiles', icon: UserRound },
   { value: 'reports', label: 'Reports & Export', icon: FileDown },
+];
+
+const SHARED_TOOLS = [
+  { value: 'kb', label: 'Knowledge Base', icon: BookOpen },
 ];
 
 const tabCls = 'shrink-0 gap-1.5 px-3 py-2 text-sm text-slate-400 data-[state=active]:bg-white/[0.06] data-[state=active]:text-white rounded-lg transition-colors';
@@ -88,9 +93,15 @@ export default function Admin() {
             {user?.email && MUSIC_EMAILS.includes(user.email.toLowerCase()) && (
               <TabsTrigger value="music" className={tabCls}><MusicIcon className="h-3.5 w-3.5" /> Music</TabsTrigger>
             )}
-            {isAdmin && <AdminMoreMenu items={ADMIN_TOOLS} value={tab} onSelect={setTab} />}
+            <AdminMoreMenu
+              items={[...SHARED_TOOLS, ...(isAdmin ? ADMIN_TOOLS : [])]}
+              value={tab}
+              onSelect={setTab}
+              showNewBadge
+            />
           </TabsList>
 
+          <TabsContent value="kb"><KnowledgeBaseTab /></TabsContent>
           <TabsContent value="appeals"><AppealsTab /></TabsContent>
           <TabsContent value="moderations"><ModerationsTab /></TabsContent>
           <TabsContent value="lookup"><UserLookup /></TabsContent>

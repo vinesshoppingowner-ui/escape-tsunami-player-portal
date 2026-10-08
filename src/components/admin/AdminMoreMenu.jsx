@@ -1,7 +1,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ChevronDown, MoreHorizontal } from 'lucide-react';
 
-export default function AdminMoreMenu({ items, value, onSelect }) {
+export default function AdminMoreMenu({ items, value, onSelect, showNewBadge }) {
   if (!items.length) return null;
   const activeItem = items.find((i) => i.value === value);
   const ActiveIcon = activeItem?.icon;
@@ -19,6 +19,9 @@ export default function AdminMoreMenu({ items, value, onSelect }) {
         >
           {ActiveIcon ? <ActiveIcon className="h-3.5 w-3.5" /> : <MoreHorizontal className="h-3.5 w-3.5" />}
           {activeItem ? activeItem.label : 'More'}
+          {showNewBadge && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-bold uppercase tracking-wider leading-none border border-cyan-500/30">New</span>
+          )}
           <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-data-[state=open]:rotate-180" />
         </DropdownMenuTrigger>
         <DropdownMenuContent

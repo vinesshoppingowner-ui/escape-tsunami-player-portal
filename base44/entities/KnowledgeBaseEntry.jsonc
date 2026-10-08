@@ -1,0 +1,106 @@
+{
+  "name": "KnowledgeBaseEntry",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the handbook entry"
+    },
+    "category": {
+      "type": "string",
+      "description": "Section the entry belongs to",
+      "enum": [
+        "Moderation Guidance",
+        "Escalation",
+        "Appeals",
+        "Staff Procedures",
+        "Resources"
+      ],
+      "default": "Moderation Guidance"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short one-line summary shown in the list"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full handbook content, supports markdown"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Lower numbers appear first within a category",
+      "default": 100
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email of the admin who last edited the entry"
+    }
+  },
+  "required": [
+    "title",
+    "body"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}
