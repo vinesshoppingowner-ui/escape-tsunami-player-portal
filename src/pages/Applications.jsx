@@ -27,12 +27,12 @@ export default function Applications() {
   useEffect(() => {
     (async () => {
       try {
-        const [apps, responses] = await Promise.all([
+        const [appsPage, responsesPage] = await Promise.all([
           base44.entities.Application.filter({ status: 'open' }, { sort: '-created_date', limit: 100 }),
-          user?.id ? base44.entities.ApplicationResponse.filter({ created_by_id: user.id }, { sort: '-created_date', limit: 100 }) : [],
+          user?.id ? base44.entities.ApplicationResponse.filter({ created_by_id: user.id }, { sort: '-created_date', limit: 100 }) : { items: [] },
         ]);
-        setApplications(apps || []);
-        setMyResponses(responses || []);
+        setApplications(appsPage?.items || []);
+        setMyResponses(responsesPage?.items || []);
       } catch {} finally {
         setLoading(false);
       }
