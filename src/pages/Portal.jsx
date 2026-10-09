@@ -20,7 +20,6 @@ import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
 import SectionLabel from '@/components/SectionLabel';
-import { sendAppealWebhook } from '@/lib/discordWebhook';
 import { emailPlayer } from '@/lib/userEmails';
 
 const COMMUNITY_GUIDELINES_URL = 'https://discord.gg/NCBqfpwPuT';
@@ -107,12 +106,6 @@ export default function Portal() {
       why_accepted,
       deserved_infraction,
       status: 'Pending',
-    });
-    sendAppealWebhook({
-      username: savedUsername,
-      moderationType: activeModeration?.moderation_type,
-      reason: appeal_reason,
-      appealId: created?.id,
     });
     if (user?.email) {
       emailPlayer({

@@ -1,4 +1,4 @@
-import { Palette, Snowflake, LayoutGrid, Droplets, Image, CloudRain } from 'lucide-react';
+import { Palette, Snowflake, Droplets, Image, CloudRain } from 'lucide-react';
 import BackgroundEffectPicker from '@/components/profile/BackgroundEffectPicker';
 import { canUseBgEffects } from '@/lib/backgroundEffects';
 import BackgroundPicker from '@/components/profile/BackgroundPicker';
@@ -6,10 +6,8 @@ import GlassSlider from '@/components/profile/GlassSlider';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/AuthContext';
-import { isOwner } from '@/lib/isOwner';
 import { useUserPrefs, savePrefs } from '@/lib/userPrefs';
 import AccentPicker from '@/components/profile/AccentPicker';
-import AppealStylePicker from '@/components/profile/AppealStylePicker';
 import SettingsSection from '@/components/profile/SettingsSection';
 import SettingToggle from '@/components/profile/SettingToggle';
 import DisplaySettings from '@/components/profile/DisplaySettings';
@@ -24,7 +22,6 @@ export default function SettingsDialog({ open, onOpenChange }) {
   const { user } = useAuth();
   const prefs = useUserPrefs();
   const { toast } = useToast();
-  const staff = isOwner(user) || user?.role === 'staff' || user?.role === 'admin';
 
   const set = async (patch) => {
     await savePrefs(user, patch);
@@ -56,19 +53,13 @@ export default function SettingsDialog({ open, onOpenChange }) {
             <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
           </SettingsSection>
           <DisplaySettings prefs={prefs} set={set} />
-          {user && <NavigationSettings prefs={prefs} set={set} staff={staff} />}
+          {user && <NavigationSettings prefs={prefs} set={set} />}
           <NotificationSettings prefs={prefs} set={set} />
           <SettingsSection icon={Snowflake} title="Effects">
             <SettingToggle label="Show seasonal effects (snow, sparkles)" checked={prefs.seasonal_effects} onChange={(v) => set({ seasonal_effects: v })} />
           </SettingsSection>
           {user && <PrivacySettings prefs={prefs} set={set} user={user} />}
           {user && <AccountSettings user={user} set={set} />}
-          {staff && (
-            <SettingsSection icon={LayoutGrid} title="Appeal card style" desc="How appeals look in your staff queue."
-              badge={<span className="ml-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200">Staff only</span>}>
-              <AppealStylePicker value={prefs.appeal_card_style} onChange={(appeal_card_style) => set({ appeal_card_style })} />
-            </SettingsSection>
-          )}
         </div>
       </DialogContent>
     </Dialog>

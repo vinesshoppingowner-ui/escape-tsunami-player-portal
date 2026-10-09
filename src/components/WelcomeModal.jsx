@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Scale, LogIn, ShieldCheck, Sparkles } from 'lucide-react';
+import { CheckCircle2, Scale, LogIn, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
-import { isOwner } from '@/lib/isOwner';
 import { useUserPrefs, WELCOME_FLAG } from '@/lib/userPrefs';
 
 export default function WelcomeModal() {
@@ -19,12 +18,10 @@ export default function WelcomeModal() {
   }, [user]);
 
   if (!user) return null;
-  const staff = isOwner(user) || user.role === 'staff' || user.role === 'admin';
   const name = user.full_name || user.roblox_username || user.email?.split('@')[0];
   const links = [
     { to: '/portal', label: 'Member Portal', icon: LogIn },
     { to: '/my-appeals', label: 'My Appeals', icon: Scale },
-    ...(staff ? [{ to: '/admin', label: 'Staff Console', icon: ShieldCheck }] : []),
   ];
 
   return (
@@ -39,7 +36,6 @@ export default function WelcomeModal() {
           <p className="mt-1 text-sm text-slate-400">Welcome{name ? `, ${name}` : ''} — glad to have you back.</p>
           <div className="mt-3 flex flex-wrap justify-center gap-1.5 text-[11px]">
             <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-slate-300">{user.email}</span>
-            {staff && <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-amber-200">Staff</span>}
             <span className={`rounded-full border px-2.5 py-0.5 ${user.roblox_username ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-slate-400'}`}>
               {user.roblox_username ? `Roblox: ${user.roblox_username}` : 'Roblox not linked'}
             </span>

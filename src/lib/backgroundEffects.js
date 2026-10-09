@@ -5,8 +5,7 @@ import createSummer from '@/lib/fx/summer';
 import createStars from '@/lib/fx/stars';
 import createBubbles from '@/lib/fx/bubbles';
 
-export const EFFECT_OWNER_EMAIL = 'vinesshoppingowner@gmail.com';
-export const canUseBgEffects = (user) => user?.email?.toLowerCase() === EFFECT_OWNER_EMAIL;
+export const canUseBgEffects = () => true;
 
 export const BG_EFFECTS = {
   none: { label: 'None', icon: '🚫' },

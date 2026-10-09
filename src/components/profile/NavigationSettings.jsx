@@ -3,8 +3,8 @@ import SettingsSection from '@/components/profile/SettingsSection';
 import SettingToggle from '@/components/profile/SettingToggle';
 import SegmentedSetting from '@/components/profile/SegmentedSetting';
 
-export default function NavigationSettings({ prefs, set, staff }) {
-  const pages = [['/', 'Home'], ['/portal', 'Portal'], ['/my-appeals', 'Appeals'], ...(staff ? [['/admin', 'Staff']] : [])];
+export default function NavigationSettings({ prefs, set }) {
+  const pages = [['/', 'Home'], ['/portal', 'Portal'], ['/my-appeals', 'Appeals']];
   return (
     <SettingsSection icon={Compass} title="Navigation" desc="Where you start and how the top bar behaves.">
       <SegmentedSetting label="Start page" hint="Where you land when you open the site" options={pages}
