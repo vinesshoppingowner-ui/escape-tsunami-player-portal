@@ -1,9 +1,9 @@
-import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown, GitBranch, ShieldCheck } from 'lucide-react';
 import { QUESTION_TYPES } from '@/lib/applicationTypes';
 import FormToggle from './FormToggle';
 
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
-const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No' };
+const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload' };
 
 export default function QuestionEditor({ question, index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });
@@ -51,6 +51,127 @@ export default function QuestionEditor({ question, index, total, active, onFocus
       </div>
 
       {active && (
+        <>
+        {(question.type === 'file' || question.showIf || question.validation) && (
+          <div className="mt-4 space-y-2">
+            {question.type === 'file' && (
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span>Allowed: {(question.fileTypes || []).join(', ')}</span>
+                <span>·</span>
+                <span>Max: {question.maxFileSize || 5}MB</span>
+              </div>
+            )}
+            {question.showIf && (
+              <div className="flex items-center gap-1.5 text-xs text-cyan-300">
+                <GitBranch className="h-3 w-3" /> Shown only when "{question.showIf.questionId}" {question.showIf.operator} "{question.showIf.value}"
+              </div>
+            )}
+            {question.validation?.pattern && (
+              <div className="flex items-center gap-1.5 text-xs text-violet-300">
+                <ShieldCheck className="h-3 w-3" /> Pattern: /{question.validation.pattern}/
+              </div>
+            )}
+          </div>
+        )}
+        <details className="mt-3 group">
+          <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-300 select-none flex items-center gap-1">
+            <GitBranch className="h-3 w-3" /> Conditional logic & validation
+          </summary>
+          <div className="mt-3 space-y-3 rounded-lg bg-white/[0.02] border border-white/5 p-3">
+            {/* Conditional logic */}
+            <div>
+              <label className="text-xs font-medium text-slate-400">Show this question only when:</label>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                <select
+                  value={question.showIf?.questionId || ''}
+                  onChange={(e) => update('showIf', e.target.value ? { questionId: e.target.value, operator: 'equals', value: '' } : null)}
+                  className="h-9 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2 flex-1 min-w-[120px]"
+                >
+                  <option value="">Always show</option>
+                </select>
+                <select
+                  value={question.showIf?.operator || 'equals'}
+                  onChange={(e) => question.showIf && update('showIf', { ...question.showIf, operator: e.target.value })}
+                  disabled={!question.showIf}
+                  className="h-9 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                >
+                  <option value="equals">equals</option>
+                  <option value="notEquals">does not equal</option>
+                  <option value="contains">contains</option>
+                  <option value="filled">is filled</option>
+                  <option value="empty">is empty</option>
+                </select>
+                {question.showIf && !['filled', 'empty'].includes(question.showIf.operator) && (
+                  <input
+                    value={question.showIf.value || ''}
+                    onChange={(e) => update('showIf', { ...question.showIf, value: e.target.value })}
+                    placeholder="value"
+                    className="h-9 flex-1 min-w-[100px] rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                  />
+                )}
+              </div>
+            </div>
+            {/* Validation */}
+            {['text', 'textarea', 'number'].includes(question.type) && (
+              <div>
+                <label className="text-xs font-medium text-slate-400 flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Validation</label>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  {['text', 'textarea'].includes(question.type) && (
+                    <>
+                      <input
+                        type="number"
+                        value={question.validation?.minLength || ''}
+                        onChange={(e) => update('validation', { ...question.validation, minLength: Number(e.target.value) || undefined })}
+                        placeholder="min chars"
+                        className="h-9 w-20 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                      />
+                      <input
+                        type="number"
+                        value={question.validation?.maxLength || ''}
+                        onChange={(e) => update('validation', { ...question.validation, maxLength: Number(e.target.value) || undefined })}
+                        placeholder="max chars"
+                        className="h-9 w-20 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                      />
+                    </>
+                  )}
+                  <input
+                    value={question.validation?.pattern || ''}
+                    onChange={(e) => update('validation', { ...question.validation, pattern: e.target.value })}
+                    placeholder="regex pattern (e.g. ^https?://)"
+                    className="h-9 flex-1 min-w-[140px] rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                  />
+                  <input
+                    value={question.validation?.patternMessage || ''}
+                    onChange={(e) => update('validation', { ...question.validation, patternMessage: e.target.value })}
+                    placeholder="error message"
+                    className="h-9 flex-1 min-w-[120px] rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                  />
+                </div>
+              </div>
+            )}
+            {/* File settings */}
+            {question.type === 'file' && (
+              <div>
+                <label className="text-xs font-medium text-slate-400">File settings</label>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  <input
+                    value={(question.fileTypes || []).join(', ')}
+                    onChange={(e) => update('fileTypes', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
+                    placeholder="pdf, docx, png"
+                    className="h-9 flex-1 min-w-[140px] rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                  />
+                  <input
+                    type="number"
+                    value={question.maxFileSize || 5}
+                    onChange={(e) => update('maxFileSize', Number(e.target.value) || 5)}
+                    className="h-9 w-20 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                  />
+                  <span className="text-xs text-slate-500 self-center">MB max</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </details>
         <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-end gap-1">
           <button onClick={onMoveUp} disabled={index === 0} title="Move up" className="p-2 rounded-md text-slate-400 hover:bg-white/5 disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
           <button onClick={onMoveDown} disabled={index === total - 1} title="Move down" className="p-2 rounded-md text-slate-400 hover:bg-white/5 disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
@@ -60,6 +181,7 @@ export default function QuestionEditor({ question, index, total, active, onFocus
           <span className="text-sm text-slate-300 mr-2">Required</span>
           <FormToggle checked={question.required} onChange={(v) => update('required', v)} />
         </div>
+        </>
       )}
     </div>
   );

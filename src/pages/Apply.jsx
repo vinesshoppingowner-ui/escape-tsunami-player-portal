@@ -15,6 +15,7 @@ import ApplyLogin from '@/components/apply/ApplyLogin';
 import AppIcon from '@/components/apply/AppIcon';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
+import { evalShowIf, validateField, readPrefillParams } from '@/lib/formLogic';
 
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
@@ -44,6 +45,9 @@ export default function Apply() {
         const qs = JSON.parse(a.questions || '[]');
         setQuestions(s.shuffleQuestions ? [...qs].sort(() => Math.random() - 0.5) : qs);
         setSettings(s);
+        // Pre-fill from URL params (?q_<questionId>=value)
+        const prefill = readPrefillParams(qs);
+        if (Object.keys(prefill).length) setAnswers((prev) => ({ ...prefill, ...prev }));
         if (user?.id) {
           const mine = await base44.entities.ApplicationResponse.filter({ application_id: id, created_by_id: user.id }, '-created_date', 50);
           setMyResponses(mine || []);
@@ -53,6 +57,9 @@ export default function Apply() {
       }
     })();
   }, [id, user?.id]);
+
+  // Questions visible after conditional logic evaluation
+  const visibleQuestions = questions.filter((q) => evalShowIf(q, answers));
 
   const draftKey = `apply-draft-${id}-${user?.id || 'anon'}`;
   useEffect(() => {
@@ -64,15 +71,10 @@ export default function Apply() {
     if (!settings.disableAutosave && !editingId && Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
   }, [answers, draftKey]);
 
-  const total = questions.length;
-  const current = step >= 0 && step < total ? questions[step] : null;
+  const total = visibleQuestions.length;
+  const current = step >= 0 && step < total ? visibleQuestions[step] : null;
 
-  const validateQuestion = (q) => {
-    const a = answers[q.id];
-    if (q.required && isEmpty(a)) return 'This question is required.';
-    if (q.type === 'email' && !isEmpty(a) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a)) return 'Please enter a valid email address.';
-    return '';
-  };
+  const validateQuestion = (q) => validateField(q, answers[q.id]);
 
   const goNext = () => {
     if (current) {
@@ -85,13 +87,12 @@ export default function Apply() {
   const goBack = () => { setError(''); setStep((s) => Math.max(s - 1, -1)); };
 
   const submit = async () => {
-    const firstBad = questions.findIndex((q) => validateQuestion(q));
-    if (firstBad !== -1) { setStep(firstBad); setError(validateQuestion(questions[firstBad])); return; }
+    const firstBad = visibleQuestions.findIndex((q) => validateQuestion(q));
+    if (firstBad !== -1) { setStep(firstBad); setError(validateQuestion(visibleQuestions[firstBad])); return; }
     setSubmitting(true);
     try {
       let ai = {};
       if (settings.aiReviewEnabled) {
-        // AI screening is optional — never block a submission if it fails.
         ai = await runAIReview(app, answers).catch(() => ({}));
       }
       if (editingId) {
@@ -113,6 +114,12 @@ export default function Apply() {
         const body = questions.map((q) => `<p><b>${q.text}</b><br/>${formatAnswer(q, answers[q.id]) || '—'}</p>`).join('');
         base44.integrations.Core.SendEmail({ to: user.email, subject: `Your response: ${app.title}`, body }).catch(() => {});
       }
+      // Discord webhook alert — fire-and-forget, never blocks submission
+      if (settings.discordAlert !== false) {
+        base44.functions.invoke('discordSend', {
+          message: `New application submitted for **${app.title}** by ${user?.roblox_username || user?.email || 'Unknown'} (attempt ${retake.attempt}).`,
+        }).catch(() => {});
+      }
       localStorage.removeItem(draftKey);
       setSubmitted(true);
     } catch (e) {
@@ -124,6 +131,12 @@ export default function Apply() {
 
   useEffect(() => {
     const onKey = (e) => {
+      // Ctrl/Cmd+Enter submits from anywhere in the form
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (step >= total && total > 0) submit();
+        return;
+      }
       if (e.key !== 'Enter' || e.shiftKey || e.target.tagName === 'TEXTAREA') return;
       if (step >= 0 && step < total) { e.preventDefault(); goNext(); }
     };
@@ -183,7 +196,7 @@ export default function Apply() {
         {settings.showProgressBar === false ? <div className="mb-8" /> : step < 0 ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8" />
         ) : (
-          <ApplyStepper questions={questions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
+          <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
         <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
@@ -196,7 +209,7 @@ export default function Apply() {
                   <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{app.title}</h1>
                   {app.description && <p className="mt-4 text-slate-400 leading-relaxed">{app.description}</p>}
                   <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
-                    <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">{total} questions</span>
+                    <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">{visibleQuestions.length} questions</span>
                     <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">~{Math.max(1, Math.ceil(total * 0.75))} min</span>
                     {user && <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">Applying as {user.roblox_username || user.email}</span>}
                     {retake.attempt > 1 && <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200">Attempt #{retake.attempt}</span>}
@@ -238,13 +251,14 @@ export default function Apply() {
                     <ClipboardCheck className="h-6 w-6 text-cyan-300" />
                     <h2 className="text-2xl font-semibold text-white">Review your answers</h2>
                   </div>
-                  <p className="text-sm text-slate-400 mb-6">{answered} of {total} answered · tap any answer to change it.</p>
-                  <ApplyReview questions={questions} answers={answers} onEdit={(i) => { setError(''); setStep(i); }} />
+                  <p className="text-sm text-slate-400 mb-6">{visibleQuestions.filter((q) => !isEmpty(answers[q.id])).length} of {visibleQuestions.length} answered · tap any answer to change it.</p>
+                  <ApplyReview questions={visibleQuestions} answers={answers} onEdit={(i) => { setError(''); setStep(i); }} />
                   <div className="mt-8 flex items-center justify-between gap-3">
                     <Button variant="ghost" onClick={goBack} className="text-slate-300 hover:text-white hover:bg-white/10"><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
                     <Button onClick={submit} disabled={submitting} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
                       {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />} {submitting ? 'Submitting…' : 'Submit application'}
                     </Button>
+                    <span className="ml-2 text-[11px] text-slate-600 hidden sm:inline">Ctrl+Enter ↵</span>
                   </div>
                 </div>
               )}

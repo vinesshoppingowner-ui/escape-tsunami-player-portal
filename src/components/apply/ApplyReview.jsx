@@ -5,6 +5,10 @@ export function formatAnswer(q, a) {
   if (q.type === 'yesno') return a ? 'Yes' : 'No';
   if (q.type === 'checkbox') return a.join(', ');
   if (q.type === 'rating') return `${a} / 5`;
+  if (q.type === 'file' && typeof a === 'string' && a.startsWith('file:')) {
+    const [, filename] = a.split('|');
+    return filename || 'Uploaded file';
+  }
   return String(a);
 }
 

@@ -9,6 +9,7 @@ export const QUESTION_TYPES = [
   { value: 'date', label: 'Date', icon: 'Calendar' },
   { value: 'rating', label: 'Rating', icon: 'Star' },
   { value: 'yesno', label: 'Yes / No', icon: 'ToggleLeft' },
+  { value: 'file', label: 'File Upload', icon: 'Paperclip' },
 ];
 
 export const defaultQuestion = () => ({
@@ -20,6 +21,10 @@ export const defaultQuestion = () => ({
   options: [],
   placeholder: '',
   maxLength: 0,
+  showIf: null,
+  validation: null,
+  fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'txt'],
+  maxFileSize: 5,
 });
 
 export const defaultSettings = () => ({
@@ -41,6 +46,7 @@ export const defaultSettings = () => ({
   aiCriteria: '',
   restrictToUsers: false,
   allowedUsers: [],
+  discordAlert: true,
 });
 
 export const RESPONSE_TAGS = ['Strong', 'Promising', 'Needs interview', 'Low effort', 'Suspicious', 'Duplicate'];
@@ -64,5 +70,9 @@ export const formatAnswer = (q, a) => {
   if (Array.isArray(a)) return a.join(', ');
   if (q.type === 'rating') return `${a} / 5`;
   if (q.type === 'yesno') return a ? 'Yes' : 'No';
+  if (q.type === 'file' && typeof a === 'string' && a.startsWith('file:')) {
+    const [, filename] = a.split('|');
+    return filename || 'Uploaded file';
+  }
   return String(a);
 };

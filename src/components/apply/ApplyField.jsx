@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Check } from 'lucide-react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import FileUploadField from '@/components/apply/FileUploadField';
 
 const inputCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 text-base rounded-xl focus-visible:ring-cyan-500/50';
 
@@ -63,7 +64,14 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
           <button type="button" onClick={() => onChange(false)} className={`h-14 rounded-xl text-base font-medium border transition-colors ${value === false ? 'bg-rose-500/15 text-rose-300 border-rose-500/40' : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'}`}>No</button>
         </div>
       );
+    case 'file':
+      return <FileUploadField q={q} value={value} onChange={onChange} />;
     default:
-      return <Input autoFocus={autoFocus} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || undefined} className={inputCls} />;
+      return (
+        <div>
+          <Input autoFocus={autoFocus} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || undefined} className={inputCls} />
+          {q.maxLength > 0 && <div className="mt-1.5 text-right text-xs text-slate-500">{(value || '').length}/{q.maxLength}</div>}
+        </div>
+      );
   }
 }
