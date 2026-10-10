@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, LogOut, LogIn, Scale } from 'lucide-react';
+import { Settings, LogOut, LogIn, Scale, FileText } from 'lucide-react';
+import { isOwner } from '@/lib/isOwner';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -40,6 +41,7 @@ export default function ProfileMenu() {
           <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem asChild className={itemCls}><Link to="/portal"><LogIn className="h-4 w-4" /> Member Portal</Link></DropdownMenuItem>
           <DropdownMenuItem asChild className={itemCls}><Link to="/my-appeals"><Scale className="h-4 w-4" /> My Appeals</Link></DropdownMenuItem>
+          {isOwner(user) && <DropdownMenuItem asChild className={itemCls}><Link to="/manage-applications"><FileText className="h-4 w-4" /> Manage Applications</Link></DropdownMenuItem>}
           <DropdownMenuItem className={itemCls} onSelect={() => setSettingsOpen(true)}><Settings className="h-4 w-4" /> Settings</DropdownMenuItem>
           <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem className={`${itemCls} text-rose-300 focus:text-rose-200 focus:bg-rose-500/10`} onSelect={() => base44.auth.logout('/')}>
