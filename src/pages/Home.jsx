@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Users, Heart, Snowflake, Play, Eye, Radio, LogIn } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
+import DiscordInviteSection from '@/components/home/DiscordInviteSection';
 import { useGameStats } from '@/hooks/useGameStats';
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
@@ -90,6 +91,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <DiscordInviteSection />
 
       <div className="home-lower" aria-hidden="true">
         <span className="home-lower-line" />
