@@ -174,8 +174,8 @@ export default function Applications() {
                 const alreadyApplied = rt && !rt.canApply;
                 const myLatest = myResponses.find((r) => r.application_id === app.id);
                 return (
-                  <div key={app.id} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 transition-all hover:-translate-y-0.5">
-                    <div className="flex items-start gap-3">
+                  <div key={app.id} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 transition-all hover:-translate-y-0.5 flex flex-col">
+                    <div className="flex items-start gap-3 flex-1">
                       <AppIcon icon={app.icon} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -194,12 +194,16 @@ export default function Applications() {
                           <span>~{Math.max(1, Math.ceil(qCount * 0.75))} min</span>
                         </div>
                       </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-white/5">
                       {alreadyApplied && myLatest ? (
-                        <button onClick={() => setSelectedResponse({ ...myLatest, application: app })} className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors">
-                          <Eye className="h-3.5 w-3.5" /> View
+                        <button onClick={() => setSelectedResponse({ ...myLatest, application: app })} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/20 transition-colors">
+                          <Eye className="h-4 w-4" /> View submission
                         </button>
                       ) : (
-                        <Link to={`/apply/${app.id}`} className="shrink-0"><ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-cyan-400 transition-colors" /></Link>
+                        <Link to={`/apply/${app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                          Open application <ChevronRight className="h-4 w-4" />
+                        </Link>
                       )}
                     </div>
                   </div>

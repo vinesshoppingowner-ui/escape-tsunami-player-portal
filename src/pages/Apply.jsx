@@ -12,6 +12,7 @@ import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
 import { formatAnswer } from '@/lib/applicationTypes';
 import ApplyLogin from '@/components/apply/ApplyLogin';
+import RespondingAs from '@/components/apply/RespondingAs';
 import AppIcon from '@/components/apply/AppIcon';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
@@ -252,6 +253,7 @@ export default function Apply() {
                     <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
                     <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
                   </label>
+                  <div className="pl-1"><RespondingAs user={user} /></div>
                   <div className="flex items-center justify-between gap-3">
                     <Button variant="ghost" onClick={goBack} className="text-slate-300 hover:text-white hover:bg-white/10"><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
                     <Button onClick={submit} disabled={submitting || !termsAccepted} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
@@ -298,6 +300,7 @@ export default function Apply() {
                     <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
                     <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
                   </label>
+                  <div className="mt-2 pl-1"><RespondingAs user={user} /></div>
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <Button variant="ghost" onClick={goBack} className="text-slate-300 hover:text-white hover:bg-white/10"><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
                     <Button onClick={submit} disabled={submitting || !termsAccepted} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
