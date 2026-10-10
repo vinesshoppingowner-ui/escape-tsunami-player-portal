@@ -10,10 +10,13 @@ export default function LandingRedirect() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
+  const VALID_LANDING_PAGES = ['/', '/portal', '/my-appeals'];
   useEffect(() => {
     if (!user || sessionStorage.getItem('et_landed')) return;
     sessionStorage.setItem('et_landed', '1');
-    if (pathname === '/' && landing_page && landing_page !== '/') navigate(landing_page, { replace: true });
+    if (pathname === '/' && landing_page && landing_page !== '/' && VALID_LANDING_PAGES.includes(landing_page)) {
+      navigate(landing_page, { replace: true });
+    }
   }, [user]);
 
   return null;
