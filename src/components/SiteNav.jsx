@@ -48,10 +48,9 @@ export default function SiteNav() {
     { label: 'Home', to: '/', icon: Home },
     { label: 'Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-  ];
-  const dropdownLinks = [
     { label: 'Applications', to: '/applications', icon: FileText },
   ];
+  const dropdownLinks = [];
   const mobileLinks = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'Member Portal', to: '/portal', icon: LogIn },
@@ -123,41 +122,7 @@ export default function SiteNav() {
             );
           })}
 
-          {dropdownLinks.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-slate-400 hover:text-white transition-all duration-150 rounded-lg hover:bg-white/[0.05]">
-                <Menu className="h-4 w-4" />
-                More
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-52 bg-[#0B0D13]/95 backdrop-blur-xl border-white/[0.08] text-white">
-              {dropdownLinks.map((l) => {
-                const active = location.pathname === l.to;
-                return (
-                  <DropdownMenuItem key={l.to} asChild>
-                    <Link
-                      to={l.to}
-                      className={`flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md ${
-                        active ? 'text-cyan-300 bg-cyan-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {l.icon && <l.icon className="h-4 w-4" />}
-                      {l.label}
-                      {l.showNew && (
-                        <span className="ml-auto px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-bold uppercase tracking-wider leading-none border border-cyan-500/30">New</span>
-                      )}
-                      {l.showDot && (
-                        <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          )}
+
         </nav>
 
         <div className="hidden md:flex items-center justify-end gap-2 w-40">

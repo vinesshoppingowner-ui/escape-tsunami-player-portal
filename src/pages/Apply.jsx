@@ -108,7 +108,6 @@ export default function Apply() {
         attempt: retake.attempt,
         ...ai,
       });
-      await base44.entities.Application.update(id, { response_count: (app.response_count || 0) + 1 });
       }
       if (settings.sendCopy && user?.email) {
         const body = questions.map((q) => `<p><b>${q.text}</b><br/>${formatAnswer(q, answers[q.id]) || '—'}</p>`).join('');
