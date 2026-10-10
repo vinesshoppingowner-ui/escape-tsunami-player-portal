@@ -48,6 +48,7 @@ export const defaultSettings = () => ({
   restrictToUsers: false,
   allowedUsers: [],
   discordAlert: true,
+  blockCopyPaste: true,
 });
 
 export const RESPONSE_TAGS = ['Strong', 'Promising', 'Needs interview', 'Low effort', 'Suspicious', 'Duplicate'];

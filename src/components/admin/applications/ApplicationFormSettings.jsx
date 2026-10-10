@@ -43,6 +43,7 @@ export default function ApplicationFormSettings({ settings, update }) {
       </Group>
       <Group title="Restrictions">
         <Row k="disableAutosave" label="Disable autosave for all respondents" desc="Drafts won't be saved in the browser" {...p} />
+        <Row k="blockCopyPaste" label="Block copy & paste" desc="Disables copying, pasting, right-click, text selection, and keyboard shortcuts like Ctrl+C / F12" {...p} />
       </Group>
     </div>
   );

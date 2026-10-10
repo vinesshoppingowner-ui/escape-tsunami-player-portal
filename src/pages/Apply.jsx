@@ -132,6 +132,30 @@ export default function Apply() {
     }
   };
 
+  // Block copy/paste/right-click/text-selection when the setting is enabled (default on)
+  useEffect(() => {
+    if (settings.blockCopyPaste === false) return;
+    const block = (e) => e.preventDefault();
+    const blockKeys = (e) => {
+      const k = e.key.toLowerCase();
+      const dev = ['f12', 'u', 's', 'p', 'i', 'j', 'c'].includes(k);
+      if ((e.ctrlKey || e.metaKey) && dev && !e.shiftKey) e.preventDefault();
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
+    };
+    const style = document.createElement('style');
+    style.textContent = '.apply-no-select, .apply-no-select * { user-select: none; -webkit-user-select: none; }';
+    document.head.appendChild(style);
+    const root = document.querySelector('.apply-no-select');
+    const events = ['copy', 'cut', 'paste', 'contextmenu', 'selectstart', 'dragstart'];
+    events.forEach((ev) => root?.addEventListener(ev, block));
+    window.addEventListener('keydown', blockKeys);
+    return () => {
+      document.head.removeChild(style);
+      events.forEach((ev) => root?.removeEventListener(ev, block));
+      window.removeEventListener('keydown', blockKeys);
+    };
+  }, [settings.blockCopyPaste]);
+
   useEffect(() => {
     const onKey = (e) => {
       // Ctrl/Cmd+Enter submits from anywhere in the form
@@ -206,7 +230,7 @@ export default function Apply() {
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
+        <div className="apply-no-select rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
