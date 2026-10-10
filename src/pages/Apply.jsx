@@ -143,7 +143,7 @@ export default function Apply() {
     };
     const blockKeys = (e) => {
       if (!isInsideForm(e.target)) return;
-      const k = e.key.toLowerCase();
+      const k = (e.key || '').toLowerCase();
       // Block Ctrl/Cmd+C, X, V, A, S, P, U and dev-tool shortcuts
       if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'v', 'a', 's', 'p', 'u', 'i', 'j'].includes(k)) e.preventDefault();
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
