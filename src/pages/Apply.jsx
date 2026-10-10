@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -133,26 +133,35 @@ export default function Apply() {
   };
 
   // Block copy/paste/right-click/text-selection when the setting is enabled (default on)
+  const formRef = useRef(null);
   useEffect(() => {
     if (settings.blockCopyPaste === false) return;
-    const block = (e) => e.preventDefault();
+    const isInsideForm = (target) => formRef.current && formRef.current.contains(target);
+
+    const blockEvent = (e) => {
+      if (isInsideForm(e.target)) e.preventDefault();
+    };
     const blockKeys = (e) => {
+      if (!isInsideForm(e.target)) return;
       const k = e.key.toLowerCase();
-      const dev = ['f12', 'u', 's', 'p', 'i', 'j', 'c'].includes(k);
-      if ((e.ctrlKey || e.metaKey) && dev && !e.shiftKey) e.preventDefault();
+      // Block Ctrl/Cmd+C, X, V, A, S, P, U and dev-tool shortcuts
+      if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'v', 'a', 's', 'p', 'u', 'i', 'j'].includes(k)) e.preventDefault();
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
     };
+
     const style = document.createElement('style');
     style.textContent = '.apply-no-select, .apply-no-select * { user-select: none; -webkit-user-select: none; }';
     document.head.appendChild(style);
-    const root = document.querySelector('.apply-no-select');
+
+    // Attach to document (capture phase) so right-click → paste is caught too
     const events = ['copy', 'cut', 'paste', 'contextmenu', 'selectstart', 'dragstart'];
-    events.forEach((ev) => root?.addEventListener(ev, block));
-    window.addEventListener('keydown', blockKeys);
+    events.forEach((ev) => document.addEventListener(ev, blockEvent, true));
+    document.addEventListener('keydown', blockKeys, true);
+
     return () => {
       document.head.removeChild(style);
-      events.forEach((ev) => root?.removeEventListener(ev, block));
-      window.removeEventListener('keydown', blockKeys);
+      events.forEach((ev) => document.removeEventListener(ev, blockEvent, true));
+      document.removeEventListener('keydown', blockKeys, true);
     };
   }, [settings.blockCopyPaste]);
 
@@ -230,7 +239,7 @@ export default function Apply() {
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
-        <div className="apply-no-select rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
+        <div ref={formRef} className="apply-no-select rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
