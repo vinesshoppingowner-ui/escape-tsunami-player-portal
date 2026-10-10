@@ -15,6 +15,7 @@ local TextService       = game:GetService("TextService")
 -- ── CONFIG ───────────────────────────────────────────────
 
 local PORTAL_LOG_URL    = "https://tsunami-shield-portal.base44.app/functions/submit-game-logs"
+local SYNC_MOD_URL      = "https://tsunami-shield-portal.base44.app/functions/syncModeration"
 local GET_WARNINGS_URL  = "https://tsunami-shield-portal.base44.app/functions/getPlayerWarnings"
 local CHECK_BAN_URL     = "https://tsunami-shield-portal.base44.app/functions/checkPlayerBan"
 local GAME_LOG_API_KEY  = "etfd-chat-8Kq2mZp9Xw4Lr7Vn"
@@ -102,6 +103,41 @@ local function removeRobloxBan(targetUserId)
 		end
 	end)
 end
+
+-- ── 1b. SYNC MODERATION TO PORTAL ────────────────────────
+-- Pushes an in-game moderation to the portal so the player can see it
+-- in their Member Portal moderation history. Call this whenever a staff
+-- member issues a warning, mute, kick, or ban in-game.
+
+local function syncModerationToPortal(targetUsername, moderationType, reason, staffName, durationStr, details)
+	if not targetUsername then return end
+	pcall(function()
+		HttpService:RequestAsync({
+			Url     = SYNC_MOD_URL,
+			Method  = "POST",
+			Headers = {
+				["Content-Type"] = "application/json",
+				["X-Api-Key"]    = GAME_LOG_API_KEY
+			},
+			Body = HttpService:JSONEncode({
+				moderations = {
+					{
+						roblox_username  = targetUsername,
+						moderation_type  = moderationType or "Warning",
+						reason           = reason or "In-game moderation",
+						details          = details or "",
+						duration         = durationStr or "",
+						staff_member     = staffName or "In-game Moderator",
+						-- moderation_date is set server-side if omitted
+					}
+				}
+			})
+		})
+	end)
+end
+
+-- Expose globally so other server scripts can call it:
+_G.SyncModerationToPortal = syncModerationToPortal
 
 -- ── 2. PORTAL BAN CHECK ──────────────────────────────────
 -- Replaces fetchBanFromRender — queries the Base44 Moderation entity directly.
