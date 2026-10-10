@@ -3,7 +3,7 @@ import { QUESTION_TYPES } from '@/lib/applicationTypes';
 import FormToggle from './FormToggle';
 
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
-const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload' };
+const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload', code: 'const x = "code snippet"' };
 
 export default function QuestionEditor({ question, index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });

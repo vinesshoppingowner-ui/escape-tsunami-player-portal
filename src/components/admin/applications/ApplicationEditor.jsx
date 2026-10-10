@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Save, Plus, FileText, X } from 'lucide-react';
@@ -9,6 +9,14 @@ import ApplicationBasicSettings from './ApplicationBasicSettings';
 import ApplicationFormSettings from './ApplicationFormSettings';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 
+const SETTINGS_SECTIONS = [
+  { id: 'sec-general', label: 'General' },
+  { id: 'sec-responses', label: 'Responses' },
+  { id: 'sec-access', label: 'Access & Limits' },
+  { id: 'sec-retakes', label: 'Retakes' },
+  { id: 'sec-ai', label: 'AI Screening' },
+];
+
 export default function ApplicationEditor({ open, onClose, application, onSave }) {
   const { toast } = useToast();
   const [form, setForm] = useState({});
@@ -17,6 +25,9 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
   const [tab, setTab] = useState('questions');
   const [activeId, setActiveId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const skipDirty = useRef(true);
+  const settingsScrollRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -25,7 +36,22 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
     setQuestions(JSON.parse(a.questions || '[]'));
     setSettings({ ...defaultSettings(), ...JSON.parse(a.settings || '{}') });
     setTab('questions');
+    skipDirty.current = true;
+    setDirty(false);
   }, [application, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (skipDirty.current) { skipDirty.current = false; return; }
+    setDirty(true);
+  }, [form, questions, settings]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
 
   if (!open) return null;
 
@@ -64,6 +90,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
       if (application) await base44.entities.Application.update(application.id, data);
       else await base44.entities.Application.create(data);
       toast({ title: application ? 'Application updated' : 'Application created' });
+      setDirty(false);
       onSave();
       onClose();
     } catch (e) {
@@ -73,16 +100,27 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
     }
   };
 
+  const handleClose = () => {
+    if (dirty && !confirm('You have unsaved changes. Close anyway?')) return;
+    onClose();
+  };
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const tabCls = (t) => `px-4 py-3 text-sm font-medium border-b-2 transition-colors ${tab === t ? 'border-cyan-400 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`;
 
   return (
     <div className="fixed inset-0 z-[60] bg-slate-950 overflow-y-auto">
       <div className="sticky top-0 z-10 bg-slate-950/95 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-3xl mx-auto px-5 pt-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 pt-3 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <button onClick={onClose} className="p-1.5 rounded-md text-slate-400 hover:bg-white/5"><X className="h-5 w-5" /></button>
+            <button onClick={handleClose} className="p-1.5 rounded-md text-slate-400 hover:bg-white/5"><X className="h-5 w-5" /></button>
             <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
             <span className="font-display font-semibold text-white truncate">{form.title || 'Untitled form'}</span>
+            {dirty && <span className="ml-2 inline-flex items-center gap-1 text-xs text-amber-300"><span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" /> Unsaved</span>}
           </div>
           <Button size="sm" onClick={save} disabled={saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
             <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
@@ -94,7 +132,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-5 py-6">
+      <div className="max-w-5xl mx-auto px-5 py-6">
         {tab === 'questions' ? (
           <div className="flex gap-3 items-start">
             <div className="flex-1 min-w-0 space-y-3">
@@ -126,10 +164,21 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            <ApplicationBasicSettings form={form} setField={setField} />
-            <ApplicationFormSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} />
-            <ApplicationAdvancedSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} />
+          <div className="grid md:grid-cols-[200px_1fr] gap-6">
+            <div className="hidden md:block">
+              <div className="sticky top-24 space-y-0.5">
+                {SETTINGS_SECTIONS.map((s) => (
+                  <button key={s.id} onClick={() => scrollToSection(s.id)} className="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors">
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div id="sec-general"><ApplicationBasicSettings form={form} setField={setField} /></div>
+              <div id="sec-responses"><ApplicationFormSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} /></div>
+              <div id="sec-access"><ApplicationAdvancedSettings settings={settings} update={(k, v) => setSettings((s) => ({ ...s, [k]: v }))} /></div>
+            </div>
           </div>
         )}
       </div>

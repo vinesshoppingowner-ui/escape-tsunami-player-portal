@@ -6,7 +6,7 @@ import SubmissionDetailModal from '@/components/apply/SubmissionDetailModal';
 import SiteNav from '@/components/SiteNav';
 import { useAuth } from '@/lib/AuthContext';
 import { getRetakeState } from '@/lib/applicationRetake';
-import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion } from 'lucide-react';
+import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye } from 'lucide-react';
 
 const STATUS_ICONS = {
   submitted: { icon: Clock, color: 'text-slate-400' },
@@ -53,9 +53,30 @@ export default function Applications() {
     });
   }, [applications, activeCategory, search]);
 
+  const dedupedResponses = useMemo(() => {
+    const byApp = {};
+    myResponses.forEach((r) => {
+      const key = r.application_id;
+      if (!byApp[key] || new Date(r.created_date) > new Date(byApp[key].created_date)) {
+        byApp[key] = { ...r, _total: 0 };
+      }
+      byApp[key]._total++;
+    });
+    return Object.values(byApp).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  }, [myResponses]);
+
   const retakeFor = (app) => {
     const mine = myResponses.filter((r) => r.application_id === app.id);
     return mine.length ? getRetakeState(JSON.parse(app.settings || '{}'), mine) : null;
+  };
+
+  const deadlineLabel = (app) => {
+    if (!app.auto_close_at) return null;
+    const diff = new Date(app.auto_close_at) - Date.now();
+    if (diff <= 0) return null;
+    const days = Math.ceil(diff / 86400000);
+    if (days > 30) return null;
+    return days <= 1 ? 'Closes soon' : `Closes in ${days}d`;
   };
 
   return (
@@ -79,7 +100,7 @@ export default function Applications() {
           <div className="mb-8">
             <h2 className="text-sm font-semibold text-slate-300 mb-3">My Submissions</h2>
             <div className="space-y-2">
-              {myResponses.map((r) => {
+              {dedupedResponses.map((r) => {
                 const SI = STATUS_ICONS[r.status] || STATUS_ICONS.submitted;
                 const Icon = SI.icon;
                 return (
@@ -89,7 +110,7 @@ export default function Applications() {
                     className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-3 flex items-center justify-between gap-3 transition-colors group"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-white">{r.application_title || 'Application'}{r.attempt > 1 && <span className="ml-2 text-[10px] text-amber-300">Attempt #{r.attempt}</span>}</div>
+                      <div className="text-sm font-medium text-white">{r.application_title || 'Application'}{r._total > 1 && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">{r._total} attempts</span>}</div>
                       <div className="text-xs text-slate-500">Submitted {new Date(r.created_date).toLocaleDateString()}</div>
                       {r.applicant_feedback && <div className="mt-1 text-xs text-slate-300 truncate"><span className="text-slate-500">Feedback: </span>{r.applicant_feedback}</div>}
                     </div>
@@ -149,16 +170,20 @@ export default function Applications() {
               {filtered.map((app) => {
                 const rt = retakeFor(app);
                 const qCount = JSON.parse(app.questions || '[]').length;
+                const dl = deadlineLabel(app);
+                const alreadyApplied = rt && !rt.canApply;
+                const myLatest = myResponses.find((r) => r.application_id === app.id);
                 return (
-                  <Link key={app.id} to={`/apply/${app.id}`} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 transition-all hover:-translate-y-0.5">
+                  <div key={app.id} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 transition-all hover:-translate-y-0.5">
                     <div className="flex items-start gap-3">
                       <AppIcon icon={app.icon} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-white truncate">{app.title}</h3>
                           {rt && (rt.canApply
                             ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/25 shrink-0">Retake</span>
-                            : <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 shrink-0">Applied</span>)}
+                            : <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 shrink-0">Already Applied</span>)}
+                          {dl && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 shrink-0 inline-flex items-center gap-1"><CalendarClock className="h-2.5 w-2.5" />{dl}</span>}
                         </div>
                         <p className="text-xs text-slate-500 mt-1 line-clamp-2">{app.description || 'No description'}</p>
                         <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
@@ -169,9 +194,15 @@ export default function Applications() {
                           <span>~{Math.max(1, Math.ceil(qCount * 0.75))} min</span>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-cyan-400 transition-colors shrink-0" />
+                      {alreadyApplied && myLatest ? (
+                        <button onClick={() => setSelectedResponse({ ...myLatest, application: app })} className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors">
+                          <Eye className="h-3.5 w-3.5" /> View
+                        </button>
+                      ) : (
+                        <Link to={`/apply/${app.id}`} className="shrink-0"><ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-cyan-400 transition-colors" /></Link>
+                      )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>

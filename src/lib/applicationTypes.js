@@ -10,6 +10,7 @@ export const QUESTION_TYPES = [
   { value: 'rating', label: 'Rating', icon: 'Star' },
   { value: 'yesno', label: 'Yes / No', icon: 'ToggleLeft' },
   { value: 'file', label: 'File Upload', icon: 'Paperclip' },
+  { value: 'code', label: 'Code Snippet', icon: 'Code' },
 ];
 
 export const defaultQuestion = () => ({

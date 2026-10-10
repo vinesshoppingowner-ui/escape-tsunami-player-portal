@@ -34,6 +34,7 @@ export default function Apply() {
   const [submitted, setSubmitted] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [myResponses, setMyResponses] = useState([]);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const retake = getRetakeState(settings, myResponses);
 
   useEffect(() => {
@@ -73,22 +74,24 @@ export default function Apply() {
 
   const total = visibleQuestions.length;
   const current = step >= 0 && step < total ? visibleQuestions[step] : null;
+  const singlePage = total > 0 && total < 5 && settings.singlePageMode !== false;
 
   const validateQuestion = (q) => validateField(q, answers[q.id]);
 
   const goNext = () => {
-    if (current) {
+    if (current && !singlePage) {
       const err = validateQuestion(current);
       if (err) { setError(err); return; }
     }
     setError('');
-    setStep((s) => Math.min(s + 1, total));
+    setStep((s) => Math.min(s + 1, singlePage ? total : total));
   };
   const goBack = () => { setError(''); setStep((s) => Math.max(s - 1, -1)); };
 
   const submit = async () => {
     const firstBad = visibleQuestions.findIndex((q) => validateQuestion(q));
-    if (firstBad !== -1) { setStep(firstBad); setError(validateQuestion(visibleQuestions[firstBad])); return; }
+    if (firstBad !== -1) { setStep(singlePage ? 0 : firstBad); setError(validateQuestion(visibleQuestions[firstBad])); return; }
+    if (!termsAccepted) { setError('Please accept the terms before submitting.'); return; }
     setSubmitting(true);
     try {
       let ai = {};
@@ -189,11 +192,15 @@ export default function Apply() {
       <main className="max-w-2xl mx-auto px-5 pt-16 pb-24">
         <div className="flex items-center justify-between mb-4">
           <Link to="/applications" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> All applications</Link>
-          <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
+          <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : singlePage ? 'All questions' : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
         </div>
 
         {settings.showProgressBar === false ? <div className="mb-8" /> : step < 0 ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8" />
+        ) : singlePage ? (
+          <div className="h-1.5 rounded-full bg-white/5 mb-8 overflow-hidden">
+            <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${total ? (questions.filter((q) => !isEmpty(answers[q.id])).length / total) * 100 : 0}%` }} />
+          </div>
         ) : (
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
@@ -212,6 +219,12 @@ export default function Apply() {
                     <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">~{Math.max(1, Math.ceil(total * 0.75))} min</span>
                     {user && <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">Applying as {user.roblox_username || user.email}</span>}
                     {retake.attempt > 1 && <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200">Attempt #{retake.attempt}</span>}
+                    {app.auto_close_at && (() => {
+                      const diff = new Date(app.auto_close_at) - Date.now();
+                      if (diff <= 0) return null;
+                      const days = Math.ceil(diff / 86400000);
+                      return <span className="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300">Closes {days <= 1 ? 'today' : `in ${days} days`}</span>;
+                    })()}
                   </div>
                   {retake.latest?.applicant_feedback && (
                     <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Feedback from last attempt: </span>{retake.latest.applicant_feedback}</p>
@@ -220,7 +233,35 @@ export default function Apply() {
                 </div>
               )}
 
-              {current && (
+              {singlePage && step >= 0 && step < total && (
+                <div className="space-y-8">
+                  {visibleQuestions.map((q, i) => (
+                    <div key={q.id} className="border-b border-white/5 pb-6 last:border-0">
+                      <div className="flex items-start gap-3 mb-4">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 text-sm font-bold shrink-0">{i + 1}</span>
+                        <div>
+                          <h2 className="text-lg sm:text-xl font-semibold text-white leading-snug">{q.text}{q.required && <span className="text-rose-400 ml-1">*</span>}</h2>
+                          {q.description && <p className="mt-1 text-sm text-slate-400">{q.description}</p>}
+                        </div>
+                      </div>
+                      <ApplyField q={q} value={answers[q.id]} onChange={(v) => { setError(''); setAnswers({ ...answers, [q.id]: v }); }} />
+                    </div>
+                  ))}
+                  {error && <div className="flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
+                  <label className="flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">
+                    <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
+                    <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <Button variant="ghost" onClick={goBack} className="text-slate-300 hover:text-white hover:bg-white/10"><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
+                    <Button onClick={submit} disabled={submitting || !termsAccepted} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
+                      {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />} {submitting ? 'Submitting…' : 'Submit application'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {!singlePage && current && (
                 <div>
                   <div className="flex items-start gap-3 mb-5">
                     <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 text-sm font-bold shrink-0">{step + 1}</span>
@@ -252,9 +293,14 @@ export default function Apply() {
                   </div>
                   <p className="text-sm text-slate-400 mb-6">{visibleQuestions.filter((q) => !isEmpty(answers[q.id])).length} of {visibleQuestions.length} answered · tap any answer to change it.</p>
                   <ApplyReview questions={visibleQuestions} answers={answers} onEdit={(i) => { setError(''); setStep(i); }} />
-                  <div className="mt-8 flex items-center justify-between gap-3">
+                  {error && <div className="mt-4 flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
+                  <label className="mt-6 flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">
+                    <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
+                    <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
+                  </label>
+                  <div className="mt-6 flex items-center justify-between gap-3">
                     <Button variant="ghost" onClick={goBack} className="text-slate-300 hover:text-white hover:bg-white/10"><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
-                    <Button onClick={submit} disabled={submitting} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
+                    <Button onClick={submit} disabled={submitting || !termsAccepted} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-11 px-6">
                       {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />} {submitting ? 'Submitting…' : 'Submit application'}
                     </Button>
                     <span className="ml-2 text-[11px] text-slate-600 hidden sm:inline">Ctrl+Enter ↵</span>

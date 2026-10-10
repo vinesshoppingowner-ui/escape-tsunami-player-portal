@@ -66,6 +66,17 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
       );
     case 'file':
       return <FileUploadField q={q} value={value} onChange={onChange} />;
+    case 'code':
+      return (
+        <div>
+          <textarea autoFocus={autoFocus} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Paste your code here…'} spellCheck={false}
+            className="w-full bg-slate-950 border border-white/10 text-emerald-300 placeholder:text-slate-600 font-mono text-sm min-h-[200px] rounded-xl p-4 focus:outline-none focus:border-cyan-500/40 resize-y leading-relaxed" />
+          <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
+            <span className="font-mono">{'{ }'}</span>
+            {q.maxLength > 0 && <span>{(value || '').length}/{q.maxLength}</span>}
+          </div>
+        </div>
+      );
     default:
       return (
         <div>
