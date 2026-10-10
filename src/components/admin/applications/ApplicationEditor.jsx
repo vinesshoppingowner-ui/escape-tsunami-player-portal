@@ -7,6 +7,7 @@ import QuestionEditor from './QuestionEditor';
 import ApplicationAdvancedSettings from './ApplicationAdvancedSettings';
 import ApplicationBasicSettings from './ApplicationBasicSettings';
 import ApplicationFormSettings from './ApplicationFormSettings';
+import AiApplicationGenerator from './AiApplicationGenerator';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 
 const SETTINGS_SECTIONS = [
@@ -122,9 +123,17 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
             <span className="font-display font-semibold text-white truncate">{form.title || 'Untitled form'}</span>
             {dirty && <span className="ml-2 inline-flex items-center gap-1 text-xs text-amber-300"><span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" /> Unsaved</span>}
           </div>
-          <Button size="sm" onClick={save} disabled={saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
-            <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {!application && (
+              <AiApplicationGenerator onGenerate={(data) => {
+                setForm((f) => ({ ...f, title: data.title, description: data.description, icon: data.icon, category: data.category, success_message: data.success_message }));
+                setQuestions(data.questions);
+              }} />
+            )}
+            <Button size="sm" onClick={save} disabled={saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
+              <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
         </div>
         <div className="flex justify-center">
           <button className={tabCls('questions')} onClick={() => setTab('questions')}>Questions</button>
