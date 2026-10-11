@@ -9,6 +9,7 @@ import BloxlinkLookup from '@/components/admin/BloxlinkLookup';
 import UserLookupAppeals from '@/components/admin/UserLookupAppeals';
 import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import PortalAccountManager from '@/components/admin/portal/PortalAccountManager';
+import StaffPasscodePanel from '@/components/admin/portal/StaffPasscodePanel';
 import { useToast } from '@/components/ui/use-toast';
 import { findUserByRobloxUsername } from '@/lib/userLookup';
 import { isOwner } from '@/lib/isOwner';
@@ -461,6 +462,7 @@ function RobloxResult({ profile, onReload }) {
               </Button>
             )}
             <DeleteAccountButton account={profile.websiteAccount} currentUser={currentUser} />
+            <StaffPasscodePanel account={profile.websiteAccount} />
           </div>
         ) : (
           <p className="text-sm text-slate-500">This Roblox user has not created an account on the portal.</p>

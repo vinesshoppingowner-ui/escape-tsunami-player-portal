@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Shield, Check, Trash2, Loader2 } from 'lucide-react';
 import PasscodeKeypad from '@/components/profile/PasscodeKeypad';
-import { savePasscodeLogin, clearPasscodeLogin, getPasscodeLogin, refreshPasscodeToken } from '@/lib/passcodeLogin';
+import { savePasscodeLogin, clearPasscodeLogin, getPasscodeLogin, refreshPasscodeToken, syncPasscodeToServer, clearServerPasscode } from '@/lib/passcodeLogin';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function QuickLoginSettings({ user }) {
@@ -27,6 +27,7 @@ export default function QuickLoginSettings({ user }) {
       const token = localStorage.getItem('base44_access_token');
       if (!token) { setError('No active session found.'); return; }
       savePasscodeLogin(code, token, user?.email || '', user?.id || '');
+      syncPasscodeToServer(code);
       setSaved(true);
       setMode('set');
       setFirstCode('');
@@ -37,6 +38,7 @@ export default function QuickLoginSettings({ user }) {
 
   const handleRemove = () => {
     clearPasscodeLogin();
+    clearServerPasscode();
     setMode('new');
     setError('');
   };

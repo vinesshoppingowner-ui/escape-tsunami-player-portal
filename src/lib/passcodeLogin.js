@@ -33,3 +33,19 @@ export function refreshPasscodeToken() {
     localStorage.setItem(KEY, JSON.stringify(stored));
   }
 }
+
+// Sync the passcode to the user's server-side data so staff can view/manage it
+export async function syncPasscodeToServer(passcode) {
+  try {
+    const { base44 } = await import('@/api/base44Client');
+    await base44.auth.updateMe({ data: { quick_passcode: passcode } });
+  } catch { /* non-critical */ }
+}
+
+// Clear the server-side passcode
+export async function clearServerPasscode() {
+  try {
+    const { base44 } = await import('@/api/base44Client');
+    await base44.auth.updateMe({ data: { quick_passcode: null } });
+  } catch { /* non-critical */ }
+}
