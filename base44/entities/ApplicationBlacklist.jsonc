@@ -6,6 +6,10 @@
       "type": "string",
       "description": "The email or Roblox username that is blacklisted from applying (stored lowercase)"
     },
+    "roblox_username": {
+      "type": "string",
+      "description": "The Roblox username, stored lowercase, used to link a Moderation record for portal history and appeals"
+    },
     "reason": {
       "type": "string",
       "description": "Why this person was blacklisted"
@@ -13,6 +17,10 @@
     "banned_by": {
       "type": "string",
       "description": "Email of the admin who blacklisted them"
+    },
+    "linked_moderation_id": {
+      "type": "string",
+      "description": "ID of the Moderation record created so the player can see and appeal the blacklist"
     }
   },
   "required": [

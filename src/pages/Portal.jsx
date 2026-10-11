@@ -51,13 +51,13 @@ export default function Portal() {
     setLoading(true);
     try {
       const [mods, apps, notes] = await Promise.all([
-        base44.entities.Moderation.filter({ roblox_username: username }, '-moderation_date', 50),
-        base44.entities.Appeal.filter({ roblox_username: username }, '-created_date', 50),
-        base44.entities.Notification.filter({ roblox_username: username }, '-created_date', 20),
+        base44.entities.Moderation.filter({ roblox_username: username }, { sort: '-moderation_date', limit: 50 }),
+        base44.entities.Appeal.filter({ roblox_username: username }, { sort: '-created_date', limit: 50 }),
+        base44.entities.Notification.filter({ roblox_username: username }, { sort: '-created_date', limit: 20 }),
       ]);
-      setModerations(mods || []);
-      setAppeals((apps || []).filter((a) => !a.removed));
-      setNotifications(notes || []);
+      setModerations(mods?.items || []);
+      setAppeals((apps?.items || []).filter((a) => !a.removed));
+      setNotifications(notes?.items || []);
       setLastUpdated(new Date());
     } finally {
       setLoading(false);
@@ -70,8 +70,8 @@ export default function Portal() {
         { roblox_username: savedUsername, read: false },
         { $set: { read: true } }
       );
-      const notes = await base44.entities.Notification.filter({ roblox_username: savedUsername }, '-created_date', 20);
-      setNotifications(notes || []);
+      const notes = await base44.entities.Notification.filter({ roblox_username: savedUsername }, { sort: '-created_date', limit: 20 });
+      setNotifications(notes?.items || []);
     } catch {}
   };
 

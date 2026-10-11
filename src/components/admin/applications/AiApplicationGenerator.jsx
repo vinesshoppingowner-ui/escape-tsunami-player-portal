@@ -7,6 +7,12 @@ import { defaultQuestion, QUESTION_TYPES } from '@/lib/applicationTypes';
 
 const VALID_TYPES = QUESTION_TYPES.map((t) => t.value);
 
+const TONE_OPTIONS = [
+  { value: 'natural', label: 'Less AI', hint: 'Short, casual, human-sounding questions' },
+  { value: 'balanced', label: 'Balanced', hint: 'Professional and thorough' },
+  { value: 'comprehensive', label: 'More AI', hint: 'Detailed, structured, exhaustive' },
+];
+
 // Sanitize a single AI-generated question so it never produces a broken field
 function sanitizeQuestion(q) {
   if (!q || typeof q !== 'object') return null;
@@ -47,6 +53,7 @@ export default function AiApplicationGenerator({ onGenerate, isEditing = false, 
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [mode, setMode] = useState('replace'); // 'replace' or 'append'
+  const [tone, setTone] = useState('balanced');
   const [loading, setLoading] = useState(false);
 
   const generate = async () => {
@@ -88,8 +95,16 @@ export default function AiApplicationGenerator({ onGenerate, isEditing = false, 
         ? `\n\nEXISTING FORM (for context):\nTitle: ${existingForm.title || 'Untitled'}\nDescription: ${existingForm.description || 'None'}\nCurrent questions: ${(existingForm.questions || []).map((q, i) => `${i + 1}. [${q.type}] ${q.text}`).join('\n') || 'None yet'}`
         : '';
 
+      const toneInstructions = {
+        natural: `TONE: Write like a real person talking to another person. Keep questions short, casual, and conversational — like a chat, not a form. Avoid corporate jargon, avoid overly formal language, avoid buzzwords. Use plain English. Prefer 1 sentence per question. Descriptions should be brief and friendly. Generate ${isEditing ? '3-5' : '4-6'} questions.`,
+        balanced: `TONE: Professional and approachable. Clear, well-structured questions that thoroughly evaluate the applicant without being overly stiff. Generate ${isEditing ? '3-6' : '4-8'} well-crafted questions.`,
+        comprehensive: `TONE: Detailed, structured, and exhaustive. Write thorough, multi-part questions that probe deeply. Include detailed descriptions explaining exactly what you expect. Cover every angle. Use professional terminology where appropriate. Generate ${isEditing ? '4-6' : '5-8'} comprehensive questions. Descriptions should be detailed paragraphs.`,
+      };
+
       const systemPrompt = `You are an expert form designer for a Roblox gaming community portal called "Escape Tsunami".
 A staff member wants to ${isEditing ? 'modify' : 'create'} an application form. Generate a complete, professional application based on their description.
+
+${toneInstructions[tone]}
 
 QUESTION TYPES — use these correctly:
 - "text": Short single-line answers (names, usernames, short phrases)
@@ -108,16 +123,14 @@ QUESTION TYPES — use these correctly:
 CRITICAL RULES:
 1. For dropdown, radio, and checkbox questions you MUST provide 2-6 options — never leave them empty
 2. If a choice question would have fewer than 2 options, use "textarea" instead
-3. Generate ${isEditing ? '3-6' : '4-8'} well-crafted questions that thoroughly evaluate the applicant
-4. Mark essential questions as required=true, optional ones as required=false
-5. Write clear, professional question text and helpful descriptions
-6. Choose a fitting emoji icon and category
-7. Write a welcoming success message
-8. Do NOT include a question asking for their Roblox username or email (the portal captures those automatically)
-9. Keep the tone professional but approachable
-10. Use "textarea" for any question expecting a paragraph or more of text
-11. Use "rating" for self-assessment or scoring questions
-12. Use "file" when the applicant needs to provide evidence or a portfolio`;
+3. Mark essential questions as required=true, optional ones as required=false
+4. Write clear question text and helpful descriptions
+5. Choose a fitting emoji icon and category
+6. Write a welcoming success message
+7. Do NOT include a question asking for their Roblox username or email (the portal captures those automatically)
+8. Use "textarea" for any question expecting a paragraph or more of text
+9. Use "rating" for self-assessment or scoring questions
+10. Use "file" when the applicant needs to provide evidence or a portfolio`;
 
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `${systemPrompt}${existingContext}\n\nRequest: ${prompt.trim()}`,
@@ -180,6 +193,23 @@ CRITICAL RULES:
                 ? 'Describe what you want to change or add. The AI will regenerate the form based on your request.'
                 : 'Describe the application you want and the AI will generate the title, description, and questions for you.'}
             </p>
+
+            {/* AI Tone selector */}
+            <div className="mb-4">
+              <label className="text-xs font-medium text-slate-400 mb-2 block">AI Tone</label>
+              <div className="grid grid-cols-3 gap-2">
+                {TONE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTone(opt.value)}
+                    className={`px-2 py-2.5 rounded-lg text-xs font-medium border transition-colors text-center ${tone === opt.value ? 'bg-violet-500/20 border-violet-500/40 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1.5">{TONE_OPTIONS.find((t) => t.value === tone)?.hint}</p>
+            </div>
 
             {isEditing && (
               <div className="mb-4 flex gap-2">
