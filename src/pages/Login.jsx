@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { loadCredentials, saveCredentials } from "@/lib/savedLogin";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn, Shield, ChevronLeft } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn, Shield } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import AppleIcon from "@/components/AppleIcon";
@@ -20,7 +20,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [passcodeMode, setPasscodeMode] = useState(false);
   const [passcodeError, setPasscodeError] = useState("");
   const returnTo = safeReturnTo();
   const hasPasscode = isPasscodeLoginAvailable();
@@ -88,30 +87,6 @@ export default function Login() {
       setPasscodeError("Wrong passcode. Try again.");
     }
   };
-
-  // Passcode login view
-  if (passcodeMode && hasPasscode) {
-    return (
-      <AuthLayout
-        icon={Shield}
-        title="Enter passcode"
-        subtitle="Log in instantly with your 4-digit code"
-        footer={
-          <button
-            onClick={() => { setPasscodeMode(false); setPasscodeError(""); }}
-            className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" /> Use email instead
-          </button>
-        }
-      >
-        {passcodeError && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">{passcodeError}</div>
-        )}
-        <PasscodeKeypad onComplete={handlePasscode} />
-      </AuthLayout>
-    );
-  }
 
   return (
     <AuthLayout
@@ -210,17 +185,17 @@ export default function Login() {
         <>
           <div className="flex items-center gap-3 my-5">
             <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">or</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">or passcode</span>
             <div className="h-px flex-1 bg-white/10" />
           </div>
-          <button
-            type="button"
-            onClick={() => setPasscodeMode(true)}
-            className="w-full h-11 rounded-lg bg-white/[0.05] border border-white/10 text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-colors"
-          >
-            <Shield className="w-4 h-4 text-cyan-300" />
-            Log in with passcode
-          </button>
+          {passcodeError && (
+            <div className="mb-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">{passcodeError}</div>
+          )}
+          <PasscodeKeypad
+            onComplete={handlePasscode}
+            title="Quick login"
+            subtitle="Enter your 4-digit passcode"
+          />
         </>
       )}
     </AuthLayout>

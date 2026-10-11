@@ -64,6 +64,7 @@ export default function QuickLoginSettings({ user }) {
       {(mode === 'create' || mode === 'confirm') && (
         <div className="py-2">
           <PasscodeKeypad
+            key={mode}
             onComplete={handleCreate}
             title={mode === 'create' ? 'Enter a 4-digit code' : 'Confirm your code'}
             subtitle={mode === 'create' ? 'Remember this — you will use it to log in' : 'Enter the same code again'}
