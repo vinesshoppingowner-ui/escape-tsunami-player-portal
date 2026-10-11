@@ -1,24 +1,21 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Settings, LogOut, LogIn, Scale, FileText } from 'lucide-react';
-import { isOwner } from '@/lib/isOwner';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
+import { useState, useEffect } from 'react';
 import SettingsDialog from '@/components/profile/SettingsDialog';
-import RobloxAvatar from '@/components/moderations/RobloxAvatar';
-
-const itemCls = 'flex items-center gap-2.5 cursor-pointer px-2.5 py-2 rounded-md text-slate-300 focus:text-white focus:bg-white/5';
+import { useAuth } from '@/lib/AuthContext';
+import AccountSwitcher from '@/components/profile/AccountSwitcher';
 
 export default function ProfileMenu() {
   const { user } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   if (!user) {
     return (
-      <Link to="/login" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-white/15 bg-white/5 text-sm text-slate-200 hover:text-white">
-        <LogIn className="h-4 w-4" /> Log in
-      </Link>
+      <a
+        href="/login"
+        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-white/15 bg-white/5 text-sm text-slate-200 hover:text-white"
+      >
+        Log in
+      </a>
     );
   }
 
@@ -27,29 +24,48 @@ export default function ProfileMenu() {
 
   return (
     <>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button aria-label="Open profile menu" className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold text-white ring-2 ring-white/10 hover:ring-cyan-400/50 transition-all flex items-center justify-center">
-            {user.roblox_username ? <RobloxAvatar username={user.roblox_username} size={36} /> : initials}
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-60 bg-slate-900/95 backdrop-blur-xl border-white/10 text-white p-1.5">
-          <div className="px-2.5 py-2">
-            <div className="text-sm font-semibold truncate">{name}</div>
-            <div className="text-xs text-slate-400 truncate">{user.email}</div>
-          </div>
-          <DropdownMenuSeparator className="bg-white/10" />
-          <DropdownMenuItem asChild className={itemCls}><Link to="/portal"><LogIn className="h-4 w-4" /> Member Portal</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild className={itemCls}><Link to="/my-appeals"><Scale className="h-4 w-4" /> My Appeals</Link></DropdownMenuItem>
-          {isOwner(user) && <DropdownMenuItem asChild className={itemCls}><Link to="/manage-applications"><FileText className="h-4 w-4" /> Manage Applications</Link></DropdownMenuItem>}
-          <DropdownMenuItem className={itemCls} onSelect={() => setSettingsOpen(true)}><Settings className="h-4 w-4" /> Settings</DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-white/10" />
-          <DropdownMenuItem className={`${itemCls} text-rose-300 focus:text-rose-200 focus:bg-rose-500/10`} onSelect={() => base44.auth.logout('/')}>
-            <LogOut className="h-4 w-4" /> Log out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <button
+        aria-label="Open account switcher"
+        onClick={() => setSwitcherOpen(true)}
+        className="relative h-9 w-9 rounded-full p-[2px] bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500 transition-all shrink-0"
+      >
+        <span className="block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center">
+          {user.roblox_username ? (
+            <RobloxAvatarInline username={user.roblox_username} />
+          ) : (
+            <span className="text-xs font-bold text-white">{initials}</span>
+          )}
+        </span>
+      </button>
+      <AccountSwitcher
+        user={user}
+        open={switcherOpen}
+        onClose={() => setSwitcherOpen(false)}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
+}
+
+// Inline avatar without its own border/ring — the gradient ring is on the parent button
+function RobloxAvatarInline({ username }) {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    if (!username) return;
+    fetch(`https://users.roproxy.com/v1/usernames/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
+    })
+      .then((r) => r.json())
+      .then((d) => d?.data?.[0]?.id)
+      .then((id) => fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png&isCircular=false`))
+      .then((r) => r.json())
+      .then((d) => d?.data?.[0]?.imageUrl)
+      .then((u) => u && setUrl(u))
+      .catch(() => {});
+  }, [username]);
+  if (!url) return <span className="text-xs font-bold text-white">{username?.[0]?.toUpperCase() || '?'}</span>;
+  return <img src={url} alt={username} className="w-full h-full object-cover" />;
 }
