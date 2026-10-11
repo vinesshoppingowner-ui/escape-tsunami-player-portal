@@ -14,6 +14,7 @@ import { formatAnswer } from '@/lib/applicationTypes';
 import ApplyLogin from '@/components/apply/ApplyLogin';
 import RespondingAs from '@/components/apply/RespondingAs';
 import AppIcon from '@/components/apply/AppIcon';
+import ApplyIntro from '@/components/apply/ApplyIntro';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 import { evalShowIf, validateField, readPrefillParams } from '@/lib/formLogic';
@@ -270,28 +271,7 @@ export default function Apply() {
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
-                <div className="text-center">
-                  <div className="mb-4 flex justify-center"><AppIcon icon={app.icon} className="h-20 w-20" emojiClass="text-6xl" /></div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-3">{app.category || 'Application'}</div>
-                  <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{app.title}</h1>
-                  {app.description && <p className="mt-4 text-slate-400 leading-relaxed">{app.description}</p>}
-                  <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
-                    <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">{visibleQuestions.length} questions</span>
-                    <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">~{Math.max(1, Math.ceil(total * 0.75))} min</span>
-                    {user && <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">Applying as {user.roblox_username || user.email}</span>}
-                    {retake.attempt > 1 && <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200">Attempt #{retake.attempt}</span>}
-                    {app.auto_close_at && (() => {
-                      const diff = new Date(app.auto_close_at) - Date.now();
-                      if (diff <= 0) return null;
-                      const days = Math.ceil(diff / 86400000);
-                      return <span className="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300">Closes {days <= 1 ? 'today' : `in ${days} days`}</span>;
-                    })()}
-                  </div>
-                  {retake.latest?.applicant_feedback && (
-                    <p className="mt-4 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"><span className="text-slate-500">Feedback from last attempt: </span>{retake.latest.applicant_feedback}</p>
-                  )}
-                  <Button onClick={goNext} size="lg" className="mt-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-12 px-8">{Object.keys(answers).length ? 'Continue application' : 'Start application'} <ChevronRight className="h-4 w-4 ml-1" /></Button>
-                </div>
+                <ApplyIntro app={app} total={visibleQuestions.length} user={user} retake={retake} hasDraft={Object.keys(answers).length > 0} onStart={goNext} />
               )}
 
               {singlePage && step >= 0 && step < total && (
