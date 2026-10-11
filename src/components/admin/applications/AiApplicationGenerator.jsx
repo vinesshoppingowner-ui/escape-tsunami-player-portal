@@ -96,14 +96,23 @@ export default function AiApplicationGenerator({ onGenerate, isEditing = false, 
         ? `\n\nEXISTING FORM (for context):\nTitle: ${existingForm.title || 'Untitled'}\nDescription: ${existingForm.description || 'None'}\nCurrent questions: ${(existingForm.questions || []).map((q, i) => `${i + 1}. [${q.type}] ${q.text}`).join('\n') || 'None yet'}`
         : '';
 
+      const countMatch = prompt.match(/(\d+)\s*(?:questions|questions|q|items|prompts)/i);
+      const requestedCount = countMatch ? parseInt(countMatch[1], 10) : null;
+
+      const defaultCount = isEditing ? '3-6' : '4-8';
+      const countInstruction = requestedCount
+        ? `Generate EXACTLY ${requestedCount} questions — not more, not less. The user specifically asked for this number.`
+        : `Generate ${defaultCount} questions.`;
+
       const toneInstructions = {
-        natural: `TONE: Write like a real person talking to another person. Keep questions short, casual, and conversational — like a chat, not a form. Avoid corporate jargon, avoid overly formal language, avoid buzzwords. Use plain English. Prefer 1 sentence per question. Descriptions should be brief and friendly. Generate ${isEditing ? '3-5' : '4-6'} questions.`,
-        balanced: `TONE: Professional and approachable. Clear, well-structured questions that thoroughly evaluate the applicant without being overly stiff. Generate ${isEditing ? '3-6' : '4-8'} well-crafted questions.`,
-        comprehensive: `TONE: Detailed, structured, and exhaustive. Write thorough, multi-part questions that probe deeply. Include detailed descriptions explaining exactly what you expect. Cover every angle. Use professional terminology where appropriate. Generate ${isEditing ? '4-6' : '5-8'} comprehensive questions. Descriptions should be detailed paragraphs.`,
+        natural: `TONE: Write like a real person talking to another person. Keep questions short, casual, and conversational — like a chat, not a form. Avoid corporate jargon, avoid overly formal language, avoid buzzwords. Use plain English. Prefer 1 sentence per question. Descriptions should be brief and friendly. ${countInstruction}`,
+        balanced: `TONE: Professional and approachable. Clear, well-structured questions that thoroughly evaluate the applicant without being overly stiff. ${countInstruction}`,
+        comprehensive: `TONE: Detailed, structured, and exhaustive. Write thorough, multi-part questions that probe deeply. Include detailed descriptions explaining exactly what you expect. Cover every angle. Use professional terminology where appropriate. ${countInstruction} Descriptions should be detailed paragraphs.`,
       };
 
-      const systemPrompt = `You are an expert form designer for a Roblox gaming community portal called "Escape Tsunami".
-A staff member wants to ${isEditing ? 'modify' : 'create'} an application form. Generate a complete, professional application based on their description.
+      const systemPrompt = `You are an expert form designer. A staff member wants to ${isEditing ? 'modify' : 'create'} a form. Generate a complete, professional form based on their description.
+
+IMPORTANT: Follow the user's request exactly. If they ask for trivia, a quiz, a survey, a game, or any non-application topic — generate questions about THAT topic. Do NOT force every form to be about Escape Tsunami, Roblox, or gaming unless the user specifically asks for that. The form can be about anything.
 
 ${toneInstructions[tone]}
 
