@@ -1,14 +1,15 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User } from 'lucide-react';
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 
 const tierConfig = (user) => {
-  if (isOwner(user)) return { label: 'Owner', icon: Crown, gradient: 'from-amber-400 to-orange-500', text: 'text-amber-300', ring: 'ring-amber-400/30' };
-  if (user.role === 'staff') return { label: 'Staff', icon: Shield, gradient: 'from-violet-400 to-purple-500', text: 'text-violet-300', ring: 'ring-violet-400/30' };
-  return { label: 'Member', icon: User, gradient: 'from-blue-400 to-cyan-500', text: 'text-cyan-300', ring: 'ring-cyan-400/30' };
+  if (isOwner(user)) return { label: 'Owner', icon: Crown, gradient: 'from-amber-400 to-orange-500', text: 'text-amber-300' };
+  if (user.role === 'staff') return { label: 'Staff', icon: Shield, gradient: 'from-violet-400 to-purple-500', text: 'text-violet-300' };
+  return { label: 'Member', icon: User, gradient: 'from-blue-400 to-cyan-500', text: 'text-cyan-300' };
 };
 
 const navItems = [
@@ -16,7 +17,28 @@ const navItems = [
   { to: '/my-appeals', label: 'My Appeals', icon: Scale },
 ];
 
-export default function AccountSwitcher({ user, open, onClose, onOpenSettings, hasRing = false }) {
+export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef, ringGradient }) {
+  const dropdownRef = useRef(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+
+  useLayoutEffect(() => {
+    if (open && anchorRef?.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) && !anchorRef?.current?.contains(e.target)) onClose();
+    };
+    const handleEsc = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => { document.removeEventListener('mousedown', handleClick); document.removeEventListener('keydown', handleEsc); };
+  }, [open, onClose]);
+
   if (!user) return null;
 
   const name = user.full_name || user.roblox_username || user.email;
@@ -27,102 +49,94 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, h
   return (
     <AnimatePresence>
       {open && (
-        <>
+        <div
+          ref={dropdownRef}
+          style={{ position: 'fixed', top: `${pos.top}px`, right: `${pos.right}px`, zIndex: 101 }}
+        >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[8vh] px-4 pointer-events-none">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: -8 }}
-              transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
-              className="pointer-events-auto w-full max-w-sm rounded-2xl bg-slate-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
-            >
-              {/* Header with gradient ring avatar */}
-              <div className="relative px-6 pt-7 pb-5 text-center">
-                <button
-                  onClick={onClose}
-                  className="absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+            initial={{ opacity: 0, scale: 0.96, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: -4 }}
+            transition={{ duration: 0.16, ease: [0.2, 0.7, 0.2, 1] }}
+            className="w-72 rounded-xl bg-slate-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className="relative px-4 pt-4 pb-3">
+              <button
+                onClick={onClose}
+                className="absolute top-2.5 right-2.5 h-7 w-7 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
 
-                {/* Avatar with Gemini-style gradient ring (only for Google-linked subscribers) */}
-                <div className={hasRing
-                  ? 'inline-block p-[4px] rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600'
-                  : 'inline-block p-[4px] rounded-full bg-slate-800 ring-2 ring-white/10'}>
-                  <div className="h-20 w-20 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className={`shrink-0 p-[3px] rounded-full bg-gradient-to-br ${ringGradient}`}>
+                  <div className="h-12 w-12 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
                     {user.roblox_username ? (
-                      <RobloxAvatar username={user.roblox_username} size={80} />
+                      <RobloxAvatar username={user.roblox_username} size={48} />
                     ) : (
-                      <span className="text-2xl font-bold text-white">{initials}</span>
+                      <span className="text-base font-bold text-white">{initials}</span>
                     )}
                   </div>
                 </div>
-
-                <h3 className="mt-3 text-lg font-semibold text-white truncate">{name}</h3>
-                <p className="text-xs text-slate-400 truncate">{user.email}</p>
-
-                {/* Subscription tier badge */}
-                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                  <span className={`h-4 w-4 rounded-full bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
-                    <TierIcon className="h-2.5 w-2.5 text-white" />
-                  </span>
-                  <span className={`text-xs font-medium ${tier.text}`}>{tier.label}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{name}</p>
+                  <p className="text-xs text-slate-400 truncate">{user.email}</p>
                 </div>
               </div>
 
-              {/* Navigation */}
-              <div className="px-3 pb-2 space-y-0.5">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
-                  >
-                    <item.icon className="h-4 w-4 text-slate-400" />
-                    {item.label}
-                  </Link>
-                ))}
-                {isOwner(user) && (
-                  <Link
-                    to="/manage-applications"
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
-                  >
-                    <FileText className="h-4 w-4 text-slate-400" />
-                    Manage Applications
-                  </Link>
-                )}
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                <span className={`h-3.5 w-3.5 rounded-full bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
+                  <TierIcon className="h-2 w-2 text-white" />
+                </span>
+                <span className={`text-[11px] font-medium ${tier.text}`}>{tier.label}</span>
               </div>
+            </div>
 
-              {/* Footer actions */}
-              <div className="border-t border-white/10 px-3 py-2 space-y-0.5">
-                <button
-                  onClick={() => { onOpenSettings(); onClose(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+            {/* Navigation */}
+            <div className="px-1.5 pb-1.5 space-y-0.5">
+              {navItems.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={onClose}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
                 >
-                  <Settings className="h-4 w-4 text-slate-400" />
-                  Settings
-                </button>
-                <button
-                  onClick={() => base44.auth.logout('/')}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 transition-colors"
+                  <item.icon className="h-3.5 w-3.5 text-slate-400" />
+                  {item.label}
+                </Link>
+              ))}
+              {isOwner(user) && (
+                <Link
+                  to="/manage-applications"
+                  onClick={onClose}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Log out
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        </>
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  Manage Applications
+                </Link>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/10 px-1.5 py-1.5 space-y-0.5">
+              <button
+                onClick={() => { onOpenSettings(); onClose(); }}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <Settings className="h-3.5 w-3.5 text-slate-400" />
+                Settings
+              </button>
+              <button
+                onClick={() => base44.auth.logout('/')}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Log out
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
