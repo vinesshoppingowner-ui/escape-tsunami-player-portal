@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, X, Wand2, Plus } from 'lucide-react';
@@ -176,7 +177,7 @@ CRITICAL RULES:
         <Sparkles className="h-4 w-4 shrink-0" /> <span className="hidden sm:inline">{label}</span>
       </button>
 
-      {open && (
+      {open && createPortal(
         <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !loading && setOpen(false)}>
           <div className="w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl bg-slate-950 border border-white/10 p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
@@ -254,7 +255,8 @@ CRITICAL RULES:
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
