@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { loadCredentials, saveCredentials } from "@/lib/savedLogin";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn, Shield, ChevronLeft } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import AppleIcon from "@/components/AppleIcon";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { markJustLoggedIn } from "@/lib/userPrefs";
+import { isPasscodeLoginAvailable, tryPasscodeLogin } from "@/lib/passcodeLogin";
+import PasscodeKeypad from "@/components/profile/PasscodeKeypad";
 
 const INPUT = "w-full h-11 rounded-lg border border-white/10 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/60 transition-colors";
 
@@ -18,7 +20,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passcodeMode, setPasscodeMode] = useState(false);
+  const [passcodeError, setPasscodeError] = useState("");
   const returnTo = safeReturnTo();
+  const hasPasscode = isPasscodeLoginAvailable();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -74,6 +79,39 @@ export default function Login() {
     markJustLoggedIn();
     base44.auth.loginWithProvider("apple", appleReturnTo);
   };
+
+  const handlePasscode = (code) => {
+    if (tryPasscodeLogin(code)) {
+      markJustLoggedIn();
+      window.location.href = returnTo;
+    } else {
+      setPasscodeError("Wrong passcode. Try again.");
+    }
+  };
+
+  // Passcode login view
+  if (passcodeMode && hasPasscode) {
+    return (
+      <AuthLayout
+        icon={Shield}
+        title="Enter passcode"
+        subtitle="Log in instantly with your 4-digit code"
+        footer={
+          <button
+            onClick={() => { setPasscodeMode(false); setPasscodeError(""); }}
+            className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Use email instead
+          </button>
+        }
+      >
+        {passcodeError && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">{passcodeError}</div>
+        )}
+        <PasscodeKeypad onComplete={handlePasscode} />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
@@ -167,6 +205,24 @@ export default function Login() {
           {loading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Logging in...</>) : (<>Log in <ArrowRight className="w-4 h-4 ml-1.5" /></>)}
         </button>
       </form>
+
+      {hasPasscode && (
+        <>
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">or</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+          <button
+            type="button"
+            onClick={() => setPasscodeMode(true)}
+            className="w-full h-11 rounded-lg bg-white/[0.05] border border-white/10 text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-colors"
+          >
+            <Shield className="w-4 h-4 text-cyan-300" />
+            Log in with passcode
+          </button>
+        </>
+      )}
     </AuthLayout>
   );
 }

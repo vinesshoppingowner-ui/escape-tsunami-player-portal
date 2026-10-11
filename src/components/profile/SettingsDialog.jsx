@@ -19,6 +19,7 @@ import AccentHexInput from '@/components/profile/AccentHexInput';
 import AppearanceSettings from '@/components/profile/AppearanceSettings';
 import NavigationSettings from '@/components/profile/NavigationSettings';
 import AccountSettings from '@/components/profile/AccountSettings';
+import QuickLoginSettings from '@/components/profile/QuickLoginSettings';
 
 const TABS = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -119,6 +120,7 @@ export default function SettingsDialog({ open, onOpenChange }) {
               )}
               {tab === 'account' && (
                 <>
+                  {user && <QuickLoginSettings user={user} />}
                   {user && <AccountSettings user={user} set={set} />}
                   {user && <NavigationSettings prefs={prefs} set={set} />}
                 </>
