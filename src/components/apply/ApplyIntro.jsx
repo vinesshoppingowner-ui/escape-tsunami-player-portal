@@ -1,119 +1,191 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Clock, User as UserIcon, Hash, AlertTriangle } from 'lucide-react';
+import { 
+  ChevronRight, 
+  Clock, 
+  User as UserIcon, 
+  HelpCircle, 
+  AlertTriangle, 
+  Sparkles, 
+  CheckCircle2, 
+  RotateCcw,
+  ShieldCheck 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AppIcon from '@/components/apply/AppIcon';
 
-export default function ApplyIntro({ app, total, user, retake, hasDraft, onStart }) {
+export default function ApplyIntro({ 
+  app = {}, 
+  total = 0, 
+  user = {}, 
+  retake = {}, 
+  hasDraft = false, 
+  onStart 
+}) {
   const estMin = Math.max(1, Math.ceil(total * 0.75));
+  
   const closesIn = (() => {
-    if (!app.auto_close_at) return null;
+    if (!app?.auto_close_at) return null;
     const diff = new Date(app.auto_close_at) - Date.now();
     if (diff <= 0) return null;
     return Math.ceil(diff / 86400000);
   })();
 
-  const infoPills = [
-    { icon: Hash, label: `${total} question${total !== 1 ? 's' : ''}` },
-    { icon: Clock, label: `~${estMin} min` },
-    { icon: UserIcon, label: user?.roblox_username || user?.email || 'Unknown' },
-  ];
+  const username = user?.roblox_username || user?.username || user?.email?.split('@')[0] || 'Guest';
 
   return (
-    <div className="text-center">
-      {/* Icon */}
+    <div className="text-center max-w-xl mx-auto px-2">
+      {/* 1. App Icon with layered studio glassmorphism */}
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="mb-5 flex justify-center"
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="mb-6 flex justify-center"
       >
-        <div className="relative">
-          <div className="absolute inset-0 rounded-2xl bg-cyan-500/20 blur-xl" />
-          <AppIcon icon={app.icon} className="h-20 w-20 relative" emojiClass="text-6xl" />
+        <div className="relative group">
+          {/* Ambient colored backdrop glow */}
+          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-tr from-cyan-500/25 via-blue-500/20 to-indigo-500/10 blur-xl transition-all duration-500 group-hover:blur-2xl" />
+          
+          {/* Icon frame container */}
+          <div className="relative flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.12] shadow-2xl backdrop-blur-md">
+            <AppIcon 
+              icon={app?.icon} 
+              className="h-16 w-16 drop-shadow-md" 
+              emojiClass="text-5xl" 
+            />
+          </div>
         </div>
       </motion.div>
 
-      {/* Category badge */}
+      {/* 2. Category badge with studio pulse */}
       <motion.div
         initial={{ y: 8, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.08 }}
-        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-3"
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-xs font-medium text-cyan-300 tracking-wide mb-3"
       >
-        {app.category || 'Application'}
+        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+        {app?.category || 'Application'}
       </motion.div>
 
-      {/* Title */}
+      {/* 3. Title */}
       <motion.h1
-        initial={{ y: 12, opacity: 0 }}
+        initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.12 }}
-        className="font-display text-3xl sm:text-4xl font-bold tracking-tight"
+        className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white"
       >
-        {app.title}
+        {app?.title || 'Untitled Application'}
       </motion.h1>
 
-      {/* Description */}
-      {app.description && (
-        <motion.p
-          initial={{ y: 12, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.16 }}
-          className="mt-4 text-slate-400 leading-relaxed max-w-md mx-auto"
-        >
-          {app.description}
-        </motion.p>
-      )}
+      {/* 4. Description with thoughtful fallback */}
+      <motion.p
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.16 }}
+        className="mt-3 text-sm sm:text-base text-slate-300/80 leading-relaxed max-w-md mx-auto"
+      >
+        {app?.description || (
+          'Please take your time to complete each question accurately. Your answers will be reviewed directly by the studio team.'
+        )}
+      </motion.p>
 
-      {/* Info pills */}
+      {/* 5. Metadata Badges (Questions, Time, Identity) */}
       <motion.div
-        initial={{ y: 12, opacity: 0 }}
+        initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-slate-400"
+        className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-slate-300"
       >
-        {infoPills.map((pill, i) => (
-          <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <pill.icon className="h-3 w-3" />
-            {pill.label}
-          </span>
-        ))}
-        {retake.attempt > 1 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200">
+        {/* Question Count */}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] shadow-sm backdrop-blur-sm">
+          <HelpCircle className="h-3.5 w-3.5 text-cyan-400" />
+          {total} {total === 1 ? 'Question' : 'Questions'}
+        </span>
+
+        {/* Estimated Duration */}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] shadow-sm backdrop-blur-sm">
+          <Clock className="h-3.5 w-3.5 text-blue-400" />
+          ~{estMin} min
+        </span>
+
+        {/* User Identity Pill */}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] shadow-sm backdrop-blur-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <UserIcon className="h-3.5 w-3.5 text-slate-400" />
+          <span>Applying as <strong className="text-white font-medium">@{username}</strong></span>
+        </span>
+
+        {/* Retake Attempt */}
+        {retake?.attempt > 1 && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200">
+            <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
             Attempt #{retake.attempt}
           </span>
         )}
+
+        {/* Closing Notice */}
         {closesIn !== null && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300">
-            <AlertTriangle className="h-3 w-3" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300">
+            <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
             Closes {closesIn <= 1 ? 'today' : `in ${closesIn} days`}
           </span>
         )}
       </motion.div>
 
-      {/* Feedback from last attempt */}
-      {retake.latest?.applicant_feedback && (
+      {/* 6. Previous Attempt Feedback Notice */}
+      {retake?.latest?.applicant_feedback && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.24 }}
-          className="mt-5 text-sm text-slate-300 rounded-xl bg-white/5 border border-white/10 p-3 text-left"
+          className="mt-6 text-xs text-left rounded-xl bg-amber-500/[0.06] border border-amber-500/20 p-3.5 text-slate-200 max-w-md mx-auto"
         >
-          <span className="text-slate-500">Feedback from last attempt: </span>
-          {retake.latest.applicant_feedback}
+          <div className="flex items-center gap-1.5 font-semibold text-amber-400 mb-1">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>Reviewer feedback from previous attempt:</span>
+          </div>
+          <p className="text-slate-300/90 pl-5 italic">
+            "{retake.latest.applicant_feedback}"
+          </p>
         </motion.div>
       )}
 
-      {/* CTA */}
+      {/* 7. CTA & Auto-save assurance */}
       <motion.div
         initial={{ y: 12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.28 }}
+        className="mt-8 flex flex-col items-center"
       >
-        <Button onClick={onStart} size="lg" className="mt-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 h-12 px-8">
-          {hasDraft ? 'Continue application' : 'Start application'}
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        <motion.div 
+          whileHover={{ scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }}
+          className="w-full sm:w-auto"
+        >
+          <Button 
+            onClick={onStart} 
+            size="lg" 
+            className="w-full sm:w-auto min-w-[220px] h-12 px-7 rounded-xl font-medium text-white shadow-lg shadow-cyan-500/20 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 border-0 transition-all duration-200 flex items-center justify-center gap-2 group"
+          >
+            {hasDraft ? (
+              <>
+                <RotateCcw className="h-4 w-4" />
+                <span>Continue draft</span>
+              </>
+            ) : (
+              <>
+                <span>Start application</span>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
+          </Button>
+        </motion.div>
+
+        {/* Micro-copy to build confidence */}
+        <p className="mt-3 text-[11px] text-slate-400/70 flex items-center gap-1.5">
+          <ShieldCheck className="h-3.5 w-3.5 text-slate-500" />
+          Progress saves automatically as you answer
+        </p>
       </motion.div>
     </div>
   );
