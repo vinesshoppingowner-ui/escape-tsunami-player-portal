@@ -201,7 +201,7 @@ export default function Applications() {
                           <Eye className="h-4 w-4" /> View submission
                         </button>
                       ) : (
-                        <Link to={`/apply/${app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                        <Link to={`/apply/${app.slug || app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
                           Open application <ChevronRight className="h-4 w-4" />
                         </Link>
                       )}

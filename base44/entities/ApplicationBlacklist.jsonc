@@ -1,0 +1,84 @@
+{
+  "name": "ApplicationBlacklist",
+  "type": "object",
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "description": "The email or Roblox username that is blacklisted from applying (stored lowercase)"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why this person was blacklisted"
+    },
+    "banned_by": {
+      "type": "string",
+      "description": "Email of the admin who blacklisted them"
+    }
+  },
+  "required": [
+    "identifier"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}

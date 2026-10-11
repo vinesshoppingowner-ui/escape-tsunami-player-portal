@@ -9,13 +9,12 @@ import ApplicationBasicSettings from './ApplicationBasicSettings';
 import ApplicationFormSettings from './ApplicationFormSettings';
 import AiApplicationGenerator from './AiApplicationGenerator';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
+import { generateSlug } from '@/lib/applicationSlug';
 
 const SETTINGS_SECTIONS = [
   { id: 'sec-general', label: 'General' },
   { id: 'sec-responses', label: 'Responses' },
   { id: 'sec-access', label: 'Access & Limits' },
-  { id: 'sec-retakes', label: 'Retakes' },
-  { id: 'sec-ai', label: 'AI Screening' },
 ];
 
 export default function ApplicationEditor({ open, onClose, application, onSave }) {
@@ -79,6 +78,12 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
     if (questions.length === 0) { toast({ title: 'Add at least one question', variant: 'destructive' }); return; }
     setSaving(true);
     try {
+      // Generate a unique slug from the title
+      let slug = generateSlug(form.title);
+      const existing = await base44.entities.Application.filter({ slug }, { limit: 5 });
+      const conflicts = (existing?.items || []).filter((a) => a.id !== application?.id);
+      if (conflicts.length) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
+
       const data = {
         ...form,
         title: form.title.trim(),
@@ -87,6 +92,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
         auto_close_at: form.auto_close_at || null,
         questions: JSON.stringify(questions.filter((q) => q.text.trim())),
         settings: JSON.stringify(settings),
+        slug,
       };
       if (application) await base44.entities.Application.update(application.id, data);
       else await base44.entities.Application.create(data);

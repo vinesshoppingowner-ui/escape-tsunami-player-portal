@@ -3,10 +3,11 @@ import { base44 } from '@/api/base44Client';
 import AppIcon from '@/components/apply/AppIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2 } from 'lucide-react';
+import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2, ShieldBan } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponsesBoard from './applications/ResponsesBoard';
+import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
 
 const STATUS_STYLES = {
   draft: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
@@ -33,12 +34,13 @@ export default function ApplicationsTab() {
   const [viewingResponse, setViewingResponse] = useState(null);
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [blacklistOpen, setBlacklistOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const apps = await base44.entities.Application.list('-created_date', 200);
-      setApplications(apps || []);
+      const page = await base44.entities.Application.filter({}, { sort: '-created_date', limit: 200 });
+      setApplications(page?.items || []);
     } catch {
       toast({ title: 'Failed to load applications', variant: 'destructive' });
     } finally {
@@ -51,8 +53,8 @@ export default function ApplicationsTab() {
   const loadResponses = async (app) => {
     setLoadingResponses(true);
     try {
-      const res = await base44.entities.ApplicationResponse.filter({ application_id: app.id }, '-created_date', 500);
-      setResponses(res || []);
+      const res = await base44.entities.ApplicationResponse.filter({ application_id: app.id }, { sort: '-created_date', limit: 500 });
+      setResponses(res?.items || []);
     } catch {
       setResponses([]);
     } finally {
@@ -88,9 +90,14 @@ export default function ApplicationsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search applications..." className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 max-w-xs" />
-        <Button size="sm" onClick={() => openEditor(null)} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
-          <Plus className="h-4 w-4 mr-1" /> Create Application
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" onClick={() => setBlacklistOpen(true)} className="text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 border border-rose-500/20">
+            <ShieldBan className="h-4 w-4 mr-1" /> Blacklist
+          </Button>
+          <Button size="sm" onClick={() => openEditor(null)} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
+            <Plus className="h-4 w-4 mr-1" /> Create Application
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -120,7 +127,7 @@ export default function ApplicationsTab() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/apply/${app.id}`); toast({ title: 'Application link copied' }); }} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Copy application link"><Link2 className="h-4 w-4" /></button>
+                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/apply/${app.slug || app.id}`); toast({ title: 'Application link copied' }); }} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Copy application link"><Link2 className="h-4 w-4" /></button>
                 <button onClick={() => openResponses(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="View responses"><Users className="h-4 w-4" /></button>
                 <button onClick={() => openEditor(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Edit"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => setConfirmDelete(app)} className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400" title="Delete"><Trash2 className="h-4 w-4" /></button>
@@ -131,6 +138,8 @@ export default function ApplicationsTab() {
       )}
 
       <ApplicationEditor open={editorOpen} onClose={() => setEditorOpen(false)} application={editingApp} onSave={load} />
+
+      {blacklistOpen && <ApplicationBlacklistPanel onClose={() => setBlacklistOpen(false)} />}
 
       {confirmDelete && (
         <div className="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-5" onClick={() => setConfirmDelete(null)}>

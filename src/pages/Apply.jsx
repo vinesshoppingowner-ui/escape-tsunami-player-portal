@@ -17,6 +17,8 @@ import AppIcon from '@/components/apply/AppIcon';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 import { evalShowIf, validateField, readPrefillParams } from '@/lib/formLogic';
+import { isObjectId } from '@/lib/applicationSlug';
+import { Ban } from 'lucide-react';
 
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
@@ -36,12 +38,20 @@ export default function Apply() {
   const [editingId, setEditingId] = useState(null);
   const [myResponses, setMyResponses] = useState([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [blacklisted, setBlacklisted] = useState(false);
   const retake = getRetakeState(settings, myResponses);
 
   useEffect(() => {
     (async () => {
       try {
-        const a = await base44.entities.Application.get(id);
+        // Look up by slug first, fall back to ObjectId
+        let a;
+        if (!isObjectId(id)) {
+          const slugPage = await base44.entities.Application.filter({ slug: id }, { limit: 1 });
+          a = slugPage?.items?.[0];
+        }
+        if (!a) a = await base44.entities.Application.get(id);
+
         setApp(a);
         const s = JSON.parse(a.settings || '{}');
         const qs = JSON.parse(a.questions || '[]');
@@ -50,9 +60,17 @@ export default function Apply() {
         // Pre-fill from URL params (?q_<questionId>=value)
         const prefill = readPrefillParams(qs);
         if (Object.keys(prefill).length) setAnswers((prev) => ({ ...prefill, ...prev }));
+
         if (user?.id) {
-          const mine = await base44.entities.ApplicationResponse.filter({ application_id: id, created_by_id: user.id }, '-created_date', 50);
-          setMyResponses(mine || []);
+          const mine = await base44.entities.ApplicationResponse.filter({ application_id: a.id, created_by_id: user.id }, { sort: '-created_date', limit: 50 });
+          setMyResponses(mine?.items || []);
+
+          // Check blacklist
+          const identifiers = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
+          if (identifiers.length) {
+            const blPage = await base44.entities.ApplicationBlacklist.filter({ identifier: { $in: identifiers } }, { limit: 1 });
+            if (blPage?.items?.length) setBlacklisted(true);
+          }
         }
       } catch {} finally {
         setLoading(false);
@@ -189,6 +207,7 @@ export default function Apply() {
   }
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
   if (!user) return <ApplyLogin app={app} />;
+  if (blacklisted) return <ApplyStatusScreen icon={Ban} tone="rose" title="You are restricted">You are not permitted to submit applications. If you believe this is an error, contact a staff member.</ApplyStatusScreen>;
   const allowed = (settings.allowedUsers || []).map((u) => u.toLowerCase());
   const me = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
   if (settings.restrictToUsers && allowed.length && !me.some((v) => allowed.includes(v))) return <ApplyStatusScreen icon={Lock} tone="rose" title="Invite only">"{app.title}" is only open to selected users.</ApplyStatusScreen>;
