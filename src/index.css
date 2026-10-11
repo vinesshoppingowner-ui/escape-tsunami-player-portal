@@ -513,6 +513,18 @@ html[data-fx] body { background-color: #0B0D13; }
 html[data-fx] .min-h-screen.bg-slate-950 { background: transparent !important; }
 .fx-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
 
+/* ===== Content protection for application forms ===== */
+/* Lives in CSS (not JS) so it still works if JavaScript is disabled */
+.apply-no-select, .apply-no-select * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+/* Block "Save as PDF" and "Print" extraction */
+@media print {
+  .apply-no-select { display: none !important; }
+}
+
 /* ===== Mobile / iPhone ===== */
 @media (max-width: 639px) {
   /* iOS zooms in on inputs under 16px — keep them at 16px on phones */

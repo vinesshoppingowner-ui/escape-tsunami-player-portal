@@ -167,9 +167,14 @@ export default function Apply() {
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
     };
 
-    const style = document.createElement('style');
-    style.textContent = '.apply-no-select, .apply-no-select * { user-select: none; -webkit-user-select: none; }';
-    document.head.appendChild(style);
+    // Override Clipboard API so browser extensions can't programmatically copy
+    const clip = navigator.clipboard;
+    const origWrite = clip?.writeText;
+    const origRead = clip?.readText;
+    if (clip) {
+      Object.defineProperty(clip, 'writeText', { value: () => Promise.reject(new Error('blocked')), configurable: true, writable: true });
+      Object.defineProperty(clip, 'readText', { value: () => Promise.reject(new Error('blocked')), configurable: true, writable: true });
+    }
 
     // Attach to document (capture phase) so right-click → paste is caught too
     const events = ['copy', 'cut', 'paste', 'contextmenu', 'selectstart', 'dragstart'];
@@ -177,9 +182,12 @@ export default function Apply() {
     document.addEventListener('keydown', blockKeys, true);
 
     return () => {
-      document.head.removeChild(style);
       events.forEach((ev) => document.removeEventListener(ev, blockEvent, true));
       document.removeEventListener('keydown', blockKeys, true);
+      if (clip) {
+        if (origWrite) Object.defineProperty(clip, 'writeText', { value: origWrite, configurable: true, writable: true });
+        if (origRead) Object.defineProperty(clip, 'readText', { value: origRead, configurable: true, writable: true });
+      }
     };
   }, [settings.blockCopyPaste]);
 
@@ -258,7 +266,7 @@ export default function Apply() {
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
-        <div ref={formRef} className="apply-no-select rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
+        <div ref={formRef} className={`${settings.blockCopyPaste === false ? '' : 'apply-no-select'} rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden`}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
