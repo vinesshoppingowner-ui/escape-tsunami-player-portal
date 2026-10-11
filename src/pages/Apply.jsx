@@ -121,7 +121,7 @@ export default function Apply() {
         await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answers), ...ai });
       } else {
       await base44.entities.ApplicationResponse.create({
-        application_id: id,
+        application_id: app.id,
         application_title: app.title,
         roblox_username: user?.roblox_username || user?.data?.roblox_username || '',
         submitted_by_email: settings.collectEmail === false ? '' : (user?.email || ''),
