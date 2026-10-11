@@ -39,12 +39,14 @@ export default function SettingsDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 border-white/10 bg-slate-950 text-white overflow-hidden">
-        <DialogTitle className="font-display text-xl px-6 pt-6 pb-2">Settings</DialogTitle>
-        <DialogDescription className="px-6 pb-3 text-slate-400 -mt-1">Changes save automatically to your account.</DialogDescription>
-        <div className="flex border-t border-white/[0.06] min-h-[420px]">
+      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 border-white/10 bg-slate-950 text-white overflow-hidden flex flex-col">
+        <div className="shrink-0 px-6 pt-6 pb-3">
+          <DialogTitle className="font-display text-xl">Settings</DialogTitle>
+          <DialogDescription className="text-slate-400 -mt-0.5">Changes save automatically to your account.</DialogDescription>
+        </div>
+        <div className="flex border-t border-white/[0.06] flex-1 min-h-0">
           {/* Sidebar */}
-          <nav className="w-44 shrink-0 border-r border-white/[0.06] p-2 space-y-0.5">
+          <nav className="w-44 shrink-0 border-r border-white/[0.06] p-2 space-y-0.5 overflow-y-auto">
             {TABS.map((t) => (
               <button
                 key={t.id}

@@ -5,6 +5,7 @@ import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, U
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import { RING_STYLE } from '@/components/profile/ProfileMenu';
 
 const tierConfig = (user) => {
   if (isOwner(user)) return { label: 'Owner', icon: Crown, gradient: 'from-amber-400 to-orange-500', text: 'text-amber-300' };
@@ -17,7 +18,7 @@ const navItems = [
   { to: '/my-appeals', label: 'My Appeals', icon: Scale },
 ];
 
-export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef, ringGradient }) {
+export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef }) {
   const dropdownRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
 
@@ -70,7 +71,7 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
               </button>
 
               <div className="flex items-center gap-3">
-                <div className={`shrink-0 p-[3px] rounded-full bg-gradient-to-br ${ringGradient}`}>
+                <div className="shrink-0 p-[3px] rounded-full" style={RING_STYLE}>
                   <div className="h-12 w-12 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
                     {user.roblox_username ? (
                       <RobloxAvatar username={user.roblox_username} size={48} />

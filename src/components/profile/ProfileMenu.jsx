@@ -1,14 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import SettingsDialog from '@/components/profile/SettingsDialog';
 import { useAuth } from '@/lib/AuthContext';
-import { isOwner } from '@/lib/isOwner';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
 
-export function ringGradient(user) {
-  if (isOwner(user)) return 'from-amber-400 to-orange-500';
-  if (user?.role === 'staff') return 'from-violet-400 to-purple-500';
-  return 'from-blue-400 to-cyan-500';
-}
+// Google-style 4-color ring: red (top-right), blue (bottom-right), green (bottom-left), yellow (top-left)
+export const RING_STYLE = {
+  background: 'conic-gradient(from 0deg, #EA4335 0deg 90deg, #4285F4 90deg 180deg, #34A853 180deg 270deg, #FBBC05 270deg 360deg)',
+};
 
 export default function ProfileMenu() {
   const { user } = useAuth();
@@ -29,7 +27,6 @@ export default function ProfileMenu() {
 
   const name = user.full_name || user.roblox_username || user.email;
   const initials = (name || '?').split(/[\s@._]+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
-  const ring = ringGradient(user);
 
   return (
     <>
@@ -37,7 +34,8 @@ export default function ProfileMenu() {
         ref={btnRef}
         aria-label="Open account menu"
         onClick={() => setSwitcherOpen(true)}
-        className={`relative h-9 w-9 rounded-full p-[3px] bg-gradient-to-br ${ring} hover:opacity-90 transition-all shrink-0`}
+        className="relative h-9 w-9 rounded-full p-[3px] shrink-0 hover:opacity-90 transition-opacity"
+        style={RING_STYLE}
       >
         <span className="block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center">
           <RobloxAvatarInline username={user.roblox_username} fallback={initials} />
@@ -49,7 +47,6 @@ export default function ProfileMenu() {
         onClose={() => setSwitcherOpen(false)}
         onOpenSettings={() => setSettingsOpen(true)}
         anchorRef={btnRef}
-        ringGradient={ring}
       />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
