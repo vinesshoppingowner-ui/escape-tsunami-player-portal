@@ -194,23 +194,6 @@ CRITICAL RULES:
                 : 'Describe the application you want and the AI will generate the title, description, and questions for you.'}
             </p>
 
-            {/* AI Tone selector */}
-            <div className="mb-4">
-              <label className="text-xs font-medium text-slate-400 mb-2 block">AI Tone</label>
-              <div className="grid grid-cols-3 gap-2">
-                {TONE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTone(opt.value)}
-                    className={`px-2 py-2.5 rounded-lg text-xs font-medium border transition-colors text-center ${tone === opt.value ? 'bg-violet-500/20 border-violet-500/40 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1.5">{TONE_OPTIONS.find((t) => t.value === tone)?.hint}</p>
-            </div>
-
             {isEditing && (
               <div className="mb-4 flex gap-2">
                 <button
@@ -238,6 +221,23 @@ CRITICAL RULES:
               autoFocus
               className="w-full resize-none rounded-xl bg-white/5 border border-white/10 focus:border-violet-400 outline-none text-sm text-white placeholder:text-slate-500 p-3"
             />
+
+            {/* AI Tone selector */}
+            <div className="mt-4">
+              <label className="text-xs font-medium text-slate-400 mb-2 block">AI Tone</label>
+              <div className="grid grid-cols-3 gap-2">
+                {TONE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTone(opt.value)}
+                    className={`px-2 py-2.5 rounded-lg text-xs font-medium border transition-colors text-center ${tone === opt.value ? 'bg-violet-500/20 border-violet-500/40 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1.5">{TONE_OPTIONS.find((t) => t.value === tone)?.hint}</p>
+            </div>
 
             <div className="mt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <span className="text-xs text-slate-500 hidden sm:block">AI generates title, description, icon &amp; questions</span>
