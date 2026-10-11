@@ -27,7 +27,7 @@ export default function ProfileMenu() {
       <button
         aria-label="Open account switcher"
         onClick={() => setSwitcherOpen(true)}
-        className="relative h-9 w-9 rounded-full p-[2px] bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500 transition-all shrink-0"
+        className="relative h-9 w-9 rounded-full p-[3px] bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500 transition-all shrink-0"
       >
         <span className="block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center">
           {user.roblox_username ? (
