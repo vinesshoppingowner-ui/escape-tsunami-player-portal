@@ -116,21 +116,30 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
   return (
     <div className="fixed inset-0 z-[60] bg-slate-950 overflow-y-auto">
       <div className="sticky top-0 z-10 bg-slate-950/95 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-5xl mx-auto px-5 pt-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-3 sm:px-5 pt-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <button onClick={handleClose} className="p-1.5 rounded-md text-slate-400 hover:bg-white/5"><X className="h-5 w-5" /></button>
-            <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
-            <span className="font-display font-semibold text-white truncate">{form.title || 'Untitled form'}</span>
-            {dirty && <span className="ml-2 inline-flex items-center gap-1 text-xs text-amber-300"><span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" /> Unsaved</span>}
+            <button onClick={handleClose} className="p-1.5 rounded-md text-slate-400 hover:bg-white/5 shrink-0"><X className="h-5 w-5" /></button>
+            <FileText className="h-5 w-5 text-cyan-400 shrink-0 hidden sm:block" />
+            <span className="font-display font-semibold text-white truncate text-sm sm:text-base">{form.title || 'Untitled form'}</span>
+            {dirty && <span className="ml-2 hidden sm:inline-flex items-center gap-1 text-xs text-amber-300 shrink-0"><span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" /> Unsaved</span>}
           </div>
           <div className="flex items-center gap-2">
-            {!application && (
-              <AiApplicationGenerator onGenerate={(data) => {
-                setForm((f) => ({ ...f, title: data.title, description: data.description, icon: data.icon, category: data.category, success_message: data.success_message }));
-                setQuestions(data.questions);
-              }} />
-            )}
-            <Button size="sm" onClick={save} disabled={saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
+            <AiApplicationGenerator
+              isEditing={!!application}
+              existingForm={{ title: form.title, description: form.description, questions }}
+              onGenerate={(data) => {
+                setForm((f) => ({
+                  ...f,
+                  title: data.mode === 'append' ? f.title : data.title,
+                  description: data.mode === 'append' ? f.description : data.description,
+                  icon: data.mode === 'append' ? f.icon : data.icon,
+                  category: data.mode === 'append' ? f.category : data.category,
+                  success_message: data.mode === 'append' ? f.success_message : data.success_message,
+                }));
+                setQuestions((prev) => data.mode === 'append' ? [...prev, ...data.questions] : data.questions);
+              }}
+            />
+            <Button size="sm" onClick={save} disabled={saving} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shrink-0">
               <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -141,7 +150,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-5 py-6">
+      <div className="max-w-5xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
         {tab === 'questions' ? (
           <div className="flex gap-3 items-start">
             <div className="flex-1 min-w-0 space-y-3">
