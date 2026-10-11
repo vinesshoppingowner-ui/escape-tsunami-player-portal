@@ -3,9 +3,9 @@ import SettingsDialog from '@/components/profile/SettingsDialog';
 import { useAuth } from '@/lib/AuthContext';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
 
-// Google-style 4-color ring: red (top-right), blue (bottom-right), green (bottom-left), yellow (top-left)
+// Portal-themed 4-color ring: cyan, violet, amber, rose
 export const RING_STYLE = {
-  background: 'conic-gradient(from 0deg, #EA4335 0deg 90deg, #4285F4 90deg 180deg, #34A853 180deg 270deg, #FBBC05 270deg 360deg)',
+  background: 'conic-gradient(from 200deg, #22d3ee 0deg 90deg, #8b5cf6 90deg 180deg, #f59e0b 180deg 270deg, #f43f5e 270deg 360deg)',
 };
 
 export default function ProfileMenu() {

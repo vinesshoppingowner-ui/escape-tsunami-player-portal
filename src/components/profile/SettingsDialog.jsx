@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Palette, User, Bell, Lock, Type, Image, CloudRain, Droplets, Monitor, Compass, Snowflake } from 'lucide-react';
+import { Palette, User, Bell, Lock, Image, CloudRain, Droplets, Snowflake, Settings as SettingsIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import BackgroundEffectPicker from '@/components/profile/BackgroundEffectPicker';
 import { canUseBgEffects } from '@/lib/backgroundEffects';
 import BackgroundPicker from '@/components/profile/BackgroundPicker';
@@ -39,67 +40,109 @@ export default function SettingsDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 border-white/10 bg-slate-950 text-white overflow-hidden flex flex-col">
-        <div className="shrink-0 px-6 pt-6 pb-3">
-          <DialogTitle className="font-display text-xl">Settings</DialogTitle>
-          <DialogDescription className="text-slate-400 -mt-0.5">Changes save automatically to your account.</DialogDescription>
-        </div>
-        <div className="flex border-t border-white/[0.06] flex-1 min-h-0">
-          {/* Sidebar */}
-          <nav className="w-44 shrink-0 border-r border-white/[0.06] p-2 space-y-0.5 overflow-y-auto">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                  tab === t.id ? 'bg-white/[0.08] text-white' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <t.icon className={`h-4 w-4 ${tab === t.id ? 'text-cyan-300' : 'text-slate-500'}`} />
-                {t.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {tab === 'appearance' && (
-              <>
-                <SettingsSection icon={Palette} title="Theme color" desc="Accent color used across the portal.">
-                  <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
-                  <AccentHexInput active={prefs.accent === 'custom'} hex={prefs.accent_hex} onApply={(accent_hex) => set({ accent: 'custom', accent_hex })} />
-                </SettingsSection>
-                <AppearanceSettings prefs={prefs} set={set} />
-                <SettingsSection icon={Image} title="Background" desc="Pick a background theme, or set your own color or image."
-                  badge={<span className="ml-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">New</span>}>
-                  <BackgroundPicker prefs={prefs} set={set} />
-                </SettingsSection>
-                {canUseBgEffects(user) && (
-                  <SettingsSection icon={CloudRain} title="Background effect" desc="Animated weather and seasonal effects behind the page."
-                    badge={<span className="ml-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-violet-300">Only you</span>}>
-                    <BackgroundEffectPicker value={prefs.background_effect} onChange={(background_effect) => set({ background_effect })} />
-                  </SettingsSection>
-                )}
-                <SettingsSection icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">
-                  <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
-                </SettingsSection>
-                <DisplaySettings prefs={prefs} set={set} />
-                <SettingsSection icon={Snowflake} title="Effects">
-                  <SettingToggle label="Show seasonal effects (snow, sparkles)" checked={prefs.seasonal_effects} onChange={(v) => set({ seasonal_effects: v })} />
-                </SettingsSection>
-              </>
-            )}
-            {tab === 'account' && (
-              <>
-                {user && <AccountSettings user={user} set={set} />}
-                {user && <NavigationSettings prefs={prefs} set={set} />}
-              </>
-            )}
-            {tab === 'notifications' && <NotificationSettings prefs={prefs} set={set} />}
-            {tab === 'privacy' && user && <PrivacySettings prefs={prefs} set={set} user={user} />}
+      <DialogContent className="max-w-[680px] max-h-[85vh] p-0 gap-0 border border-white/10 bg-[#0c0e16] text-white overflow-hidden flex flex-col rounded-2xl">
+        {/* Header */}
+        <div className="shrink-0 px-6 pt-5 pb-4 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-white/10 flex items-center justify-center">
+              <SettingsIcon className="h-4 w-4 text-cyan-300" />
+            </div>
+            <div>
+              <DialogTitle className="font-display text-lg leading-tight">Settings</DialogTitle>
+              <DialogDescription className="text-slate-400 text-xs mt-0.5">Changes save automatically to your account.</DialogDescription>
+            </div>
           </div>
+
+          {/* Horizontal tab pills */}
+          <div className="flex gap-1 mt-4 -mb-1">
+            {TABS.map((t) => {
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    active ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="settings-tab-bg"
+                      className="absolute inset-0 rounded-lg bg-white/[0.08] border border-white/10"
+                      transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
+                    />
+                  )}
+                  <t.icon className={`relative h-3.5 w-3.5 ${active ? 'text-cyan-300' : ''}`} />
+                  <span className="relative">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-3"
+            >
+              {tab === 'appearance' && (
+                <>
+                  <SettingsCard icon={Palette} title="Theme color" desc="Accent color used across the portal.">
+                    <AccentPicker value={prefs.accent} onChange={(accent) => set({ accent })} />
+                    <AccentHexInput active={prefs.accent === 'custom'} hex={prefs.accent_hex} onApply={(accent_hex) => set({ accent: 'custom', accent_hex })} />
+                  </SettingsCard>
+                  <AppearanceSettings prefs={prefs} set={set} />
+                  <SettingsCard icon={Image} title="Background" desc="Pick a background theme, or set your own color or image."
+                    badge={<span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">New</span>}>
+                    <BackgroundPicker prefs={prefs} set={set} />
+                  </SettingsCard>
+                  {canUseBgEffects(user) && (
+                    <SettingsCard icon={CloudRain} title="Background effect" desc="Animated weather and seasonal effects behind the page."
+                      badge={<span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-violet-300">Only you</span>}>
+                      <BackgroundEffectPicker value={prefs.background_effect} onChange={(background_effect) => set({ background_effect })} />
+                    </SettingsCard>
+                  )}
+                  <SettingsCard icon={Droplets} title="Button glass" desc="How see-through the liquid glass buttons are.">
+                    <GlassSlider value={prefs.glass_transparency} onChange={(glass_transparency) => set({ glass_transparency })} />
+                  </SettingsCard>
+                  <DisplaySettings prefs={prefs} set={set} />
+                  <SettingsCard icon={Snowflake} title="Effects">
+                    <SettingToggle label="Show seasonal effects (snow, sparkles)" checked={prefs.seasonal_effects} onChange={(v) => set({ seasonal_effects: v })} />
+                  </SettingsCard>
+                </>
+              )}
+              {tab === 'account' && (
+                <>
+                  {user && <AccountSettings user={user} set={set} />}
+                  {user && <NavigationSettings prefs={prefs} set={set} />}
+                </>
+              )}
+              {tab === 'notifications' && <NotificationSettings prefs={prefs} set={set} />}
+              {tab === 'privacy' && user && <PrivacySettings prefs={prefs} set={set} user={user} />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SettingsCard({ icon: Icon, title, desc, badge, children }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="h-4 w-4 text-slate-400" />
+        <h3 className="text-sm font-semibold text-white">{title}</h3>
+        {badge}
+      </div>
+      {desc && <p className="text-xs text-slate-500 mb-3">{desc}</p>}
+      {children}
+    </div>
   );
 }
