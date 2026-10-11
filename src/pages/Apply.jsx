@@ -365,6 +365,7 @@ export default function Apply() {
             </motion.div>
           </AnimatePresence>
         </div>
+        <p className="mt-6 text-center text-xs text-slate-600">This application was made inside of Dymatic Waves Studios.</p>
       </main>
     </div>
   );
