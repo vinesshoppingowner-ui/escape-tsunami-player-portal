@@ -16,7 +16,7 @@ const navItems = [
   { to: '/my-appeals', label: 'My Appeals', icon: Scale },
 ];
 
-export default function AccountSwitcher({ user, open, onClose, onOpenSettings }) {
+export default function AccountSwitcher({ user, open, onClose, onOpenSettings, hasRing = false }) {
   if (!user) return null;
 
   const name = user.full_name || user.roblox_username || user.email;
@@ -53,8 +53,10 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings })
                   <X className="h-4 w-4" />
                 </button>
 
-                {/* Avatar with Gemini-style gradient ring */}
-                <div className="inline-block p-[4px] rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
+                {/* Avatar with Gemini-style gradient ring (only for Google-linked subscribers) */}
+                <div className={hasRing
+                  ? 'inline-block p-[4px] rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600'
+                  : 'inline-block p-[4px] rounded-full bg-slate-800 ring-2 ring-white/10'}>
                   <div className="h-20 w-20 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
                     {user.roblox_username ? (
                       <RobloxAvatar username={user.roblox_username} size={80} />

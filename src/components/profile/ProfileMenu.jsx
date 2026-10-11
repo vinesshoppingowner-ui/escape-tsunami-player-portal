@@ -1,12 +1,35 @@
 import { useState, useEffect } from 'react';
 import SettingsDialog from '@/components/profile/SettingsDialog';
 import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
 
 export default function ProfileMenu() {
   const { user } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [hasRing, setHasRing] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    // Quick check from localStorage cache (5 min TTL)
+    const cacheKey = `google-ring-${user.id}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const { ts, ring } = JSON.parse(cached);
+        if (Date.now() - ts < 300000) { setHasRing(ring); return; }
+      } catch {}
+    }
+    // Fetch from backend
+    base44.functions.invoke('checkGoogleSubscription')
+      .then((res) => {
+        const ring = res?.data?.has_ring === true;
+        setHasRing(ring);
+        localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), ring }));
+      })
+      .catch(() => {});
+  }, [user?.id]);
 
   if (!user) {
     return (
@@ -27,14 +50,12 @@ export default function ProfileMenu() {
       <button
         aria-label="Open account switcher"
         onClick={() => setSwitcherOpen(true)}
-        className="relative h-9 w-9 rounded-full p-[3px] bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500 transition-all shrink-0"
+        className={hasRing
+          ? 'relative h-9 w-9 rounded-full p-[3px] bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500 transition-all shrink-0'
+          : 'h-9 w-9 rounded-full overflow-hidden bg-slate-800 ring-2 ring-white/10 hover:ring-white/20 transition-all shrink-0 flex items-center justify-center'}
       >
-        <span className="block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center">
-          {user.roblox_username ? (
-            <RobloxAvatarInline username={user.roblox_username} />
-          ) : (
-            <span className="text-xs font-bold text-white">{initials}</span>
-          )}
+        <span className={hasRing ? 'block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center' : 'flex items-center justify-center w-full h-full'}>
+          <RobloxAvatarInline username={user.roblox_username} fallback={initials} />
         </span>
       </button>
       <AccountSwitcher
@@ -42,14 +63,14 @@ export default function ProfileMenu() {
         open={switcherOpen}
         onClose={() => setSwitcherOpen(false)}
         onOpenSettings={() => setSettingsOpen(true)}
+        hasRing={hasRing}
       />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }
 
-// Inline avatar without its own border/ring — the gradient ring is on the parent button
-function RobloxAvatarInline({ username }) {
+function RobloxAvatarInline({ username, fallback }) {
   const [url, setUrl] = useState(null);
   useEffect(() => {
     if (!username) return;
@@ -66,6 +87,6 @@ function RobloxAvatarInline({ username }) {
       .then((u) => u && setUrl(u))
       .catch(() => {});
   }, [username]);
-  if (!url) return <span className="text-xs font-bold text-white">{username?.[0]?.toUpperCase() || '?'}</span>;
+  if (!url) return <span className="text-xs font-bold text-white">{username?.[0]?.toUpperCase() || fallback}</span>;
   return <img src={url} alt={username} className="w-full h-full object-cover" />;
 }
