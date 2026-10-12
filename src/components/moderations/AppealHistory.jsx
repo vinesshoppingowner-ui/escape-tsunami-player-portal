@@ -54,7 +54,7 @@ function AppealTimeline({ status }) {
   );
 }
 
-export default function AppealHistory({ appeals = [], moderations = [] }) {
+export default function AppealHistory({ appeals = [], moderations = [], onViewDetails }) {
   if (!appeals.length) return null;
   const modMap = Object.fromEntries(moderations.map((m) => [m.id, m]));
 
@@ -107,6 +107,15 @@ export default function AppealHistory({ appeals = [], moderations = [] }) {
                 </div>
               ) : (
                 <p className="mt-3 text-xs text-slate-500">No decision yet — your appeal is awaiting review.</p>
+              )}
+
+              {onViewDetails && (
+                <button
+                  onClick={() => onViewDetails(a)}
+                  className="mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  View details →
+                </button>
               )}
             </motion.div>
           );

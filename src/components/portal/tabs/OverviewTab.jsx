@@ -50,7 +50,10 @@ export default function OverviewTab({ portal, onTabChange }) {
             </button>
           )}
           {unreadNotifications.length > 0 && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 text-left">
+            <button
+              onClick={() => onTabChange('appeals')}
+              className="flex items-center gap-3 p-3 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 hover:border-cyan-500/25 transition-colors text-left"
+            >
               <div className="h-9 w-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
                 <Bell className="h-4 w-4 text-cyan-400" />
               </div>
@@ -58,7 +61,8 @@ export default function OverviewTab({ portal, onTabChange }) {
                 <div className="text-sm font-semibold text-white">{unreadNotifications.length}</div>
                 <div className="text-[11px] text-slate-400">Unread notification{unreadNotifications.length !== 1 ? 's' : ''}</div>
               </div>
-            </div>
+              <ArrowRight className="h-3.5 w-3.5 text-slate-500 ml-auto" />
+            </button>
           )}
         </div>
       )}
