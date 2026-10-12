@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, AlertTriangle, Megaphone, FileText, ChevronDown, Bug } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, AlertTriangle, Megaphone, FileText, ChevronDown, Bug, Play } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -103,8 +103,8 @@ export default function SiteNav() {
           </button>
         </div>
       )}
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-6">
-        <div className="md:w-40 shrink-0"><SiteBrand /></div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-5 h-14 md:h-16 flex items-center justify-between gap-4">
+        <div className="shrink-0"><SiteBrand /></div>
 
         <nav className="hidden md:flex flex-1 justify-center items-center gap-0.5">
           {directLinks.map((l) => {
@@ -136,10 +136,15 @@ export default function SiteNav() {
           <ProfileMenu />
         </div>
 
-        <div className="md:hidden flex items-center gap-1">
+        <div className="md:hidden flex items-center gap-0.5">
+          {!user && (
+            <Link to="/login" className="px-3 py-1.5 rounded-lg text-sm font-medium text-cyan-300 hover:bg-white/[0.06] transition-colors">
+              Sign in
+            </Link>
+          )}
           <ProfileMenu />
           <button
-            className="text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+            className="text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors active:scale-95"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle menu"
           >
@@ -148,8 +153,13 @@ export default function SiteNav() {
         </div>
       </div>
 
-      {open && (
-        <div className="md:hidden border-t border-white/[0.06] bg-[#0B0D13]/95 backdrop-blur-xl px-5 py-4 space-y-0.5">
+      {/* Mobile slide-down menu */}
+      <div
+        className={`md:hidden overflow-hidden border-t border-white/[0.06] bg-[#0B0D13]/95 backdrop-blur-xl transition-all duration-300 ease-out ${
+          open ? 'max-h-[480px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-5 py-4 space-y-1">
           {mobileLinks.map((l) => {
             const active = location.pathname === l.to;
             return (
@@ -157,26 +167,39 @@ export default function SiteNav() {
                 key={l.to}
                 to={l.to}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors ${
                   active ? 'text-white bg-white/[0.08]' : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
                 }`}
               >
-                {l.icon && <l.icon className="h-4 w-4 text-cyan-400/70" />}
+                {l.icon && <l.icon className="h-4.5 w-4.5 text-cyan-400/70 shrink-0" style={{ width: '1.125rem', height: '1.125rem' }} />}
                 {l.label}
                 {l.showNew && (
                   <span className="ml-auto px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-bold uppercase tracking-wider leading-none border border-cyan-500/30">New</span>
                 )}
-                {l.showDot && (
-                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500 ml-auto" />
-                )}
               </Link>
             );
           })}
-          <a href={GAME_URL} target="_blank" rel="noreferrer" className="block px-3 py-2.5 rounded-lg text-cyan-300 text-sm hover:bg-white/[0.04] transition-colors">
-            Play on Roblox ↗
+          <a
+            href={GAME_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 justify-center mt-2 px-3 py-3 rounded-xl text-white text-[15px] font-semibold bg-gradient-to-r from-cyan-500 to-blue-600"
+          >
+            <Play className="h-4 w-4" /> Play on Roblox
+            <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-black/25">FREE</span>
           </a>
+          {!user && (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 justify-center px-3 py-3 rounded-xl text-white/90 text-[15px] font-medium border border-white/15 bg-white/5"
+            >
+              <LogIn className="h-4 w-4" /> Sign In
+            </Link>
+          )}
         </div>
-      )}
+      </div>
     </header>
     {barOffset > 0 && <div style={{ height: `${barOffset}px` }} aria-hidden="true" />}
     </>
