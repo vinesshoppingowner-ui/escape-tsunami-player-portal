@@ -47,6 +47,21 @@ export default function BugReports() {
         setLoading(false);
       }
     })();
+
+    // Realtime: when staff website updates/creates a report, it shows here instantly
+    const unsubscribe = base44.entities.BugReport.subscribe((event) => {
+      setReports((prev) => {
+        if (event.type === 'delete') return prev.filter((r) => r.id !== event.data.id);
+        const existing = prev.findIndex((r) => r.id === event.data.id);
+        if (existing !== -1) {
+          const next = [...prev];
+          next[existing] = { ...next[existing], ...event.data };
+          return next.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        }
+        return [event.data, ...prev];
+      });
+    });
+    return unsubscribe;
   }, []);
 
   const submit = async () => {
