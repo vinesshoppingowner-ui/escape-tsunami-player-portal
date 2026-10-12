@@ -3,23 +3,17 @@ import { base44 } from '@/api/base44Client';
 import AppIcon from '@/components/apply/AppIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, FileText, Pencil, Trash2, Users, ChevronLeft, Link2, ShieldBan } from 'lucide-react';
+import { Loader2, Plus, FileText, Pencil, Trash2, Users, Link2, ShieldBan } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
+import { safeParse } from '@/lib/safeParse';
 
 const STATUS_STYLES = {
   draft: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
   open: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   closed: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-};
-
-const RESPONSE_STATUS_STYLES = {
-  submitted: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
-  under_review: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
-  accepted: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  rejected: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
 };
 
 export default function ApplicationsTab() {
@@ -29,9 +23,6 @@ export default function ApplicationsTab() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
   const [viewingApp, setViewingApp] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [loadingResponses, setLoadingResponses] = useState(false);
-  const [viewingResponse, setViewingResponse] = useState(null);
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [blacklistOpen, setBlacklistOpen] = useState(false);
@@ -49,20 +40,6 @@ export default function ApplicationsTab() {
   };
 
   useEffect(() => { load(); }, []);
-
-  const loadResponses = async (app) => {
-    setLoadingResponses(true);
-    try {
-      const res = await base44.entities.ApplicationResponse.filter({ application_id: app.id }, { sort: '-created_date', limit: 500 });
-      setResponses(res?.items || []);
-    } catch {
-      setResponses([]);
-    } finally {
-      setLoadingResponses(false);
-    }
-  };
-
-  const openResponses = (app) => setViewingApp(app);
 
   const openEditor = (app = null) => {
     setEditingApp(app);
@@ -121,14 +98,14 @@ export default function ApplicationsTab() {
                 </div>
                 <p className="text-xs text-slate-500 truncate mt-0.5">{app.description || 'No description'}</p>
                 <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
-                  <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> {JSON.parse(app.questions || '[]').length} questions</span>
+                  <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> {safeParse(app.questions, []).length} questions</span>
                   <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {app.response_count || 0} responses</span>
                   <span>{app.category}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/apply/${app.slug || app.id}`); toast({ title: 'Application link copied' }); }} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Copy application link"><Link2 className="h-4 w-4" /></button>
-                <button onClick={() => openResponses(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="View responses"><Users className="h-4 w-4" /></button>
+                <button onClick={() => setViewingApp(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="View responses"><Users className="h-4 w-4" /></button>
                 <button onClick={() => openEditor(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Edit"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => setConfirmDelete(app)} className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400" title="Delete"><Trash2 className="h-4 w-4" /></button>
               </div>

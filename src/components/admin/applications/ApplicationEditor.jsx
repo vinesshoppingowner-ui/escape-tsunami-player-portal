@@ -10,6 +10,7 @@ import ApplicationFormSettings from './ApplicationFormSettings';
 import AiApplicationGenerator from './AiApplicationGenerator';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 import { generateSlug } from '@/lib/applicationSlug';
+import { safeParse } from '@/lib/safeParse';
 
 const SETTINGS_SECTIONS = [
   { id: 'sec-general', label: 'General' },
@@ -33,8 +34,8 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
     if (!open) return;
     const a = application || {};
     setForm({ title: a.title || '', description: a.description || '', icon: a.icon || '📋', status: a.status || 'draft', category: a.category || 'General', success_message: a.success_message || '', auto_close_at: a.auto_close_at || '' });
-    setQuestions(JSON.parse(a.questions || '[]'));
-    setSettings({ ...defaultSettings(), ...JSON.parse(a.settings || '{}') });
+    setQuestions(safeParse(a.questions, []));
+    setSettings({ ...defaultSettings(), ...safeParse(a.settings, {}) });
     setTab('questions');
     skipDirty.current = true;
     setDirty(false);

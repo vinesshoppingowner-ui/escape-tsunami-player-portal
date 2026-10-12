@@ -119,36 +119,29 @@ export default function Apply() {
     submittingRef.current = true;
     setSubmitting(true);
     try {
-      const visibleIds = new Set(visibleQuestions.map((q) => q.id));
-      const answersToSave = Object.fromEntries(Object.entries(answers).filter(([qid]) => visibleIds.has(qid)));
-      let ai = {};
-      if (settings.aiReviewEnabled) {
-        ai = await runAIReview(app, answersToSave).catch(() => ({}));
-      }
+      const visibleIds = visibleQuestions.map((q) => q.id);
       if (editingId) {
+        // Edits go direct — server-side retake checks only apply to new submissions
+        const answersToSave = Object.fromEntries(Object.entries(answers).filter(([qid]) => visibleIds.includes(qid)));
+        let ai = {};
+        if (settings.aiReviewEnabled) {
+          ai = await runAIReview(app, answersToSave).catch(() => ({}));
+        }
         await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answersToSave), ...ai });
       } else {
-      await base44.entities.ApplicationResponse.create({
-        application_id: app.id,
-        application_title: app.title,
-        roblox_username: user?.roblox_username || user?.data?.roblox_username || '',
-        submitted_by_email: settings.collectEmail === false ? '' : (user?.email || ''),
-        answers: JSON.stringify(answersToSave),
-        status: 'submitted',
-        attempt: retake.attempt,
-        ...ai,
-      });
-      }
-      if (settings.sendCopy && user?.email) {
-        const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        const body = visibleQuestions.map((q) => `<p><b>${esc(q.text)}</b><br/>${esc(formatAnswer(q, answersToSave[q.id]) || '—')}</p>`).join('');
-        base44.integrations.Core.SendEmail({ to: user.email, subject: `Your response: ${app.title}`, body }).catch(() => {});
-      }
-      // Discord webhook alert — fire-and-forget, never blocks submission
-      if (settings.discordAlert !== false) {
-        base44.functions.invoke('discordSend', {
-          message: `New application submitted for **${app.title}** by ${user?.roblox_username || 'Unknown'} (attempt ${retake.attempt}).`,
-        }).catch(() => {});
+        // New submissions go through the backend function for security checks
+        const res = await base44.functions.invoke('submitApplication', {
+          application_id: app.id,
+          answers,
+          visible_question_ids: visibleIds,
+        });
+        if (res?.data?.error) { setError(res.data.error); return; }
+        if (res?.data?.response && settings.aiReviewEnabled) {
+          const ai = await runAIReview(app, answers).catch(() => ({}));
+          if (Object.keys(ai).length) {
+            await base44.entities.ApplicationResponse.update(res.data.response.id, ai).catch(() => {});
+          }
+        }
       }
       localStorage.removeItem(draftKey);
       setSubmitted(true);
