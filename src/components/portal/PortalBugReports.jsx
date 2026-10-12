@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Bug, Loader2, ChevronRight } from 'lucide-react';
+import { Bug, Loader2, ChevronRight, ChevronDown, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_STYLES = {
-  Submitted: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
-  Confirmed: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  Declined: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+  Submitted: { cls: 'bg-amber-500/10 text-amber-300 border-amber-500/20', icon: Clock },
+  Confirmed: { cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', icon: CheckCircle2 },
+  Declined: { cls: 'bg-rose-500/10 text-rose-300 border-rose-500/20', icon: XCircle },
 };
 
-const SEVERITY_STYLES = {
-  Low: 'text-slate-400',
-  Medium: 'text-amber-300',
-  High: 'text-orange-300',
-  Critical: 'text-rose-300',
+const SEV_DOT = {
+  Low: 'bg-slate-400',
+  Medium: 'bg-amber-400',
+  High: 'bg-orange-400',
+  Critical: 'bg-rose-400',
 };
 
 export default function PortalBugReports() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -82,19 +84,64 @@ export default function PortalBugReports() {
         </div>
       ) : (
         <div className="space-y-2">
-          {reports.map((r) => (
-            <div key={r.id} className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3 hover:border-cyan-500/20 transition-colors">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-white truncate">{r.title}</p>
-                  <p className={`text-[11px] mt-0.5 ${SEVERITY_STYLES[r.severity] || 'text-slate-400'}`}>{r.severity} severity</p>
-                </div>
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium border ${STATUS_STYLES[r.status] || STATUS_STYLES.Submitted}`}>
-                  {r.status}
-                </span>
-              </div>
-            </div>
-          ))}
+          {reports.map((r) => {
+            const expanded = expandedId === r.id;
+            const status = STATUS_STYLES[r.status] || STATUS_STYLES.Submitted;
+            const StatusIcon = status.icon;
+            return (
+              <motion.div
+                key={r.id}
+                layout
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-xl bg-white/[0.02] border overflow-hidden transition-colors ${expanded ? 'border-cyan-500/25' : 'border-white/[0.06] hover:border-white/[0.12]'}`}
+              >
+                <button
+                  onClick={() => setExpandedId(expanded ? null : r.id)}
+                  className="w-full text-left p-3.5 flex items-center gap-3"
+                >
+                  <span className={`shrink-0 w-2 h-2 rounded-full ${SEV_DOT[r.severity] || 'bg-slate-400'}`} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium text-white truncate">{r.title}</span>
+                    <span className="block text-[11px] text-slate-500 mt-0.5">
+                      {r.severity} · {new Date(r.created_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                  </span>
+                  <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${status.cls}`}>
+                    <StatusIcon className="h-3 w-3" /> {r.status}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-slate-500 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {expanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3.5 pb-3.5">
+                        <div className="pt-3 border-t border-white/5">
+                          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1.5">Description</p>
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{r.description}</p>
+                          {r.status === 'Confirmed' && (
+                            <p className="mt-3 text-xs text-emerald-300/80 flex items-center gap-1.5">
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Our team confirmed this bug and is working on a fix.
+                            </p>
+                          )}
+                          {r.status === 'Declined' && (
+                            <p className="mt-3 text-xs text-rose-300/80 flex items-center gap-1.5">
+                              <XCircle className="h-3.5 w-3.5" /> This was reviewed and not considered a bug.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

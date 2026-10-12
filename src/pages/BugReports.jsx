@@ -149,28 +149,45 @@ export default function BugReports() {
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
               className="overflow-hidden"
             >
-              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 sm:p-6">
-                <div className="space-y-4">
+              <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 sm:p-6">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                    <Bug className="h-4 w-4 text-cyan-400" />
+                  </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Title</label>
+                    <h3 className="text-sm font-semibold text-white">Report a Bug</h3>
+                    <p className="text-[11px] text-slate-500">Help us improve the portal — describe what went wrong.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-slate-300">Title</label>
+                      <span className="text-[10px] text-slate-600">{form.title.length}/120</span>
+                    </div>
                     <Input
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      placeholder="Brief summary of the bug"
+                      placeholder="e.g. Appeal chat doesn't scroll on mobile"
                       maxLength={120}
-                      className="bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500"
+                      className="bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-cyan-400/30"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-slate-300">Description</label>
+                      <span className="text-[10px] text-slate-600">{form.description.length} chars</span>
+                    </div>
                     <Textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      placeholder="Steps to reproduce, what you expected, and what actually happened..."
+                      placeholder="What were you doing? What did you expect to happen? What actually happened? Include any steps to reproduce the issue."
                       rows={5}
-                      className="bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 resize-y"
+                      className="bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 resize-y focus-visible:ring-cyan-400/30"
                     />
+                    <p className="mt-1.5 text-[11px] text-slate-500">Tip: The more detail you provide, the faster we can fix it.</p>
                   </div>
 
                   <div>
@@ -180,18 +197,19 @@ export default function BugReports() {
                         <button
                           key={s.value}
                           onClick={() => setForm({ ...form, severity: s.value })}
-                          className={`text-left p-2.5 rounded-lg border text-xs transition-all ${form.severity === s.value ? s.cls + ' ring-1 ring-cyan-400/40' : 'border-white/10 bg-white/[0.02] text-slate-400 hover:bg-white/[0.05]'}`}
+                          className={`text-left p-3 rounded-lg border text-xs transition-all ${form.severity === s.value ? s.cls + ' ring-1 ring-cyan-400/40' : 'border-white/10 bg-white/[0.02] text-slate-400 hover:bg-white/[0.05]'}`}
                         >
                           <span className="font-semibold block">{s.label}</span>
-                          <span className="text-[10px] opacity-80">{s.desc}</span>
+                          <span className="text-[10px] opacity-70 mt-0.5 block">{s.desc}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {error && <div className="flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
+                  {error && <div className="flex items-center gap-2 text-sm text-rose-300 bg-rose-500/[0.06] border border-rose-500/15 rounded-lg px-3 py-2"><AlertCircle className="h-4 w-4 shrink-0" /> {error}</div>}
 
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-[11px] text-slate-500">Reporting as <span className="text-slate-300">{user?.roblox_username || user?.data?.roblox_username || user?.email || 'Unknown'}</span></p>
                     <Button
                       onClick={submit}
                       disabled={submitting}
