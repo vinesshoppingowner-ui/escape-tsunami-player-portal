@@ -19,6 +19,7 @@ import QuickLinks from '@/components/portal/QuickLinks';
 import DailyStreakQuest from '@/components/portal/DailyStreakQuest';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import SecurityCard from '@/components/portal/SecurityCard';
+import PortalBugReports from '@/components/portal/PortalBugReports';
 import SectionLabel from '@/components/SectionLabel';
 import { emailPlayer } from '@/lib/userEmails';
 
@@ -319,6 +320,11 @@ export default function Portal() {
             <SectionLabel className="mt-8 mb-3">Account Security</SectionLabel>
 
             <SecurityCard user={user} robloxUsername={savedUsername} />
+
+            {/* Bug Reports */}
+            <SectionLabel className="mt-8 mb-3">Bug Reports</SectionLabel>
+
+            <PortalBugReports />
           </>
         )}
       </main>
