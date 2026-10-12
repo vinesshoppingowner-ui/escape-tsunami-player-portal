@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle, Ban } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplyField from '@/components/apply/ApplyField';
 import ApplyReview from '@/components/apply/ApplyReview';
@@ -19,14 +19,14 @@ import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 import { evalShowIf, validateField, readPrefillParams } from '@/lib/formLogic';
 import { isObjectId } from '@/lib/applicationSlug';
-import { Ban } from 'lucide-react';
-
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
 export default function Apply() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isLoadingAuth } = useAuth();
   const { toast } = useToast();
+  const submittingRef = useRef(false);
+  const [loadError, setLoadError] = useState(false);
   const [app, setApp] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [settings, setSettings] = useState({});
@@ -42,42 +42,45 @@ export default function Apply() {
   const [blacklisted, setBlacklisted] = useState(false);
   const retake = getRetakeState(settings, myResponses);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // Look up by slug first, fall back to ObjectId
-        let a;
-        if (!isObjectId(id)) {
-          const slugPage = await base44.entities.Application.filter({ slug: id }, { limit: 1 });
-          a = slugPage?.items?.[0];
-        }
-        if (!a) a = await base44.entities.Application.get(id);
-
-        setApp(a);
-        const s = JSON.parse(a.settings || '{}');
-        const qs = JSON.parse(a.questions || '[]');
-        setQuestions(s.shuffleQuestions ? [...qs].sort(() => Math.random() - 0.5) : qs);
-        setSettings(s);
-        // Pre-fill from URL params (?q_<questionId>=value)
-        const prefill = readPrefillParams(qs);
-        if (Object.keys(prefill).length) setAnswers((prev) => ({ ...prefill, ...prev }));
-
-        if (user?.id) {
-          const mine = await base44.entities.ApplicationResponse.filter({ application_id: a.id, created_by_id: user.id }, { sort: '-created_date', limit: 50 });
-          setMyResponses(mine?.items || []);
-
-          // Check blacklist
-          const identifiers = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
-          if (identifiers.length) {
-            const blPage = await base44.entities.ApplicationBlacklist.filter({ identifier: { $in: identifiers } }, { limit: 1 });
-            if (blPage?.items?.length) setBlacklisted(true);
-          }
-        }
-      } catch {} finally {
-        setLoading(false);
+  const loadApp = async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      // Look up by slug first, fall back to ObjectId
+      let a;
+      if (!isObjectId(id)) {
+        const slugPage = await base44.entities.Application.filter({ slug: id }, { limit: 1 });
+        a = slugPage?.items?.[0];
       }
-    })();
-  }, [id, user?.id]);
+      if (!a) a = await base44.entities.Application.get(id);
+
+      setApp(a);
+      const s = JSON.parse(a.settings || '{}');
+      const qs = JSON.parse(a.questions || '[]');
+      setQuestions(s.shuffleQuestions ? [...qs].sort(() => Math.random() - 0.5) : qs);
+      setSettings(s);
+      // Pre-fill from URL params (?q_<questionId>=value)
+      const prefill = readPrefillParams(qs);
+      if (Object.keys(prefill).length) setAnswers((prev) => ({ ...prefill, ...prev }));
+
+      if (user?.id) {
+        const mine = await base44.entities.ApplicationResponse.filter({ application_id: a.id, created_by_id: user.id }, { sort: '-created_date', limit: 50 });
+        setMyResponses(mine?.items || []);
+
+        // Check blacklist
+        const identifiers = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
+        if (identifiers.length) {
+          const blPage = await base44.entities.ApplicationBlacklist.filter({ identifier: { $in: identifiers } }, { limit: 1 });
+          if (blPage?.items?.length) setBlacklisted(true);
+        }
+      }
+    } catch (e) {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { loadApp(); }, [id, user?.id]);
 
   // Questions visible after conditional logic evaluation
   const visibleQuestions = questions.filter((q) => evalShowIf(q, answers));
@@ -86,7 +89,7 @@ export default function Apply() {
   useEffect(() => {
     if (settings.disableAutosave) return;
     const saved = localStorage.getItem(draftKey);
-    if (saved) setAnswers(JSON.parse(saved));
+    if (saved) { try { setAnswers(JSON.parse(saved)); } catch {} }
   }, [draftKey, settings.disableAutosave]);
   useEffect(() => {
     if (!settings.disableAutosave && !editingId && Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
@@ -104,42 +107,47 @@ export default function Apply() {
       if (err) { setError(err); return; }
     }
     setError('');
-    setStep((s) => Math.min(s + 1, singlePage ? total : total));
+    setStep((s) => Math.min(s + 1, total));
   };
   const goBack = () => { setError(''); setStep((s) => Math.max(s - 1, -1)); };
 
   const submit = async () => {
+    if (submittingRef.current) return;
     const firstBad = visibleQuestions.findIndex((q) => validateQuestion(q));
     if (firstBad !== -1) { setStep(singlePage ? 0 : firstBad); setError(validateQuestion(visibleQuestions[firstBad])); return; }
     if (!termsAccepted) { setError('Please accept the terms before submitting.'); return; }
+    submittingRef.current = true;
     setSubmitting(true);
     try {
+      const visibleIds = new Set(visibleQuestions.map((q) => q.id));
+      const answersToSave = Object.fromEntries(Object.entries(answers).filter(([qid]) => visibleIds.has(qid)));
       let ai = {};
       if (settings.aiReviewEnabled) {
-        ai = await runAIReview(app, answers).catch(() => ({}));
+        ai = await runAIReview(app, answersToSave).catch(() => ({}));
       }
       if (editingId) {
-        await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answers), ...ai });
+        await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answersToSave), ...ai });
       } else {
       await base44.entities.ApplicationResponse.create({
         application_id: app.id,
         application_title: app.title,
         roblox_username: user?.roblox_username || user?.data?.roblox_username || '',
         submitted_by_email: settings.collectEmail === false ? '' : (user?.email || ''),
-        answers: JSON.stringify(answers),
+        answers: JSON.stringify(answersToSave),
         status: 'submitted',
         attempt: retake.attempt,
         ...ai,
       });
       }
       if (settings.sendCopy && user?.email) {
-        const body = questions.map((q) => `<p><b>${q.text}</b><br/>${formatAnswer(q, answers[q.id]) || '—'}</p>`).join('');
+        const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const body = visibleQuestions.map((q) => `<p><b>${esc(q.text)}</b><br/>${esc(formatAnswer(q, answersToSave[q.id]) || '—')}</p>`).join('');
         base44.integrations.Core.SendEmail({ to: user.email, subject: `Your response: ${app.title}`, body }).catch(() => {});
       }
       // Discord webhook alert — fire-and-forget, never blocks submission
       if (settings.discordAlert !== false) {
         base44.functions.invoke('discordSend', {
-          message: `New application submitted for **${app.title}** by ${user?.roblox_username || user?.email || 'Unknown'} (attempt ${retake.attempt}).`,
+          message: `New application submitted for **${app.title}** by ${user?.roblox_username || 'Unknown'} (attempt ${retake.attempt}).`,
         }).catch(() => {});
       }
       localStorage.removeItem(draftKey);
@@ -148,72 +156,37 @@ export default function Apply() {
       toast({ title: 'Failed to submit', description: e.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
+      submittingRef.current = false;
     }
   };
 
-  // Block copy/paste/right-click/text-selection when the setting is enabled (default on)
   const formRef = useRef(null);
-  useEffect(() => {
-    if (settings.blockCopyPaste === false) return;
-    const isInsideForm = (target) => formRef.current && formRef.current.contains(target);
-
-    const blockEvent = (e) => {
-      if (isInsideForm(e.target)) e.preventDefault();
-    };
-    const blockKeys = (e) => {
-      if (!isInsideForm(e.target)) return;
-      const k = (e.key || '').toLowerCase();
-      // Block Ctrl/Cmd+C, X, V, A, S, P, U and dev-tool shortcuts
-      if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'v', 'a', 's', 'p', 'u', 'i', 'j'].includes(k)) e.preventDefault();
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
-    };
-
-    // Override Clipboard API so browser extensions can't programmatically copy
-    const clip = navigator.clipboard;
-    const origWrite = clip?.writeText;
-    const origRead = clip?.readText;
-    if (clip) {
-      Object.defineProperty(clip, 'writeText', { value: () => Promise.reject(new Error('blocked')), configurable: true, writable: true });
-      Object.defineProperty(clip, 'readText', { value: () => Promise.reject(new Error('blocked')), configurable: true, writable: true });
-    }
-
-    // Attach to document (capture phase) so right-click → paste is caught too
-    const events = ['copy', 'cut', 'paste', 'contextmenu', 'selectstart', 'dragstart'];
-    events.forEach((ev) => document.addEventListener(ev, blockEvent, true));
-    document.addEventListener('keydown', blockKeys, true);
-
-    return () => {
-      events.forEach((ev) => document.removeEventListener(ev, blockEvent, true));
-      document.removeEventListener('keydown', blockKeys, true);
-      if (clip) {
-        if (origWrite) Object.defineProperty(clip, 'writeText', { value: origWrite, configurable: true, writable: true });
-        if (origRead) Object.defineProperty(clip, 'readText', { value: origRead, configurable: true, writable: true });
-      }
-    };
-  }, [settings.blockCopyPaste]);
 
   useEffect(() => {
     const onKey = (e) => {
       // Ctrl/Cmd+Enter submits from anywhere in the form
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (step >= total && total > 0) submit();
+        if (!submittingRef.current) submit();
         return;
       }
       if (e.key !== 'Enter' || e.shiftKey || e.target.tagName === 'TEXTAREA') return;
-      if (step >= 0 && step < total) { e.preventDefault(); goNext(); }
+      const tag = e.target.tagName;
+      if (['BUTTON', 'A', 'SELECT'].includes(tag) || (tag === 'INPUT' && ['checkbox', 'radio'].includes(e.target.type))) return;
+      if (!singlePage && step >= 0 && step < total) { e.preventDefault(); goNext(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  if (loading) {
+  if (loading || isLoadingAuth) {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
         <div className="flex items-center justify-center pt-20 text-slate-400"><Loader2 className="h-6 w-6 animate-spin text-cyan-400 mr-2" /> Loading application…</div>
       </div>
     );
   }
+  if (loadError) return <ApplyStatusScreen icon={AlertCircle} tone="slate" title="Couldn't load">Something went wrong loading this application. <button onClick={() => { setLoadError(false); loadApp(); }} className="mt-2 text-cyan-300 hover:underline">Retry</button></ApplyStatusScreen>;
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
   if (!user) return <ApplyLogin app={app} />;
   if (blacklisted) return <ApplyStatusScreen icon={Ban} tone="rose" title="You are restricted">You are not permitted to submit applications. If you believe this is an error, contact a staff member.</ApplyStatusScreen>;
@@ -246,28 +219,25 @@ export default function Apply() {
     );
   }
 
-  const answered = questions.filter((q) => !isEmpty(answers[q.id])).length;
-  const progress = step < 0 ? 0 : step >= total ? 100 : (step / total) * 100;
-
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <main className="max-w-2xl mx-auto px-5 pt-16 pb-24">
         <div className="flex items-center justify-between mb-4">
           <Link to="/applications" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> All applications</Link>
-          <div className="text-xs text-slate-500">{Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : singlePage ? 'All questions' : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
+          <div className="text-xs text-slate-500">{!settings.disableAutosave && !editingId && Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : singlePage ? 'All questions' : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
         </div>
 
         {settings.showProgressBar === false ? <div className="mb-8" /> : step < 0 ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8" />
         ) : singlePage ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8 overflow-hidden">
-            <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${total ? (questions.filter((q) => !isEmpty(answers[q.id])).length / total) * 100 : 0}%` }} />
+            <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${total ? Math.min((visibleQuestions.filter((q) => !isEmpty(answers[q.id])).length / total) * 100, 100) : 0}%` }} />
           </div>
         ) : (
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
-        <div ref={formRef} className={`${settings.blockCopyPaste === false ? '' : 'apply-no-select'} rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden`}>
+        <div ref={formRef} className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
