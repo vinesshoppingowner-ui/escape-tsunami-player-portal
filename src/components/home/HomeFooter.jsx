@@ -36,7 +36,7 @@ export default function HomeFooter() {
         </div>
         <div className="pt-6 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-slate-600">© {new Date().getFullYear()} Escape Tsunami for Developers. All rights reserved.</p>
-          <p className="text-xs text-slate-600">Built with <span className="text-cyan-400">Base44</span></p>
+  
         </div>
       </div>
     </footer>

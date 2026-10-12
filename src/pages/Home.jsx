@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Eye, ThumbsUp, TrendingUp, Clock, Play, LogIn } from 'lucide-react';
+import { Eye, ThumbsUp, Heart, Play, LogIn } from 'lucide-react';
 import { useReducedMotion } from 'framer-motion';
 import SiteNav from '@/components/SiteNav';
 import DiscordInviteSection from '@/components/home/DiscordInviteSection';
@@ -12,7 +12,6 @@ import HowToPlay from '@/components/home/HowToPlay';
 import HomeFAQ from '@/components/home/HomeFAQ';
 import StaffSection from '@/components/home/StaffSection';
 import HomeFooter from '@/components/home/HomeFooter';
-import LatestUpdates from '@/components/home/LatestUpdates';
 import SocialProof from '@/components/home/SocialProof';
 import StickyPlayButton from '@/components/home/StickyPlayButton';
 
@@ -46,8 +45,7 @@ export default function Home() {
   const stats = [
     { icon: Eye, label: 'Total Visits', value: statsLoading ? null : live?.visits, countUp: true },
     { icon: ThumbsUp, label: 'Like Ratio', value: statsLoading ? null : live?.likeRatio, suffix: '%', countUp: true },
-    { icon: TrendingUp, label: 'Peak Players', value: statsLoading ? null : live?.maxPlayers, countUp: true },
-    { icon: Clock, label: 'Last Updated', value: statsLoading ? null : 'live', relative: true },
+    { icon: Heart, label: 'Favorites', value: statsLoading ? null : live?.favorites, countUp: true },
   ];
 
   const robloxUsername = user?.roblox_username || user?.data?.roblox_username;
@@ -154,7 +152,6 @@ export default function Home() {
 
       <FeaturesRow />
       <HowToPlay />
-      <LatestUpdates />
       <HomeFAQ />
       <StaffSection />
       <DiscordInviteSection />
