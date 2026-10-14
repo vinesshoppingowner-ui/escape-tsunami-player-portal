@@ -9,11 +9,14 @@ import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import { Navigate } from 'react-router-dom';
 import Home from './pages/Home';
+import RoleSelect from './pages/RoleSelect';
 import Portal from './pages/Portal';
 import MyAppeals from './pages/MyAppeals';
 import Applications from './pages/Applications';
 import Apply from './pages/Apply';
 import ManageApplications from './pages/ManageApplications';
+import AdminDashboard from './pages/AdminDashboard';
+import TeachingDashboard from './pages/TeachingDashboard';
 import RobloxCallback from './pages/RobloxCallback';
 import BugReports from './pages/BugReports';
 import Login from '@/pages/Login';
@@ -62,7 +65,10 @@ const AuthenticatedApp = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
+        <Route path="/role-select" element={<RoleSelect />} />
         <Route path="/portal" element={<Portal />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/teaching" element={<TeachingDashboard />} />
         <Route path="/apply/:id" element={<Apply />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppeals />} />
