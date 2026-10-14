@@ -1,6 +1,6 @@
 import AppealChat from '@/components/appeals/AppealChat';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollText, Calendar, Clock, UserCog, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
+import { ScrollText, Calendar, Clock, UserCog, MessageSquare, CheckCircle2, XCircle, Eye, FileSearch, CheckCircle } from 'lucide-react';
 
 const STATUS_STYLES = {
   Pending: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -9,6 +9,19 @@ const STATUS_STYLES = {
   Denied: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
 };
 const STATUS_ICON = { Pending: Clock, 'Under Review': Clock, Approved: CheckCircle2, Denied: XCircle };
+
+const THREAD_STATUS_STYLES = {
+  'Awaiting Review': 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+  'Under Review': 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+  'Awaiting Evidence': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+  'Resolved': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+};
+const THREAD_STATUS_ICON = {
+  'Awaiting Review': Clock,
+  'Under Review': Eye,
+  'Awaiting Evidence': FileSearch,
+  'Resolved': CheckCircle,
+};
 
 export default function AppealDetailsModal({ open, onClose, appeals = [], moderations = [] }) {
   const modMap = Object.fromEntries(moderations.map((m) => [m.id, m]));
@@ -58,11 +71,22 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
                   <div className="mt-4 text-[11px] uppercase tracking-wider text-slate-500 font-medium mb-1">Your Appeal</div>
                   <p className="text-sm text-slate-300">{a.appeal_reason}</p>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Status</div>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[a.status] || ''}`}>
-                      <StatusIcon className="h-3.5 w-3.5" /> {a.status}
-                    </span>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Decision</span>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[a.status] || ''}`}>
+                        <StatusIcon className="h-3.5 w-3.5" /> {a.status}
+                      </span>
+                    </div>
+                    {a.thread_status && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Thread</span>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${THREAD_STATUS_STYLES[a.thread_status] || ''}`}>
+                          {(() => { const TI = THREAD_STATUS_ICON[a.thread_status] || Clock; return <TI className="h-3.5 w-3.5" />; })()}
+                          {a.thread_status}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {a.staff_response ? (

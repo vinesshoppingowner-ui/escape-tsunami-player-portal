@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ShieldAlert, Clock, UserCog, CheckCircle2, XCircle, Hourglass, Eye, FileText } from 'lucide-react';
+import { ShieldAlert, Clock, UserCog, CheckCircle2, XCircle, Hourglass, Eye, FileText, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import EvidenceDialog from '@/components/moderations/EvidenceDialog';
+import { matchRule } from '@/lib/communityRules';
 
 const typeStyles = {
   Warning: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -35,6 +36,7 @@ export default function ModerationCard({ moderation, appeal, onAppeal, appealsLo
     ? new Date(moderation.moderation_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : '—';
 
+  const ruleLink = matchRule(moderation.reason);
   const a = appeal ? appealBadge[appeal.status] : null;
   const isDenied = appeal?.status === 'Denied';
   const canReappeal = appeal ? appeal.can_reappeal !== false && !(appeal.reappeal_after && new Date(appeal.reappeal_after) > new Date()) : true;
@@ -72,6 +74,17 @@ export default function ModerationCard({ moderation, appeal, onAppeal, appealsLo
         <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {date}</span>
         {moderation.duration && <span className="flex items-center gap-1.5"><Hourglass className="h-3.5 w-3.5" /> {moderation.duration}</span>}
         {moderation.staff_member && <span className="flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> by {moderation.staff_member}</span>}
+        {ruleLink && (
+          <a
+            href={ruleLink.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
+            title={`Read the rule: ${ruleLink.section}`}
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Read the rule
+          </a>
+        )}
         {hasEvidence && (
           <button
             onClick={() => setEvidenceOpen(true)}

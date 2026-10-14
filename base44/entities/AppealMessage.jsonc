@@ -27,6 +27,10 @@
       "type": "string",
       "description": "Private file URI of an attached image"
     },
+    "video_url": {
+      "type": "string",
+      "description": "URL of an attached video clip (YouTube, Medal.tv, etc.) for staff review"
+    },
     "internal": {
       "type": "boolean",
       "description": "Staff-only note, never visible to the player",

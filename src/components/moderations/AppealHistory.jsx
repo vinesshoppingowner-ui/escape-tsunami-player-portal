@@ -9,6 +9,13 @@ const STATUS_STYLES = {
 };
 const STATUS_ICON = { Pending: Clock, 'Under Review': Clock, Approved: CheckCircle2, Denied: XCircle };
 
+const THREAD_STATUS_STYLES = {
+  'Awaiting Review': 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+  'Under Review': 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+  'Awaiting Evidence': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+  'Resolved': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+};
+
 function AppealTimeline({ status }) {
   const steps = [
     { key: 'submitted', label: 'Submitted', reached: true },
@@ -90,9 +97,16 @@ export default function AppealHistory({ appeals = [], moderations = [], onViewDe
                   </div>
                   <p className="mt-2 text-sm text-slate-300">{a.appeal_reason}</p>
                 </div>
-                <span className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${style.badge}`}>
-                  <StatusIcon className="h-3.5 w-3.5" /> {a.status}
-                </span>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${style.badge}`}>
+                    <StatusIcon className="h-3.5 w-3.5" /> {a.status}
+                  </span>
+                  {a.thread_status && (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${THREAD_STATUS_STYLES[a.thread_status] || ''}`}>
+                      {a.thread_status}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <AppealTimeline status={a.status} />

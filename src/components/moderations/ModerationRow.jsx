@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { FileText, ChevronDown } from 'lucide-react';
+import { FileText, ChevronDown, BookOpen } from 'lucide-react';
 import EvidenceDialog from '@/components/moderations/EvidenceDialog';
+import { matchRule } from '@/lib/communityRules';
 
 export const ROW_GRID = 'grid grid-cols-[minmax(0,1fr)_96px] sm:grid-cols-[minmax(0,1.8fr)_1fr_1fr_1fr_96px] items-center gap-3';
 
@@ -33,6 +34,7 @@ export default function ModerationRow({ moderation: m, appeal, onAppeal, appeals
   const [open, setOpen] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const hasEvidence = (m.evidence_type === 'chat_log' && m.evidence_text) || (m.evidence_type === 'screenshot' && m.evidence_image_url) || m.evidence_files?.length > 0;
+  const ruleLink = matchRule(m.reason);
   const date = m.moderation_date ? new Date(m.moderation_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const isDenied = appeal?.status === 'Denied';
   const canAppeal = !appealsLocked && (!appeal || (isDenied && appeal.can_reappeal !== false && !(appeal.reappeal_after && new Date(appeal.reappeal_after) > new Date())));
@@ -68,6 +70,11 @@ export default function ModerationRow({ moderation: m, appeal, onAppeal, appeals
           {m.details && <p className="text-sm text-slate-300 leading-relaxed">{m.details}</p>}
           {m.staff_member && <div>Issued by <span className="text-slate-300">{m.staff_member}</span></div>}
           {appeal?.staff_response && <p className="italic">Staff: “{appeal.staff_response}”</p>}
+          {ruleLink && (
+            <a href={ruleLink.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200">
+              <BookOpen className="h-3.5 w-3.5" /> Read the rule: {ruleLink.section}
+            </a>
+          )}
           {hasEvidence && (
             <button onClick={() => setEvidenceOpen(true)} className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200">
               <FileText className="h-3.5 w-3.5" /> View evidence

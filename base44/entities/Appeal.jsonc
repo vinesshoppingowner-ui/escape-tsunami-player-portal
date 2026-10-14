@@ -46,6 +46,17 @@
       ],
       "default": "Pending"
     },
+    "thread_status": {
+      "type": "string",
+      "description": "Current status of the appeal conversation thread, set by staff",
+      "enum": [
+        "Awaiting Review",
+        "Under Review",
+        "Awaiting Evidence",
+        "Resolved"
+      ],
+      "default": "Awaiting Review"
+    },
     "staff_response": {
       "type": "string",
       "description": "Optional response from the staff team reviewing the appeal, shown to the player"

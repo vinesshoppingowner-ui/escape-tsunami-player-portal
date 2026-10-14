@@ -1,24 +1,30 @@
 import { useRef, useState } from 'react';
-import { Loader2, Send, ImagePlus, X, Zap, Lock } from 'lucide-react';
+import { Loader2, Send, ImagePlus, X, Zap, Lock, Video } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CHAT_QUICK_REPLIES } from '@/lib/chatQuickReplies';
+import { isValidVideoUrl } from '@/components/appeals/VideoAttachment';
 
 export default function AppealChatInput({ isStaff, onSend, onTyping }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
   const [sending, setSending] = useState(false);
   const [note, setNote] = useState(false);
   const fileRef = useRef(null);
 
   const submit = async (e) => {
     e.preventDefault();
-    if ((!text.trim() && !file) || sending) return;
+    if ((!text.trim() && !file && !videoUrl.trim()) || sending) return;
+    if (videoUrl.trim() && !isValidVideoUrl(videoUrl.trim())) return;
     setSending(true);
-    await onSend(text.trim(), file, note);
+    await onSend(text.trim(), file, note, videoUrl.trim() || undefined);
     setText('');
     setFile(null);
+    setVideoUrl('');
     setSending(false);
   };
+
+  const hasVideo = videoUrl.trim() && isValidVideoUrl(videoUrl.trim());
 
   return (
     <form onSubmit={submit} className="border-t border-white/10 p-2 space-y-2">
@@ -28,10 +34,19 @@ export default function AppealChatInput({ isStaff, onSend, onTyping }) {
           <button type="button" onClick={() => setFile(null)} className="text-slate-400 hover:text-white"><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
+      {videoUrl.trim() && (
+        <div className="flex items-center gap-2 text-xs text-slate-300 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5">
+          <Video className="h-3.5 w-3.5 text-rose-400" /> <span className="truncate flex-1">{videoUrl}</span>
+          <button type="button" onClick={() => setVideoUrl('')} className="text-slate-400 hover:text-white"><X className="h-3.5 w-3.5" /></button>
+        </div>
+      )}
       <div className="flex gap-2 items-center">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
         <button type="button" onClick={() => fileRef.current?.click()} title="Attach image" className="h-9 w-9 shrink-0 rounded-full border border-white/15 text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center">
           <ImagePlus className="h-4 w-4" />
+        </button>
+        <button type="button" onClick={() => { const url = prompt('Paste a video link (YouTube, Medal.tv, Streamable):'); if (url) setVideoUrl(url); }} title="Attach video link" className={`h-9 w-9 shrink-0 rounded-full border flex items-center justify-center ${hasVideo ? 'border-rose-500/50 bg-rose-500/15 text-rose-300' : 'border-white/15 text-slate-300 hover:text-white hover:bg-white/10'}`}>
+          <Video className="h-4 w-4" />
         </button>
         {isStaff && (
           <DropdownMenu>

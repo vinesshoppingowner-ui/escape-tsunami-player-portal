@@ -1,5 +1,6 @@
 import { ShieldCheck, Check, CheckCheck, Lock, Trash2 } from 'lucide-react';
 import ChatImage from '@/components/appeals/ChatImage';
+import VideoAttachment from '@/components/appeals/VideoAttachment';
 
 export default function AppealChatMessage({ msg, mine, receipt, onDelete }) {
   return (
@@ -21,6 +22,7 @@ export default function AppealChatMessage({ msg, mine, receipt, onDelete }) {
         </div>
         {msg.message && <p className="text-sm text-slate-100 whitespace-pre-wrap break-words">{msg.message}</p>}
         {msg.image_uri && <ChatImage uri={msg.image_uri} />}
+        {msg.video_url && <VideoAttachment url={msg.video_url} />}
       </div>
       {onDelete && (
         <button type="button" onClick={onDelete} title="Delete message" className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-300 p-1">

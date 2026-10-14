@@ -38,7 +38,7 @@ export default function AppealChat({ appeal }) {
     if (presence.ready && lastId) presence.markSeen(lastId);
   }, [lastId, presence.ready]);
 
-  const send = async (message, file, internal = false) => {
+  const send = async (message, file, internal = false, video_url = undefined) => {
     const cleanMsg = (!isStaff || internal) ? censorMessage(message) : message;
     const image_uri = file ? (await base44.integrations.Core.UploadPrivateFile({ file })).file_uri : undefined;
     const created = await base44.entities.AppealMessage.create({
@@ -48,6 +48,7 @@ export default function AppealChat({ appeal }) {
       sender_is_staff: isStaff,
       message: cleanMsg,
       image_uri,
+      video_url,
       internal: isStaff && internal,
     });
     addLocal(created);
