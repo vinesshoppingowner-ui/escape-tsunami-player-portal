@@ -23,7 +23,7 @@ export default function LandingRedirect() {
       const saved = getAdminRole();
       if (saved && pathname === '/') {
         markRoleChecked();
-        navigate(saved === 'admin' ? '/admin' : '/teaching', { replace: true });
+        navigate(saved === 'admin' ? '/admin' : '/portal', { replace: true });
         return;
       }
       if (pathname === '/') {

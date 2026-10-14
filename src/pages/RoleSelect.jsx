@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { setAdminRole, markRoleChecked } from '@/lib/adminRole';
-import { Shield, GraduationCap, ArrowRight } from 'lucide-react';
+import { Shield, GraduationCap, ArrowRight, LogOut } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 
 export default function RoleSelect() {
@@ -11,7 +11,7 @@ export default function RoleSelect() {
   const choose = (role) => {
     setAdminRole(role);
     markRoleChecked();
-    navigate(role === 'admin' ? '/admin' : '/teaching', { replace: true });
+    navigate(role === 'admin' ? '/admin' : '/portal', { replace: true });
   };
 
   return (
@@ -37,7 +37,7 @@ export default function RoleSelect() {
                 <GraduationCap className="h-6 w-6 text-cyan-300" />
               </div>
               <div>
-                <h2 className="text-xl font-display font-bold">Teaching</h2>
+                <h2 className="text-xl font-display font-bold">Members Portal</h2>
                 <p className="text-xs text-cyan-300/70 uppercase tracking-wider font-semibold">Member Portal</p>
               </div>
             </div>
@@ -45,7 +45,7 @@ export default function RoleSelect() {
               View your moderation history, submit appeals, track applications, and manage your account standing.
             </p>
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-cyan-300 group-hover:gap-2.5 transition-all">
-              Enter Teaching <ArrowRight className="h-4 w-4" />
+              Enter Members Portal <ArrowRight className="h-4 w-4" />
             </span>
           </button>
 
