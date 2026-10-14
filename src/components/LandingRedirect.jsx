@@ -2,11 +2,9 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { useUserPrefs } from '@/lib/userPrefs';
-import { isOwner } from '@/lib/isOwner';
-import { getAdminRole, hasRoleChecked, markRoleChecked } from '@/lib/adminRole';
 
 // Sends signed-in users to their chosen start page once per visit.
-// Admins who haven't picked a role yet go to /role-select first.
+// Staff destination selection is handled by StaffDestinationModal overlay.
 export default function LandingRedirect() {
   const { user } = useAuth();
   const { landing_page } = useUserPrefs();
@@ -17,20 +15,6 @@ export default function LandingRedirect() {
   useEffect(() => {
     if (!user || sessionStorage.getItem('et_landed')) return;
     sessionStorage.setItem('et_landed', '1');
-
-    // Admins must choose a workspace role before proceeding
-    if (isOwner(user) && !hasRoleChecked()) {
-      const saved = getAdminRole();
-      if (saved && pathname === '/') {
-        markRoleChecked();
-        navigate(saved === 'admin' ? '/admin' : '/portal', { replace: true });
-        return;
-      }
-      if (pathname === '/') {
-        navigate('/role-select', { replace: true });
-        return;
-      }
-    }
 
     if (pathname === '/' && landing_page && landing_page !== '/' && VALID_LANDING_PAGES.includes(landing_page)) {
       navigate(landing_page, { replace: true });

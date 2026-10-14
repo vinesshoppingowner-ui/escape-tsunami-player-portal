@@ -9,7 +9,6 @@ import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import { Navigate } from 'react-router-dom';
 import Home from './pages/Home';
-import RoleSelect from './pages/RoleSelect';
 import Portal from './pages/Portal';
 import MyAppeals from './pages/MyAppeals';
 import Applications from './pages/Applications';
@@ -34,6 +33,7 @@ import AccentApplier from '@/components/AccentApplier';
 import LandingRedirect from '@/components/LandingRedirect';
 import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
+import StaffDestinationModal from '@/components/StaffDestinationModal';
 import ClickSound from '@/components/ClickSound';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
@@ -64,7 +64,6 @@ const AuthenticatedApp = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
-        <Route path="/role-select" element={<RoleSelect />} />
         <Route path="/portal" element={<Portal />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/apply/:id" element={<Apply />} />
@@ -88,6 +87,7 @@ const AuthenticatedApp = () => {
         {!isLoading && <LandingRedirect />}
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
+        {!isLoading && <StaffDestinationModal />}
         <ClickSound />
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />
