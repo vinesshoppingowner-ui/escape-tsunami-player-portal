@@ -101,7 +101,7 @@ export default function DashboardPortalControls({ settings, update }) {
         <Textarea
           value={settings.welcome_message || ''}
           onChange={(e) => update({ welcome_message: e.target.value })}
-          placeholder="Welcome to the Escape Tsunami Player Portal! Track your moderation history and submit appeals."
+          placeholder="Welcome to the Escape Tsunami for Developers Player Portal! Track your moderation history and submit appeals."
           className="bg-slate-950/60 border-white/15 text-white min-h-[60px]"
         />
         <p className="text-xs text-slate-500 mt-1">Shown to visitors on the home page. Leave empty for the default message.</p>

@@ -50,7 +50,7 @@ export default function BanOverlay({ user }) {
           </div>
 
           <h1 className="text-2xl font-bold text-white tracking-tight">Account banned</h1>
-          <p className="mt-1.5 text-sm text-slate-400">You can't use the Escape Tsunami portal right now.</p>
+          <p className="mt-1.5 text-sm text-slate-400">You can't use the Escape Tsunami for Developers portal right now.</p>
         </div>
 
         {/* Body */}

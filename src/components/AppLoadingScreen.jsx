@@ -9,9 +9,9 @@ export default function AppLoadingScreen() {
       <div className="relative flex flex-col items-center">
         <div className="relative h-24 w-24">
           <div className="absolute inset-0 rounded-[28px] bg-cyan-400/30 blur-xl animate-pulse-slow" />
-          <img src={ICON} alt="Escape Tsunami" className="relative h-24 w-24 rounded-[28px] border border-white/15 shadow-2xl shadow-black/60" />
+          <img src={ICON} alt="Escape Tsunami for Developers" className="relative h-24 w-24 rounded-[28px] border border-white/15 shadow-2xl shadow-black/60" />
         </div>
-        <h1 className="mt-6 text-xl font-bold text-white tracking-tight">Escape Tsunami</h1>
+        <h1 className="mt-6 text-xl font-bold text-white tracking-tight">Escape Tsunami for Developers</h1>
         <p className="mt-1 text-sm text-slate-400">Member Portal</p>
 
         <div className="mt-8 h-1 w-40 rounded-full bg-white/10 overflow-hidden">

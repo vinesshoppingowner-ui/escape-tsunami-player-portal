@@ -34,36 +34,36 @@ export default function StaffDestinationModal() {
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0a0c] p-5">
-      <div className="w-full max-w-3xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0a0c] p-4 sm:p-5 overflow-y-auto">
+      <div className="w-full max-w-3xl my-auto">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-500/20 mb-5">
-            <Shield className="h-7 w-7 text-blue-400" strokeWidth={1.5} />
+        <div className="text-center mb-6 sm:mb-10">
+          <div className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl border border-blue-500/20 mb-4 sm:mb-5">
+            <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-blue-400" strokeWidth={1.5} />
           </div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-white px-2">
             Welcome back, {user?.full_name || user?.email?.split('@')[0] || 'Staff'}
           </h1>
-          <p className="mt-2.5 text-slate-400 text-base">Choose where to go.</p>
+          <p className="mt-2 sm:mt-2.5 text-slate-400 text-sm sm:text-base">Choose where to go.</p>
         </div>
 
         {/* Portal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Members Portal */}
           <button
             onClick={chooseMembers}
-            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-6 hover:border-cyan-500/40 hover:bg-[#131c2e] transition-all duration-200"
+            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-5 sm:p-6 hover:border-cyan-500/40 hover:bg-[#131c2e] transition-all duration-200 active:scale-[0.98] sm:active:scale-100"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-11 w-11 rounded-xl bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
                 <Users className="h-5 w-5 text-cyan-400" strokeWidth={1.5} />
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white leading-tight">Members Portal</h2>
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-semibold text-white leading-tight">Members Portal</h2>
                 <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-semibold mt-0.5">Player Portal</p>
               </div>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed mb-5">
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-4 sm:mb-5">
               View your moderation history, submit appeals, track applications, and manage your account standing.
             </p>
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400 group-hover:gap-2.5 transition-all">
@@ -74,18 +74,18 @@ export default function StaffDestinationModal() {
           {/* Staff Portal */}
           <button
             onClick={chooseStaff}
-            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-6 hover:border-amber-500/40 hover:bg-[#1c1810] transition-all duration-200"
+            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-5 sm:p-6 hover:border-amber-500/40 hover:bg-[#1c1810] transition-all duration-200 active:scale-[0.98] sm:active:scale-100"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-11 w-11 rounded-xl bg-[#1e293b] border border-[#3a3520] flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#1e293b] border border-[#3a3520] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
                 <Shield className="h-5 w-5 text-amber-400" strokeWidth={1.5} />
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white leading-tight">Staff Portal</h2>
-                <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-semibold mt-0.5 truncate max-w-[180px]">staff.escapetsunamifordevelopers.com</p>
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-semibold text-white leading-tight">Staff Portal</h2>
+                <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-semibold mt-0.5 truncate">staff.escapetsunamifordevelopers.com</p>
               </div>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed mb-5">
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-4 sm:mb-5">
               Manage applications, review appeals, issue moderations, and access staff tools and analytics.
             </p>
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 group-hover:gap-2.5 transition-all">
@@ -97,22 +97,22 @@ export default function StaffDestinationModal() {
         {/* Home page option */}
         <button
           onClick={chooseHome}
-          className="group mt-3 w-full flex items-center justify-between rounded-2xl bg-[#111827] border border-[#1e293b] px-5 py-4 hover:bg-[#161f2e] hover:border-white/10 transition-all duration-200"
+          className="group mt-3 w-full flex items-center justify-between rounded-2xl bg-[#111827] border border-[#1e293b] px-4 sm:px-5 py-3.5 sm:py-4 hover:bg-[#161f2e] hover:border-white/10 transition-all duration-200 active:scale-[0.99]"
         >
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
               <Home className="h-4 w-4 text-slate-300" strokeWidth={1.5} />
             </div>
-            <div className="text-left">
+            <div className="text-left min-w-0">
               <p className="text-sm font-medium text-white">Go to Home Page</p>
               <p className="text-xs text-slate-500">Browse the public landing page</p>
             </div>
           </div>
-          <ArrowRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all shrink-0" />
         </button>
 
         {/* Sign out */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <button
             onClick={() => logout(true)}
             className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors"

@@ -11,7 +11,7 @@ export function emailModerationIssued(m) {
     subject: `New ${m.moderation_type} on your account`,
     title: `${ICON[m.moderation_type] || '⚠️'} ${m.moderation_type} issued`,
     accent: ACCENT[m.moderation_type],
-    body: `Hey ${m.roblox_username},\n\nYou just got a ${m.moderation_type.toLowerCase()} on Escape Tsunami. If you think this was a mistake, you can appeal it from the Member Portal.`,
+    body: `Hey ${m.roblox_username},\n\nYou just got a ${m.moderation_type.toLowerCase()} on Escape Tsunami for Developers. If you think this was a mistake, you can appeal it from the Member Portal.`,
     fields: [
       { name: 'Action', value: m.moderation_type },
       { name: 'Reason', value: m.reason },

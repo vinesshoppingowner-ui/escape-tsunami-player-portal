@@ -274,7 +274,7 @@ export default function PortalActions({ account, related, currentUser, onReload 
       sendEmail: async () => {
         setBusy('Send email');
         try {
-          await base44.integrations.Core.SendEmail({ to: account.email, subject: input?.subject || 'Escape Tsunami Portal', body: input?.body || '', from_name: 'Escape Tsunami' });
+          await base44.integrations.Core.SendEmail({ to: account.email, subject: input?.subject || 'Escape Tsunami for Developers Portal', body: input?.body || '', from_name: 'Escape Tsunami for Developers' });
           toast({ title: 'Email sent', description: account.email });
         } catch (e) {
           toast({ title: 'Email failed', description: e.message, variant: 'destructive' });

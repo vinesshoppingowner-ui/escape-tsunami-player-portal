@@ -19,7 +19,7 @@ export default function LockdownScreen({ message, signedIn }) {
 
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">The portal is temporarily down</h1>
         <p className="mt-3 text-slate-400 text-base leading-relaxed">
-          {message || 'The Escape Tsunami portal is in lockdown while staff handle an incident. Please check back soon.'}
+          {message || 'The Escape Tsunami for Developers portal is in lockdown while staff handle an incident. Please check back soon.'}
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-500">

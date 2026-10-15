@@ -13,7 +13,7 @@ export default function AskGeminiDialog({ open, onOpenChange, useEmbed, onResult
     setLoading(true);
     const res = await base44.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
-      prompt: `Write a Discord message for the Escape Tsunami Roblox game community. Request: ${prompt}
+      prompt: `Write a Discord message for the Escape Tsunami for Developers Roblox game community. Request: ${prompt}
 Use Discord markdown (**bold**, *italic*, -# small text, > quotes, emojis) where it fits. ${useEmbed ? 'Fill an embed title, description and footer; content can be empty or a short ping line.' : 'Only fill content; leave embed fields empty.'} color is a hex like #2563EB.`,
       response_json_schema: { type: 'object', properties: {
         content: { type: 'string' }, title: { type: 'string' }, description: { type: 'string' }, footer: { type: 'string' }, color: { type: 'string' },

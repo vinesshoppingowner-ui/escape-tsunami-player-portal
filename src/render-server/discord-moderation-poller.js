@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 /**
- * Discord Moderation Poller — Escape Tsunami Portal
+ * Discord Moderation Poller — Escape Tsunami for Developers Portal
  *
  * Connects your Discord bot to the website so staff can remotely
  * moderate Discord users (timeout, kick, ban, etc.) from the admin dashboard.
@@ -144,7 +144,7 @@ async function sendModerationDM(client, guild, action, resultText) {
         { name: 'Reason', value: action.reason || 'No reason provided', inline: false },
         { name: 'Result', value: resultText, inline: false },
       ],
-      footer: { text: 'Escape Tsunami Staff Team' },
+      footer: { text: 'Escape Tsunami for Developers Staff Team' },
       timestamp: new Date().toISOString(),
     };
     await user.send({ embeds: [embed] });

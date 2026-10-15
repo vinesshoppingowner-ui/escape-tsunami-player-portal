@@ -10,7 +10,7 @@ export async function runAIReview(application, answers) {
     .join('\n\n');
 
   const res = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are screening applications for "${application.title}" in the Roblox game community "Escape Tsunami".
+    prompt: `You are screening applications for "${application.title}" in the Roblox game community "Escape Tsunami for Developers".
 ${application.description ? `About the application: ${application.description}\n` : ''}${settings.aiCriteria ? `Staff grading criteria: ${settings.aiCriteria}\n` : ''}
 Grade this applicant fairly. Consider effort, maturity, honesty, relevance, grammar, and whether answers are detailed.
 Flag things like: low effort or one-word answers, copy-pasted or likely AI-generated text, contradictions, inappropriate content, troll answers, age/eligibility concerns.

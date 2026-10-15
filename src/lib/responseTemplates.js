@@ -8,7 +8,7 @@ export const RESPONSE_TEMPLATES = [
   },
   {
     label: 'Standard Lift',
-    text: 'Hi {PlayerName}, your appeal has been approved and your {ModerationType} has been lifted. Welcome back to Escape Tsunami — please follow the rules going forward.',
+    text: 'Hi {PlayerName}, your appeal has been approved and your {ModerationType} has been lifted. Welcome back to Escape Tsunami for Developers — please follow the rules going forward.',
   },
   {
     label: 'Request More Info',

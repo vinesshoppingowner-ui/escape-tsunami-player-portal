@@ -10,7 +10,7 @@ export default function StaffSection() {
         </div>
         <h2 className="font-display text-2xl sm:text-3xl font-bold mb-3">How we keep the game fair</h2>
         <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
-          Our moderation team works around the clock to keep Escape Tsunami fun and safe for everyone.
+          Our moderation team works around the clock to keep Escape Tsunami for Developers fun and safe for everyone.
           If you have been moderated, you can view your full history and submit an appeal through the Member Portal.
         </p>
         <Link

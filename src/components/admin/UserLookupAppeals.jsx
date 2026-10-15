@@ -56,7 +56,7 @@ export default function UserLookupAppeals({ appeals = [], moderations = [], user
       emailPlayer({
         robloxUsername: username,
         subject: `Your appeal has been ${draft.status.toLowerCase()}`,
-        body: `Hi ${username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n\u2014 Escape Tsunami Staff Team`,
+        body: `Hi ${username},\n\nYour appeal for "${mod?.moderation_type || 'your moderation'}" has been ${draft.status.toLowerCase()}.\n\n${draft.staff_response ? draft.staff_response + '\n\n' : ''}View details in the Member Portal.\n\n\u2014 Escape Tsunami for Developers Staff Team`,
       });
       sendAppealDecisionWebhook({
         username,

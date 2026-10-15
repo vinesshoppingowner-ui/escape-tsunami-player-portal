@@ -21,7 +21,7 @@ export default function AppealAISummary({ chatLogs, exploitLogs, moderation, app
         .map((l) => `${l.exploitType}: ${l.details} (${new Date(l.timestamp).toLocaleString()})`)
         .join('\n');
 
-      const prompt = `You are a moderation assistant for the Roblox game "Escape Tsunami". Summarize the context around a player's infraction to help staff review an appeal quickly.
+      const prompt = `You are a moderation assistant for the Roblox game "Escape Tsunami for Developers". Summarize the context around a player's infraction to help staff review an appeal quickly.
 
 PLAYER: ${appeal?.roblox_username || 'Unknown'}
 MODERATION: ${moderation?.moderation_type || 'Unknown'} — Reason: ${moderation?.reason || 'N/A'}

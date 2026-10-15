@@ -15,7 +15,7 @@ export default function AuthBrandPanel() {
           <Waves className="h-6 w-6 text-white" strokeWidth={2.5} />
         </span>
         <span className="font-display font-semibold text-white text-lg leading-tight">
-          Escape Tsunami
+          Escape Tsunami for Developers
           <span className="block text-[10px] font-normal text-cyan-300/80 tracking-[0.18em] uppercase">Player Portal</span>
         </span>
       </Link>
@@ -43,7 +43,7 @@ export default function AuthBrandPanel() {
         </div>
       </div>
 
-      <p className="text-xs text-slate-500">© {new Date().getFullYear()} Escape Tsunami. Not affiliated with Roblox Corporation.</p>
+      <p className="text-xs text-slate-500">© {new Date().getFullYear()} Escape Tsunami for Developers. Not affiliated with Roblox Corporation.</p>
     </div>
   );
 }

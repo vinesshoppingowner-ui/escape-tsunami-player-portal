@@ -35,7 +35,7 @@ export function renderEmail({ subject, title, body = '', fields = [], accent, ct
           <table role="presentation" cellpadding="0" cellspacing="0"><tr>
             <td style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#22d3ee,#2563eb);text-align:center;font-size:20px;color:#fff;">🌊</td>
             <td style="padding-left:12px;">
-              <div style="font-size:16px;font-weight:700;color:#fff;">Escape Tsunami</div>
+              <div style="font-size:16px;font-weight:700;color:#fff;">Escape Tsunami for Developers</div>
               <div style="font-size:12px;color:#64748b;">Member Portal</div>
             </td>
           </tr></table>
@@ -47,7 +47,7 @@ export function renderEmail({ subject, title, body = '', fields = [], accent, ct
           <a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#2563eb);background-color:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px;">${esc(ctaLabel)} →</a>
         </td></tr>
         <tr><td style="padding:18px 4px 0;font-size:12px;line-height:1.6;color:#475569;text-align:center;">
-          You're receiving this because you have an account on the Escape Tsunami Member Portal.<br/>— Escape Tsunami Staff Team
+          You're receiving this because you have an account on the Escape Tsunami for Developers Member Portal.<br/>— Escape Tsunami for Developers Staff Team
         </td></tr>
       </table>
     </td></tr>

@@ -13,7 +13,7 @@ export default function PortalFooter() {
       <Link to="/bug-reports" className="inline-flex items-center gap-1.5 hover:text-cyan-400 transition-colors">
         <Bug className="h-3.5 w-3.5" /> Report a Bug
       </Link>
-      <span className="ml-auto">Escape Tsunami Player Portal</span>
+      <span className="ml-auto">Escape Tsunami for Developers Player Portal</span>
     </footer>
   );
 }

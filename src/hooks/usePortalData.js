@@ -100,7 +100,7 @@ export function usePortalData() {
       emailPlayer({
         email: user.email,
         subject: 'Your appeal has been submitted',
-        body: `Hi ${savedUsername},\n\nYour appeal for "${activeModeration?.moderation_type || 'your moderation'}" has been received. Our staff team will review it shortly.\n\nYou can track the status in the Member Portal.\n\n— Escape Tsunami Staff Team`,
+        body: `Hi ${savedUsername},\n\nYour appeal for "${activeModeration?.moderation_type || 'your moderation'}" has been received. Our staff team will review it shortly.\n\nYou can track the status in the Member Portal.\n\n— Escape Tsunami for Developers Staff Team`,
       });
     }
     await loadData(savedUsername, true);

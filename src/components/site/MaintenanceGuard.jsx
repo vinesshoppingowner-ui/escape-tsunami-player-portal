@@ -83,7 +83,7 @@ function MaintenanceScreen({ message, scheduledUntil }) {
           We'll be right back
         </h1>
         <p className="mt-3 text-slate-400 text-base leading-relaxed">
-          {message || 'Escape Tsunami Portal is currently undergoing scheduled maintenance. We apologize for the inconvenience — please check back shortly.'}
+          {message || 'Escape Tsunami for Developers Portal is currently undergoing scheduled maintenance. We apologize for the inconvenience — please check back shortly.'}
         </p>
 
         {remaining !== null && !overdue && (

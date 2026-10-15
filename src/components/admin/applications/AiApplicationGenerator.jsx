@@ -112,7 +112,7 @@ export default function AiApplicationGenerator({ onGenerate, isEditing = false, 
 
       const systemPrompt = `You are an expert form designer. A staff member wants to ${isEditing ? 'modify' : 'create'} a form. Generate a complete, professional form based on their description.
 
-IMPORTANT: Follow the user's request exactly. If they ask for trivia, a quiz, a survey, a game, or any non-application topic — generate questions about THAT topic. Do NOT force every form to be about Escape Tsunami, Roblox, or gaming unless the user specifically asks for that. The form can be about anything.
+IMPORTANT: Follow the user's request exactly. If they ask for trivia, a quiz, a survey, a game, or any non-application topic — generate questions about THAT topic. Do NOT force every form to be about Escape Tsunami for Developers, Roblox, or gaming unless the user specifically asks for that. The form can be about anything.
 
 ${toneInstructions[tone]}
 

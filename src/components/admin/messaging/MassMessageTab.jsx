@@ -22,7 +22,7 @@ export default function MassMessageTab() {
     let emailed = 0;
     if (form.email) {
       for (const n of names) {
-        if (await emailPlayer({ robloxUsername: n, subject: form.title, title: `📣 ${form.title}`, body: `Hi ${n},\n\n${form.body}\n\n— Escape Tsunami Staff Team`, accent: '#06b6d4' })) emailed++;
+        if (await emailPlayer({ robloxUsername: n, subject: form.title, title: `📣 ${form.title}`, body: `Hi ${n},\n\n${form.body}\n\n— Escape Tsunami for Developers Staff Team`, accent: '#06b6d4' })) emailed++;
       }
     }
     setSending(false);

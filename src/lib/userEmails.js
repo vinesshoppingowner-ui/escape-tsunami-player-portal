@@ -20,7 +20,7 @@ export async function emailPlayer({ robloxUsername, email, subject, body, ...emb
     await base44.integrations.Core.SendEmail({
       to,
       subject,
-      from_name: 'Escape Tsunami',
+      from_name: 'Escape Tsunami for Developers',
       body: renderEmail({ subject, body, ...embed }),
       text: body,
     });

@@ -231,7 +231,7 @@ export default function GameAnalytics() {
           <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 w-fit mb-3">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live on Roblox
           </span>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">{game.name || 'Escape Tsunami'}</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">{game.name || 'Escape Tsunami for Developers'}</h2>
           <p className="mt-2 text-sm text-slate-400 leading-relaxed line-clamp-3">{game.description || 'Sprint through the chaos, outrun towering tsunamis, and climb the leaderboards.'}</p>
 
           <div className="mt-4 flex flex-wrap gap-2.5">

@@ -115,9 +115,9 @@ export async function generateFingerprint() {
     ctx.fillStyle = '#f60';
     ctx.fillRect(125, 1, 62, 20);
     ctx.fillStyle = '#069';
-    ctx.fillText('Escape Tsunami', 2, 15);
+    ctx.fillText('Escape Tsunami for Developers', 2, 15);
     ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-    ctx.fillText('Escape Tsunami', 4, 17);
+    ctx.fillText('Escape Tsunami for Developers', 4, 17);
     parts.push(`cv:${canvas.toDataURL().length}`);
   } catch { parts.push('cv:x'); }
 

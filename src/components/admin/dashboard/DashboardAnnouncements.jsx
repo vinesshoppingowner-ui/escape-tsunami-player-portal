@@ -106,7 +106,7 @@ export default function DashboardAnnouncements({ user, onAnnouncementsChange }) 
           await base44.integrations.Core.SendEmail({
             to: email,
             subject: `[Announcement] ${a.title}`,
-            body: `${a.body}\n\n— Escape Tsunami Portal`,
+            body: `${a.body}\n\n— Escape Tsunami for Developers Portal`,
           });
           sent++;
         } catch { /* skip failed sends */ }
@@ -132,7 +132,7 @@ export default function DashboardAnnouncements({ user, onAnnouncementsChange }) 
             title: `📢 ${a.title}`,
             description: a.body,
             color: colors[a.type] || 0x06b6d4,
-            footer: { text: 'Escape Tsunami Portal' },
+            footer: { text: 'Escape Tsunami for Developers Portal' },
             timestamp: new Date().toISOString(),
           }],
         }),

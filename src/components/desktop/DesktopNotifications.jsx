@@ -52,7 +52,7 @@ export default function DesktopNotifications({ isDesktopApp }) {
           const age = Date.now() - new Date(n.created_date).getTime();
           if (age < 60_000 && notifAllowed(prefsRef.current, n.type)) {
             if (prefsRef.current.notification_sound) playNotifSound();
-            new Notification(n.title || 'Escape Tsunami', {
+            new Notification(n.title || 'Escape Tsunami for Developers', {
               body: n.body || '',
               icon: 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png',
               badge: 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png',

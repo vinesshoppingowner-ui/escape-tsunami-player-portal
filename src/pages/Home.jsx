@@ -97,7 +97,7 @@ export default function Home() {
             <div className="home-phone-screen">
               <div className="home-speaker" />
               <div className="home-screen-top">
-                <span>Escape Tsunami</span>
+                <span>Escape Tsunami for Developers</span>
                 <span className="home-signal" />
               </div>
               {statsLoading ? (

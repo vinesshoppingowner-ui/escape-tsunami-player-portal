@@ -33,7 +33,7 @@ export default function Applications() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedResponse, setSelectedResponse] = useState(null);
 
-  useEffect(() => { document.title = 'Applications · Escape Tsunami'; }, []);
+  useEffect(() => { document.title = 'Applications · Escape Tsunami for Developers'; }, []);
 
   useEffect(() => {
     if (isLoadingAuth) return;
