@@ -16,7 +16,7 @@ import Apply from './pages/Apply';
 import ManageApplications from './pages/ManageApplications';
 import AdminDashboard from './pages/AdminDashboard';
 import RobloxCallback from './pages/RobloxCallback';
-import BugReports from './pages/BugReports';
+
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -71,7 +71,7 @@ const AuthenticatedApp = () => {
           <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/manage-applications" element={<ManageApplications />} />
-          <Route path="/bug-reports" element={<BugReports />} />
+
           <Route path="/roblox-callback" element={<RobloxCallback />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

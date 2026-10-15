@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import SiteBrand from '@/components/SiteBrand';
-import { LogIn, Menu, X, Home, Scale, AlertTriangle, Megaphone, FileText, ChevronDown, Bug, Play } from 'lucide-react';
+import { LogIn, Menu, X, Home, Scale, AlertTriangle, Megaphone, FileText, ChevronDown, Play } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,6 @@ export default function SiteNav() {
     { label: 'Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
-    { label: 'Bug Reports', to: '/bug-reports', icon: Bug, comingSoon: true },
   ];
   const dropdownLinks = [];
   const mobileLinks = [
@@ -57,7 +56,6 @@ export default function SiteNav() {
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
-    { label: 'Bug Reports', to: '/bug-reports', icon: Bug, comingSoon: true },
   ];
 
   const BANNER_COLORS = {
