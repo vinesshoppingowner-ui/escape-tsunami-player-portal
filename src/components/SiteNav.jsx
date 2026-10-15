@@ -49,7 +49,7 @@ export default function SiteNav() {
     { label: 'Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
-    { label: 'Bug Reports', to: '/bug-reports', icon: Bug },
+    { label: 'Bug Reports', to: '/bug-reports', icon: Bug, comingSoon: true },
   ];
   const dropdownLinks = [];
   const mobileLinks = [
@@ -57,7 +57,7 @@ export default function SiteNav() {
     { label: 'Member Portal', to: '/portal', icon: LogIn },
     { label: 'My Appeals', to: '/my-appeals', icon: Scale },
     { label: 'Applications', to: '/applications', icon: FileText },
-    { label: 'Bug Reports', to: '/bug-reports', icon: Bug },
+    { label: 'Bug Reports', to: '/bug-reports', icon: Bug, comingSoon: true },
   ];
 
   const BANNER_COLORS = {
@@ -109,6 +109,19 @@ export default function SiteNav() {
         <nav className="hidden md:flex flex-1 justify-center items-center gap-0.5">
           {directLinks.map((l) => {
             const active = location.pathname === l.to;
+            if (l.comingSoon) {
+              return (
+                <span
+                  key={l.to}
+                  className="relative px-3.5 py-2 text-sm font-medium rounded-lg inline-flex items-center gap-1.5 text-slate-600 cursor-not-allowed"
+                  title="Coming soon"
+                >
+                  {l.icon && <l.icon className="h-3.5 w-3.5" />}
+                  {l.label}
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-700/50 text-slate-400 border border-slate-600/30 leading-none">Soon</span>
+                </span>
+              );
+            }
             return (
               <Link
                 key={l.to}
@@ -162,6 +175,18 @@ export default function SiteNav() {
         <div className="px-5 py-4 space-y-1">
           {mobileLinks.map((l) => {
             const active = location.pathname === l.to;
+            if (l.comingSoon) {
+              return (
+                <span
+                  key={l.to}
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-slate-600 cursor-not-allowed"
+                >
+                  {l.icon && <l.icon className="h-4.5 w-4.5 shrink-0" style={{ width: '1.125rem', height: '1.125rem' }} />}
+                  {l.label}
+                  <span className="ml-auto px-1.5 py-0.5 rounded-full bg-slate-700/50 text-slate-400 text-[9px] font-bold uppercase tracking-wider leading-none border border-slate-600/30">Coming Soon</span>
+                </span>
+              );
+            }
             return (
               <Link
                 key={l.to}
