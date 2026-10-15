@@ -34,7 +34,6 @@ export const DEFAULT_PREFS = {
   notification_sound: true,
   click_sounds: true,
   hide_online_status: false,
-  email_otp_login: false,
 };
 
 const NOTIF_PREF = {

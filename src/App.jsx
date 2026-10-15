@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -37,27 +36,16 @@ import WelcomeModal from '@/components/WelcomeModal';
 import StaffDestinationModal from '@/components/StaffDestinationModal';
 import ClickSound from '@/components/ClickSound';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
-import LoginVerificationGate, { isOtpVerified, markOtpVerified } from '@/components/auth/LoginVerificationGate';
 import { useUserPrefs } from '@/lib/userPrefs';
 
 const AuthenticatedApp = () => {
-  const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const isDesktopApp = useDesktopApp();
   const season = useSeasonalTheme();
   const prefs = useUserPrefs();
-  const [otpVerified, setOtpVerified] = useState(true);
-
-  useEffect(() => {
-    if (user && prefs.email_otp_login) {
-      setOtpVerified(isOtpVerified(user.id));
-    } else {
-      setOtpVerified(true);
-    }
-  }, [user, prefs.email_otp_login]);
 
   const isLoading = isLoadingPublicSettings || isLoadingAuth;
   const showSplash = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
-  const needsOtp = user && prefs.email_otp_login && !otpVerified;
 
   let content;
   if (isLoading) {
@@ -99,12 +87,6 @@ const AuthenticatedApp = () => {
         {!isLoading && <LandingRedirect />}
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
-        {!isLoading && needsOtp && (
-          <LoginVerificationGate
-            user={user}
-            onVerified={() => { markOtpVerified(user.id); setOtpVerified(true); }}
-          />
-        )}
         {!isLoading && <StaffDestinationModal />}
         <ClickSound />
         {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
