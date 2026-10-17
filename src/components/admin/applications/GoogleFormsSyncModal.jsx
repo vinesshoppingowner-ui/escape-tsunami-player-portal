@@ -96,12 +96,15 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
     toast({ title: 'Disconnected from Google Forms' });
   };
 
-  const handleSelectForm = async (f) => {
+  const handleSelectForm = async (f, usePublic = false) => {
     setSelectedForm(f);
     setLoadingPreview(true);
     setPreview(null);
     try {
-      const res = await base44.functions.invoke('googleFormsSync', { action: 'get', formId: f.id });
+      const res = await base44.functions.invoke(
+        'googleFormsSync',
+        usePublic ? { action: 'getPublic', formUrl: f.id } : { action: 'get', formId: f.id }
+      );
       if (res.data?.error) throw new Error(res.data.error);
       setPreview(res.data.form);
     } catch (e) {
@@ -193,24 +196,86 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
               </Button>
             </div>
           ) : !connected ? (
-            <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-8 text-center space-y-4">
-              <div className="h-14 w-14 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center mx-auto">
-                <FileSpreadsheet className="h-7 w-7 text-violet-300" />
-              </div>
-              <div className="max-w-md mx-auto space-y-1">
-                <h3 className="text-base font-semibold text-white">Connect your Google Account</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Sign in with Google and allow read access to your Google Forms so we can list every form in your account and sync its questions.
-                </p>
-              </div>
-              {connError && (
-                <div className="max-w-lg mx-auto rounded-xl bg-rose-500/10 border border-rose-500/25 p-3 text-xs text-rose-200 text-left leading-relaxed">
-                  {connError}
+            <div className="space-y-4">
+              {/* Instant import by link (no OAuth required) */}
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 space-y-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Quick Import by Google Form Link</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Paste any public Google Form link (`docs.google.com/forms/...`) to import its questions immediately without connecting OAuth.
+                  </p>
                 </div>
-              )}
-              <Button onClick={handleConnect} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 px-6">
-                Sign in with Google & Allow Access
-              </Button>
+                <div className="flex gap-2">
+                  <Input
+                    value={directUrl}
+                    onChange={(e) => setDirectUrl(e.target.value)}
+                    placeholder="https://docs.google.com/forms/d/e/.../viewform"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-xs"
+                  />
+                  <Button
+                    type="button"
+                    disabled={!directUrl.trim() || loadingPreview}
+                    onClick={() => handleSelectForm({ id: directUrl.trim(), name: 'Linked Google Form' }, true)}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shrink-0"
+                  >
+                    {loadingPreview ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Load Form'}
+                  </Button>
+                </div>
+
+                {preview && (
+                  <div className="mt-3 rounded-xl bg-slate-900/70 border border-white/10 p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-semibold text-sm text-white">{preview.title}</h4>
+                        {preview.description && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{preview.description}</p>}
+                      </div>
+                      <span className="text-xs font-medium text-violet-300 shrink-0">
+                        {preview.questions.length} question{preview.questions.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                      {preview.questions.map((q, i) => (
+                        <div key={q.id} className="text-xs bg-slate-950/80 border border-white/5 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2">
+                          <span className="text-slate-200 truncate">{i + 1}. {q.text}</span>
+                          <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-slate-400 shrink-0">{q.type}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={handleSyncConfirm}
+                      disabled={syncing || preview.questions.length === 0}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
+                    >
+                      {syncing ? (
+                        <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Syncing...</>
+                      ) : (
+                        <>{onImportQuestions ? 'Import Questions to Form' : 'Sync Form to Applications'} <ArrowRight className="h-4 w-4 ml-1.5" /></>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* OAuth account connection */}
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 text-center space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center mx-auto">
+                  <FileSpreadsheet className="h-6 w-6 text-violet-300" />
+                </div>
+                <div className="max-w-md mx-auto space-y-1">
+                  <h3 className="text-sm font-semibold text-white">Or browse all forms in your Google Account</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Sign in with Google to list every form in your Google Drive.
+                  </p>
+                </div>
+                {connError && (
+                  <div className="max-w-lg mx-auto rounded-xl bg-rose-500/10 border border-rose-500/25 p-3 text-xs text-rose-200 text-left leading-relaxed">
+                    {connError}
+                  </div>
+                )}
+                <Button onClick={handleConnect} variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10 text-white px-5">
+                  Sign in with Google & Allow Access
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
