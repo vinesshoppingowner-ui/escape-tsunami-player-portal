@@ -15,6 +15,7 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
   const [user, setUser] = useState(null);
   const [forms, setForms] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [connMode, setConnMode] = useState('shared');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedForm, setSelectedForm] = useState(null);
@@ -37,6 +38,7 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
       }
       if (res.data?.error) throw new Error(res.data.error);
       setForms(res.data?.forms || []);
+      setConnMode(res.data?.mode || 'shared');
       setConnected(true);
       setConnError('');
     } catch (e) {
@@ -163,13 +165,18 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
             </div>
           </div>
           {connected && (
-            <div className="flex items-center gap-1.5">
-              <button onClick={fetchForms} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5" title="Refresh forms">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] font-medium text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Connected ({forms.length} forms)
+              </span>
+              <button onClick={() => fetchForms(false)} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5" title="Refresh forms">
                 <RefreshCw className="h-4 w-4" />
               </button>
-              <button onClick={handleDisconnect} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10 border border-rose-500/20">
-                <Unlink className="h-3.5 w-3.5" /> Disconnect
-              </button>
+              {connMode === 'app_user' && (
+                <button onClick={handleDisconnect} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10 border border-rose-500/20">
+                  <Unlink className="h-3.5 w-3.5" /> Disconnect
+                </button>
+              )}
             </div>
           )}
         </div>
