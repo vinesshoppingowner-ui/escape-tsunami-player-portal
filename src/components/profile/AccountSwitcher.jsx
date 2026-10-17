@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User } from 'lucide-react';
+import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil } from 'lucide-react';
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
-import RobloxAvatar from '@/components/moderations/RobloxAvatar';
+import UserAvatar from '@/components/profile/UserAvatar';
 import { RING_STYLE } from '@/components/profile/ProfileMenu';
 
 const tierConfig = (user) => {
@@ -42,8 +42,8 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
 
   if (!user) return null;
 
-  const name = user.full_name || user.roblox_username || user.email;
-  const initials = (name || '?').split(/[\s@._]+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
+  const name = user.custom_display_name || user.data?.custom_display_name || user.full_name || user.roblox_username || user.email;
+  const bio = user.bio || user.data?.bio || '';
   const tier = tierConfig(user);
   const TierIcon = tier.icon;
 
@@ -72,25 +72,37 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
 
               <div className="flex items-center gap-3">
                 <div className="shrink-0 p-[3px] rounded-full" style={RING_STYLE}>
-                  <div className="h-12 w-12 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
-                    {user.roblox_username ? (
-                      <RobloxAvatar username={user.roblox_username} size={48} />
-                    ) : (
-                      <span className="text-base font-bold text-white">{initials}</span>
-                    )}
-                  </div>
+                  <UserAvatar user={user} size={48} />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-white truncate">{name}</p>
                   <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                  {user.roblox_username && (
+                    <p className="text-[11px] text-cyan-300/90 truncate">@{user.roblox_username}</p>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10">
-                <span className={`h-3.5 w-3.5 rounded-full bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
-                  <TierIcon className="h-2 w-2 text-white" />
-                </span>
-                <span className={`text-[11px] font-medium ${tier.text}`}>{tier.label}</span>
+              {bio ? (
+                <p className="mt-2.5 text-xs text-slate-300 bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 leading-snug line-clamp-2">
+                  {bio}
+                </p>
+              ) : null}
+
+              <div className="mt-2.5 flex items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  <span className={`h-3.5 w-3.5 rounded-full bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
+                    <TierIcon className="h-2 w-2 text-white" />
+                  </span>
+                  <span className={`text-[11px] font-medium ${tier.text}`}>{tier.label}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { onOpenSettings('account'); onClose(); }}
+                  className="inline-flex items-center gap-1 text-[11px] text-cyan-300 hover:text-white"
+                >
+                  <Pencil className="h-3 w-3" /> Edit profile
+                </button>
               </div>
             </div>
 

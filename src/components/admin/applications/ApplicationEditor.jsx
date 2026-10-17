@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Save, Plus, FileText, X } from 'lucide-react';
+import { Save, Plus, FileText, X, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import QuestionEditor from './QuestionEditor';
 import ApplicationAdvancedSettings from './ApplicationAdvancedSettings';
 import ApplicationBasicSettings from './ApplicationBasicSettings';
 import ApplicationFormSettings from './ApplicationFormSettings';
 import AiApplicationGenerator from './AiApplicationGenerator';
+import GoogleFormsSyncModal from './GoogleFormsSyncModal';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
 import { generateSlug } from '@/lib/applicationSlug';
 import { safeParse } from '@/lib/safeParse';
@@ -27,6 +28,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
   const [activeId, setActiveId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
   const skipDirty = useRef(true);
   const settingsScrollRef = useRef(null);
 
@@ -131,6 +133,16 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
             {dirty && <span className="ml-2 hidden sm:inline-flex items-center gap-1 text-xs text-amber-300 shrink-0"><span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" /> Unsaved</span>}
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setGoogleSyncOpen(true)}
+              className="text-violet-200 hover:text-white hover:bg-violet-500/15 border border-violet-500/30 bg-violet-500/10"
+            >
+              <FileSpreadsheet className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Sync Google Form</span>
+            </Button>
             <AiApplicationGenerator
               isEditing={!!application}
               existingForm={{ title: form.title, description: form.description, questions }}
@@ -207,6 +219,18 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
           </div>
         )}
       </div>
+      <GoogleFormsSyncModal
+        open={googleSyncOpen}
+        onClose={() => setGoogleSyncOpen(false)}
+        onImportQuestions={(syncedForm) => {
+          setForm((f) => ({
+            ...f,
+            title: f.title || syncedForm.title,
+            description: f.description || syncedForm.description,
+          }));
+          setQuestions((prev) => [...prev, ...(syncedForm.questions || [])]);
+        }}
+      />
     </div>
   );
 }

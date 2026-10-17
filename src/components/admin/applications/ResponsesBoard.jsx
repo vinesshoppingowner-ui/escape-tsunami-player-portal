@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, ChevronLeft, Users, Search, Sparkles, Download, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, ChevronLeft, Users, Search, Sparkles, Download, AlertCircle, RefreshCw, BarChart3, Shuffle } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { useToast } from '@/components/ui/use-toast';
 import { RESPONSE_STATUS, formatAnswer, RESPONSE_TAGS } from '@/lib/applicationTypes';
@@ -11,6 +11,7 @@ import ResponseListItem from './ResponseListItem';
 import ResponseViewer from './ResponseViewer';
 import ResponseStats from './ResponseStats';
 import ResponseBulkBar from './ResponseBulkBar';
+import ApplicationInsightsPanel from './ApplicationInsightsPanel';
 import AppIcon from '@/components/apply/AppIcon';
 
 const SORTS = [
@@ -38,6 +39,7 @@ export default function ResponsesBoard({ app, onBack }) {
   const [bulk, setBulk] = useState(null);
   const [tag, setTag] = useState('all');
   const [selected, setSelected] = useState([]);
+  const [showInsights, setShowInsights] = useState(true);
 
   const questions = safeParse(app.questions, []);
 
@@ -113,6 +115,28 @@ export default function ResponsesBoard({ app, onBack }) {
           <h3 className="font-display text-lg font-bold text-white">{app.title}</h3>
           <p className="text-xs text-slate-500">{responses.length} responses · {app.category}</p>
         </div>
+        <button
+          onClick={() => {
+            const pool = responses.filter((r) => r.status === 'submitted');
+            if (!pool.length) {
+              toast({ title: 'No unreviewed applications left!' });
+              return;
+            }
+            const pick = pool[Math.floor(Math.random() * pool.length)];
+            setTab('all');
+            setOpenId(pick.id);
+          }}
+          disabled={!responses.some((r) => r.status === 'submitted')}
+          className={`${btn} bg-cyan-500/10 border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20`}
+        >
+          <Shuffle className="h-3.5 w-3.5" /> Next unreviewed
+        </button>
+        <button
+          onClick={() => setShowInsights((s) => !s)}
+          className={`${btn} ${showInsights ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
+        >
+          <BarChart3 className="h-3.5 w-3.5" /> Insights
+        </button>
         <button onClick={bulkAI} disabled={!!bulk || !unchecked.length} className={`${btn} bg-violet-500/10 border-violet-500/30 text-violet-200 hover:bg-violet-500/20`}>
           {bulk ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} {bulk ? `Checking ${bulk}` : `AI check ${unchecked.length} unchecked`}
         </button>
@@ -120,6 +144,7 @@ export default function ResponsesBoard({ app, onBack }) {
       </div>
 
       <ResponseStats responses={responses} />
+      {showInsights && <ApplicationInsightsPanel responses={responses} questions={questions} />}
       <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-white/5 border border-white/10 w-fit">
         {[['all', 'All'], ...Object.entries(RESPONSE_STATUS).map(([k, s]) => [k, s.label])].map(([k, l]) => (
           <button key={k} onClick={() => { setTab(k); setSelected([]); }} role="tab" aria-selected={tab === k} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tab === k ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}>

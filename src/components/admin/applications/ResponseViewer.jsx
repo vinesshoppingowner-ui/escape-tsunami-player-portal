@@ -6,6 +6,7 @@ import { RESPONSE_STATUS } from '@/lib/applicationTypes';
 import ResponseAnswers from './ResponseAnswers';
 import ResponseAIPanel from './ResponseAIPanel';
 import ResponseDecisionPanel from './ResponseDecisionPanel';
+import ApplicantContextCard from './ApplicantContextCard';
 
 export default function ResponseViewer({ responses, index, application, onIndex, onClose, onUpdate }) {
   const response = responses[index];
@@ -49,6 +50,7 @@ export default function ResponseViewer({ responses, index, application, onIndex,
         <div className="grid lg:grid-cols-[1fr_340px] gap-5 items-start">
           <ResponseAnswers questions={questions} answers={answers} />
           <div className="space-y-4 lg:sticky lg:top-24">
+            <ApplicantContextCard username={response.roblox_username} currentResponseId={response.id} />
             <ResponseAIPanel response={response} application={application} onUpdate={onUpdate} />
             <ResponseDecisionPanel response={response} application={application} onUpdate={onUpdate} />
           </div>

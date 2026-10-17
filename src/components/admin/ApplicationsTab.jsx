@@ -3,11 +3,12 @@ import { base44 } from '@/api/base44Client';
 import AppIcon from '@/components/apply/AppIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, FileText, Pencil, Trash2, Users, Link2, ShieldBan } from 'lucide-react';
+import { Loader2, Plus, FileText, Pencil, Trash2, Users, Link2, ShieldBan, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
+import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import { safeParse } from '@/lib/safeParse';
 
 const STATUS_STYLES = {
@@ -26,6 +27,7 @@ export default function ApplicationsTab() {
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [blacklistOpen, setBlacklistOpen] = useState(false);
+  const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -67,9 +69,12 @@ export default function ApplicationsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search applications..." className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 max-w-xs" />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="ghost" onClick={() => setBlacklistOpen(true)} className="text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 border border-rose-500/20">
             <ShieldBan className="h-4 w-4 mr-1" /> Blacklist
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setGoogleSyncOpen(true)} className="text-violet-200 hover:text-white hover:bg-violet-500/15 border border-violet-500/30 bg-violet-500/10">
+            <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Sync from Google Forms
           </Button>
           <Button size="sm" onClick={() => openEditor(null)} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
             <Plus className="h-4 w-4 mr-1" /> Create Application
@@ -115,6 +120,8 @@ export default function ApplicationsTab() {
       )}
 
       <ApplicationEditor open={editorOpen} onClose={() => setEditorOpen(false)} application={editingApp} onSave={load} />
+
+      <GoogleFormsSyncModal open={googleSyncOpen} onClose={() => setGoogleSyncOpen(false)} onSynced={load} />
 
       {blacklistOpen && <ApplicationBlacklistPanel onClose={() => setBlacklistOpen(false)} />}
 

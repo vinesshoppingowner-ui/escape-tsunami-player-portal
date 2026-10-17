@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Waves } from "lucide-react";
+import { Waves, ArrowLeft } from "lucide-react";
 import AuthBrandPanel from "@/components/auth/AuthBrandPanel";
 
 // Branded shell shared by login, sign-up, forgot and reset password pages.
@@ -15,8 +15,14 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
       <div className="relative grid min-h-screen lg:grid-cols-2">
         <AuthBrandPanel />
 
-        <div className="flex items-center justify-center px-4 py-10">
-          <div className="w-full max-w-[420px]">
+        <div className="flex flex-col justify-center items-center px-4 py-10 relative">
+          <Link
+            to="/"
+            className="absolute top-5 right-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
+          </Link>
+          <div className="w-full max-w-[430px]">
             <Link to="/" className="lg:hidden flex justify-center mb-6">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/30">
                 <Waves className="h-6 w-6 text-white" strokeWidth={2.5} />

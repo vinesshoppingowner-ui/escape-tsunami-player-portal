@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import SettingsDialog from '@/components/profile/SettingsDialog';
 import { useAuth } from '@/lib/AuthContext';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
+import UserAvatar from '@/components/profile/UserAvatar';
 
 // Portal-themed 4-color ring: cyan, violet, amber, rose
 export const RING_STYLE = {
@@ -11,6 +12,7 @@ export const RING_STYLE = {
 export default function ProfileMenu() {
   const { user } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [initialTab, setInitialTab] = useState('appearance');
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const btnRef = useRef(null);
 
@@ -25,9 +27,6 @@ export default function ProfileMenu() {
     );
   }
 
-  const name = user.full_name || user.roblox_username || user.email;
-  const initials = (name || '?').split(/[\s@._]+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
-
   return (
     <>
       <button
@@ -37,39 +36,19 @@ export default function ProfileMenu() {
         className="relative h-9 w-9 rounded-full p-[3px] shrink-0 hover:opacity-90 transition-opacity"
         style={RING_STYLE}
       >
-        <span className="block w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center">
-          <RobloxAvatarInline username={user.roblox_username} fallback={initials} />
-        </span>
+        <UserAvatar user={user} size={30} />
       </button>
       <AccountSwitcher
         user={user}
         open={switcherOpen}
         onClose={() => setSwitcherOpen(false)}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={(tab = 'appearance') => {
+          setInitialTab(tab);
+          setSettingsOpen(true);
+        }}
         anchorRef={btnRef}
       />
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} defaultTab={initialTab} />
     </>
   );
-}
-
-function RobloxAvatarInline({ username, fallback }) {
-  const [url, setUrl] = useState(null);
-  useEffect(() => {
-    if (!username) return;
-    fetch(`https://users.roproxy.com/v1/usernames/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
-    })
-      .then((r) => r.json())
-      .then((d) => d?.data?.[0]?.id)
-      .then((id) => fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png&isCircular=false`))
-      .then((r) => r.json())
-      .then((d) => d?.data?.[0]?.imageUrl)
-      .then((u) => u && setUrl(u))
-      .catch(() => {});
-  }, [username]);
-  if (!url) return <span className="text-xs font-bold text-white">{username?.[0]?.toUpperCase() || fallback}</span>;
-  return <img src={url} alt={username} className="w-full h-full object-cover" />;
 }

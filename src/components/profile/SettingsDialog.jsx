@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Palette, User, Bell, Lock, Image, CloudRain, Droplets, Snowflake, Settings as SettingsIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackgroundEffectPicker from '@/components/profile/BackgroundEffectPicker';
@@ -20,19 +20,24 @@ import AppearanceSettings from '@/components/profile/AppearanceSettings';
 import NavigationSettings from '@/components/profile/NavigationSettings';
 import AccountSettings from '@/components/profile/AccountSettings';
 import QuickLoginSettings from '@/components/profile/QuickLoginSettings';
+import ProfileCustomizationCard from '@/components/profile/ProfileCustomizationCard';
 
 const TABS = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
-  { id: 'account', label: 'Account', icon: User },
+  { id: 'account', label: 'Account & Profile', icon: User },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'privacy', label: 'Privacy', icon: Lock },
 ];
 
-export default function SettingsDialog({ open, onOpenChange }) {
+export default function SettingsDialog({ open, onOpenChange, defaultTab = 'appearance' }) {
   const { user } = useAuth();
   const prefs = useUserPrefs();
   const { toast } = useToast();
-  const [tab, setTab] = useState('appearance');
+  const [tab, setTab] = useState(defaultTab);
+
+  useEffect(() => {
+    if (open && defaultTab) setTab(defaultTab);
+  }, [open, defaultTab]);
 
   const set = async (patch) => {
     await savePrefs(user, patch);
@@ -120,8 +125,9 @@ export default function SettingsDialog({ open, onOpenChange }) {
               )}
               {tab === 'account' && (
                 <>
-                  {user && <QuickLoginSettings user={user} />}
+                  {user && <ProfileCustomizationCard user={user} />}
                   {user && <AccountSettings user={user} set={set} />}
+                  {user && <QuickLoginSettings user={user} />}
                   {user && <NavigationSettings prefs={prefs} set={set} />}
                 </>
               )}
