@@ -80,6 +80,12 @@ export function validateField(q, value) {
   if (q.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
     return 'Please enter a valid email address.';
 
+  // YouTube URL validation when the question asks the applicant to provide a YouTube link
+  if (q.type === 'youtube' && !q.youtubeUrl) {
+    const ytMatch = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.test(str) || /^[a-zA-Z0-9_-]{11}$/.test(str.trim());
+    if (!ytMatch) return 'Please enter a valid YouTube video URL.';
+  }
+
   // File
   if (q.type === 'file' && typeof value === 'string' && value.startsWith('file:')) {
     // file_uri stored as answer — valid

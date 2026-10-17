@@ -5,11 +5,30 @@ const CONNECTOR_ID = '6ad2dab80ca7f9b5339bb1ec';
 function mapGoogleFormItem(item, idx) {
   const qItem = item?.questionItem;
   const qGroup = item?.questionGroupItem;
-  if (!qItem && !qGroup) return null;
+  const vItem = item?.videoItem;
+  if (!qItem && !qGroup && !vItem) return null;
 
   const baseId = `gf_${item.itemId || idx}_${Math.random().toString(36).slice(2, 6)}`;
-  const title = (item.title || `Question ${idx + 1}`).trim();
+  const title = (item.title || vItem?.caption || `Question ${idx + 1}`).trim();
   const description = (item.description || '').trim();
+
+  if (vItem?.video?.youtubeUri) {
+    return {
+      id: baseId,
+      text: title || 'Watch YouTube Video',
+      description: description || vItem.caption || '',
+      type: 'youtube',
+      required: false,
+      options: [],
+      placeholder: '',
+      maxLength: 0,
+      showIf: null,
+      validation: null,
+      fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'txt'],
+      maxFileSize: 5,
+      youtubeUrl: vItem.video.youtubeUri,
+    };
+  }
 
   if (qGroup?.questions?.length) {
     return {
@@ -85,6 +104,36 @@ function parsePublicGoogleFormHtml(html, fallbackId) {
     const qTitle = (item[1] || `Question ${idx + 1}`).trim();
     const qDesc = (item[2] || '').trim();
     const typeCode = item[3];
+
+    // Google Forms video item (typeCode === 11)
+    if (typeCode === 11) {
+      const videoMeta = Array.isArray(item[6]) ? item[6] : [];
+      let ytId = typeof videoMeta[0] === 'string' ? videoMeta[0].trim() : '';
+      if (!ytId) {
+        const serialized = JSON.stringify(item);
+        const m = serialized.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        if (m) ytId = m[1];
+      }
+      const youtubeUrl = ytId
+        ? (ytId.startsWith('http') ? ytId : `https://www.youtube.com/watch?v=${ytId}`)
+        : '';
+      return {
+        id: `gf_${item[0] || idx}_${Math.random().toString(36).slice(2, 6)}`,
+        text: qTitle || 'Watch YouTube Video',
+        description: qDesc,
+        type: 'youtube',
+        required: false,
+        options: [],
+        placeholder: '',
+        maxLength: 0,
+        showIf: null,
+        validation: null,
+        fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'txt'],
+        maxFileSize: 5,
+        youtubeUrl,
+      };
+    }
+
     const details = Array.isArray(item[4]) && Array.isArray(item[4][0]) ? item[4][0] : null;
     if (!details && typeCode !== 0 && typeCode !== 1) return null;
 

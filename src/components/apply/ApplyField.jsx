@@ -1,8 +1,9 @@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Star, Check } from 'lucide-react';
+import { Star, Check, Play } from 'lucide-react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import FileUploadField from '@/components/apply/FileUploadField';
+import { extractYouTubeId } from '@/lib/applicationTypes';
 
 const inputCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 text-base rounded-xl focus-visible:ring-cyan-500/50';
 
@@ -77,6 +78,74 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
           </div>
         </div>
       );
+    case 'youtube': {
+      const embeddedId = extractYouTubeId(q.youtubeUrl);
+      const userVideoId = extractYouTubeId(value);
+      if (embeddedId) {
+        const watched = value === 'Watched' || (typeof value === 'string' && value.trim().length > 0);
+        return (
+          <div className="space-y-4">
+            <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-black shadow-lg">
+              <iframe
+                src={`https://www.youtube.com/embed/${embeddedId}`}
+                title={q.text || 'YouTube video'}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <button
+                type="button"
+                onClick={() => onChange(watched ? '' : 'Watched')}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  watched
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                    : 'bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.06]'
+                }`}
+              >
+                <span className={`flex h-5 w-5 items-center justify-center rounded-md border ${watched ? 'bg-emerald-500 border-emerald-400 text-white' : 'border-white/30'}`}>
+                  {watched && <Check className="h-3.5 w-3.5" />}
+                </span>
+                I have watched this video
+              </button>
+              <Input
+                value={value === 'Watched' ? '' : (value || '')}
+                onChange={(e) => onChange(e.target.value || (watched ? 'Watched' : ''))}
+                placeholder={q.placeholder || 'Optional notes or response about the video…'}
+                className={`${inputCls} flex-1`}
+              />
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="space-y-3">
+          <Input
+            autoFocus={autoFocus}
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={q.placeholder || 'Paste a YouTube video link (https://www.youtube.com/watch?v=…)'}
+            className={inputCls}
+          />
+          {userVideoId ? (
+            <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-black shadow-lg">
+              <iframe
+                src={`https://www.youtube.com/embed/${userVideoId}`}
+                title="Submitted YouTube video"
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Play className="h-3.5 w-3.5 text-rose-400" /> Paste a valid YouTube link to preview the video
+            </div>
+          )}
+        </div>
+      );
+    }
     default:
       return (
         <div>

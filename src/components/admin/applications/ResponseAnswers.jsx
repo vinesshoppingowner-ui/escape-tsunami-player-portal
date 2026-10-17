@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Copy, Check, Clock, FileText } from 'lucide-react';
-import { formatAnswer } from '@/lib/applicationTypes';
+import { formatAnswer, extractYouTubeId } from '@/lib/applicationTypes';
 
 export default function ResponseAnswers({ questions, answers }) {
   const [onlyRequired, setOnlyRequired] = useState(false);
@@ -60,7 +60,20 @@ export default function ResponseAnswers({ questions, answers }) {
               <div className="text-sm text-slate-300 font-medium leading-snug">{q.text}{q.required && <span className="text-rose-400 ml-0.5">*</span>}</div>
             </div>
             {a ? (
-              <div className="text-sm text-white whitespace-pre-wrap leading-relaxed pl-8">{a}</div>
+              <div className="pl-8 space-y-2">
+                <div className="text-sm text-white whitespace-pre-wrap leading-relaxed">{a}</div>
+                {q.type === 'youtube' && extractYouTubeId(a) && (
+                  <div className="aspect-video w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${extractYouTubeId(a)}`}
+                      title={q.text || 'Submitted YouTube video'}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="text-sm text-slate-600 italic pl-8">No answer</div>
             )}

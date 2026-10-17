@@ -1,9 +1,9 @@
-import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown, GitBranch, ShieldCheck } from 'lucide-react';
-import { QUESTION_TYPES } from '@/lib/applicationTypes';
+import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown, GitBranch, ShieldCheck, Play } from 'lucide-react';
+import { QUESTION_TYPES, extractYouTubeId } from '@/lib/applicationTypes';
 import FormToggle from './FormToggle';
 
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
-const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload', code: 'const x = "code snippet"' };
+const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload', code: 'const x = "code snippet"', youtube: '▶ YouTube Video (watch or submit link)' };
 
 export default function QuestionEditor({ question, index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });
@@ -43,6 +43,36 @@ export default function QuestionEditor({ question, index, total, active, onFocus
               <button onClick={() => update('options', [...opts, ''])} className="flex items-center gap-3 py-2 text-sm text-slate-500 hover:text-slate-300">
                 <OptIcon className="h-4 w-4" /> Add option
               </button>
+            )}
+          </div>
+        ) : question.type === 'youtube' ? (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                <Play className="h-3.5 w-3.5 text-rose-400" />
+                Embedded YouTube Video URL <span className="text-slate-600">(optional — leave blank if applicant submits a YouTube link)</span>
+              </label>
+              <input
+                value={question.youtubeUrl || ''}
+                onChange={(e) => update('youtubeUrl', e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className={`${lineInput} text-sm mt-1`}
+              />
+            </div>
+            {extractYouTubeId(question.youtubeUrl) ? (
+              <div className="aspect-video w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-black">
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(question.youtubeUrl)}`}
+                  title={question.text || 'YouTube video'}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 border-b border-dotted border-white/10 py-2">
+                {PREVIEW.youtube}
+              </div>
             )}
           </div>
         ) : (

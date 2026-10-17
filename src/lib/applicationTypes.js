@@ -11,7 +11,18 @@ export const QUESTION_TYPES = [
   { value: 'yesno', label: 'Yes / No', icon: 'ToggleLeft' },
   { value: 'file', label: 'File Upload', icon: 'Paperclip' },
   { value: 'code', label: 'Code Snippet', icon: 'Code' },
+  { value: 'youtube', label: 'YouTube Video', icon: 'Youtube' },
 ];
+
+export function extractYouTubeId(input) {
+  if (!input || typeof input !== 'string') return null;
+  const trimmed = input.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  const m = trimmed.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  return m ? m[1] : null;
+}
 
 export const defaultQuestion = () => ({
   id: 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
@@ -26,6 +37,7 @@ export const defaultQuestion = () => ({
   validation: null,
   fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'txt'],
   maxFileSize: 5,
+  youtubeUrl: '',
 });
 
 export const defaultSettings = () => ({
