@@ -46,7 +46,7 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
       setForms([]);
       if (fromPopup) {
         setConnError(
-          'Google OAuth callback could not complete token exchange. Make sure the Client ID and Client Secret in your Google Forms Sync connector match your Google Cloud Console Web client, or authorize the built-in Google Forms connection in chat.'
+          'Google sign-in redirected back, but Base44 could not exchange the token. This happens when the Client Secret in your "Google Forms Sync" workspace connector does not match the Client ID in Google Cloud Console (make sure it is the GOCSPX-... secret value, with no extra spaces).'
         );
       }
     } finally {
@@ -172,11 +172,9 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
               <button onClick={() => fetchForms(false)} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5" title="Refresh forms">
                 <RefreshCw className="h-4 w-4" />
               </button>
-              {connMode === 'app_user' && (
-                <button onClick={handleDisconnect} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10 border border-rose-500/20">
-                  <Unlink className="h-3.5 w-3.5" /> Disconnect
-                </button>
-              )}
+              <button onClick={handleDisconnect} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10 border border-rose-500/20">
+                <Unlink className="h-3.5 w-3.5" /> Disconnect
+              </button>
             </div>
           )}
         </div>
