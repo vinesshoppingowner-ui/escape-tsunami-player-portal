@@ -21,18 +21,32 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
   const [preview, setPreview] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [connError, setConnError] = useState('');
+  const [directUrl, setDirectUrl] = useState('');
 
   // Rule 2: reusable fetch — doubles as connection check AND data loader
-  const fetchForms = async () => {
+  const fetchForms = async (fromPopup = false) => {
     setLoading(true);
     try {
       const res = await base44.functions.invoke('googleFormsSync', { action: 'list' });
+      if (res.data?.apiError && res.data?.error) {
+        setConnected(true);
+        setConnError(res.data.error);
+        setForms([]);
+        return;
+      }
       if (res.data?.error) throw new Error(res.data.error);
       setForms(res.data?.forms || []);
       setConnected(true);
-    } catch {
+      setConnError('');
+    } catch (e) {
       setConnected(false);
       setForms([]);
+      if (fromPopup) {
+        setConnError(
+          'Google OAuth callback could not complete token exchange. Make sure the Client ID and Client Secret in your Google Forms Sync connector match your Google Cloud Console Web client, or authorize the built-in Google Forms connection in chat.'
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -56,13 +70,14 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
 
   // Rule 3: open OAuth popup, poll for close, then re-fetch
   const handleConnect = async () => {
+    setConnError('');
     try {
       const url = await base44.connectors.connectAppUser(CONNECTOR_ID);
       const popup = window.open(url, '_blank');
       const timer = setInterval(() => {
         if (!popup || popup.closed) {
           clearInterval(timer);
-          fetchForms();
+          fetchForms(true);
         }
       }, 500);
     } catch (e) {
@@ -183,20 +198,49 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
                   Sign in with Google and allow read access to your Google Forms so we can list every form in your account and sync its questions.
                 </p>
               </div>
+              {connError && (
+                <div className="max-w-lg mx-auto rounded-xl bg-rose-500/10 border border-rose-500/25 p-3 text-xs text-rose-200 text-left leading-relaxed">
+                  {connError}
+                </div>
+              )}
               <Button onClick={handleConnect} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 px-6">
                 Sign in with Google & Allow Access
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={`Search ${forms.length} Google Forms...`}
-                  className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-                />
+              {connError && (
+                <div className="rounded-xl bg-amber-500/10 border border-amber-500/25 p-3 text-xs text-amber-200 leading-relaxed">
+                  {connError}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={`Search ${forms.length} Google Forms...`}
+                    className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                  />
+                </div>
+                <div className="flex gap-1.5">
+                  <Input
+                    value={directUrl}
+                    onChange={(e) => setDirectUrl(e.target.value)}
+                    placeholder="Or paste Google Form link / ID..."
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-xs sm:w-56"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={!directUrl.trim() || loadingPreview}
+                    onClick={() => handleSelectForm({ id: directUrl.trim(), name: 'Linked Google Form' })}
+                    className="bg-white/10 hover:bg-white/15 text-white border border-white/10 shrink-0"
+                  >
+                    Load
+                  </Button>
+                </div>
               </div>
 
               {filtered.length === 0 ? (
