@@ -1,18 +1,55 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { setAdminRole, markRoleChecked, hasRoleChecked } from '@/lib/adminRole';
 import { isOwner } from '@/lib/isOwner';
-import { Shield, Users, ArrowRight, LogOut, Home } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { isObjectId } from '@/lib/applicationSlug';
+import AppIcon from '@/components/apply/AppIcon';
+import { Shield, Users, ArrowRight, LogOut, Home, FileText } from 'lucide-react';
 
 const STAFF_URL = 'https://staff.escapetsunamifordevelopers.com/';
 
 // Full-screen overlay shown to staff accounts who haven't picked a destination yet.
-// Blocks access to everything until they choose — members portal, staff website, or home.
+// Blocks access to everything until they choose — members portal, staff website, home, or the linked application.
 export default function StaffDestinationModal() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [linkedApp, setLinkedApp] = useState(null);
 
   const shouldShow = user && isOwner(user) && !hasRoleChecked();
+  const applyMatch = location.pathname.match(/^\/apply\/([^/?#]+)/);
+  const applySlugOrId = applyMatch ? decodeURIComponent(applyMatch[1]) : null;
+
+  useEffect(() => {
+    let active = true;
+    if (!shouldShow || !applySlugOrId) {
+      setLinkedApp(null);
+      return;
+    }
+    (async () => {
+      try {
+        let a = null;
+        if (!isObjectId(applySlugOrId)) {
+          const slugPage = await base44.entities.Application.filter({ slug: applySlugOrId }, { limit: 1 });
+          a = slugPage?.items?.[0] || null;
+        }
+        if (!a) a = await base44.entities.Application.get(applySlugOrId);
+        if (active) setLinkedApp(a || null);
+      } catch {
+        if (active) setLinkedApp(null);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [shouldShow, applySlugOrId]);
+
+  const chooseApplication = () => {
+    setAdminRole('members');
+    markRoleChecked();
+  };
 
   const chooseMembers = () => {
     setAdminRole('members');
@@ -46,6 +83,38 @@ export default function StaffDestinationModal() {
           </h1>
           <p className="mt-2 sm:mt-2.5 text-slate-400 text-sm sm:text-base">Choose where to go.</p>
         </div>
+
+        {/* Direct Application Link card when visiting /apply/:id */}
+        {applySlugOrId && (
+          <button
+            onClick={chooseApplication}
+            className="group relative mb-3 sm:mb-4 w-full text-left rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#111827] to-blue-600/15 border border-cyan-500/40 p-5 sm:p-6 hover:border-cyan-400 hover:from-cyan-500/20 hover:to-blue-600/20 transition-all duration-200 active:scale-[0.99]"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
+                  {linkedApp?.icon ? (
+                    <AppIcon icon={linkedApp.icon} className="h-6 w-6 text-cyan-300" emojiClass="text-2xl" />
+                  ) : (
+                    <FileText className="h-5 w-5 text-cyan-300" strokeWidth={1.75} />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-cyan-300 uppercase tracking-widest font-semibold">Direct Application Link</p>
+                  <h2 className="text-base sm:text-lg font-semibold text-white leading-tight truncate mt-0.5">
+                    {linkedApp?.title || `Application (${applySlugOrId})`}
+                  </h2>
+                  {linkedApp?.description && (
+                    <p className="text-xs text-slate-400 line-clamp-1 mt-1">{linkedApp.description}</p>
+                  )}
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-300 group-hover:gap-2.5 transition-all shrink-0">
+                Continue to Application <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* Portal cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
