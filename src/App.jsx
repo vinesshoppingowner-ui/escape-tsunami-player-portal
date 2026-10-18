@@ -14,6 +14,7 @@ import MyAppeals from './pages/MyAppeals';
 import Applications from './pages/Applications';
 import Apply from './pages/Apply';
 import ManageApplications from './pages/ManageApplications';
+import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import RobloxCallback from './pages/RobloxCallback';
 
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/my-appeals" element={<MyAppeals />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/manage-applications" element={<ManageApplications />} />
+          <Route path="/notifications" element={<Notifications />} />
 
           <Route path="/roblox-callback" element={<RobloxCallback />} />
         </Route>

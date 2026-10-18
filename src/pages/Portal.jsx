@@ -176,7 +176,6 @@ export default function Portal() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <NotificationsBell notifications={portal.notifications} onMarkAllRead={portal.markAllRead} />
             <Button
               size="sm"
               variant="ghost"

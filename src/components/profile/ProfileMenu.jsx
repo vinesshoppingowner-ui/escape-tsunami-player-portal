@@ -3,6 +3,7 @@ import SettingsDialog from '@/components/profile/SettingsDialog';
 import { useAuth } from '@/lib/AuthContext';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
 import UserAvatar from '@/components/profile/UserAvatar';
+import NotificationsBell from '@/components/moderations/NotificationsBell';
 
 // Portal-themed 4-color ring: cyan, violet, amber, rose
 export const RING_STYLE = {
@@ -29,15 +30,18 @@ export default function ProfileMenu() {
 
   return (
     <>
-      <button
-        ref={btnRef}
-        aria-label="Open account menu"
-        onClick={() => setSwitcherOpen(true)}
-        className="relative h-9 w-9 rounded-full p-[3px] shrink-0 hover:opacity-90 transition-opacity"
-        style={RING_STYLE}
-      >
-        <UserAvatar user={user} size={30} />
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        <NotificationsBell />
+        <button
+          ref={btnRef}
+          aria-label="Open account menu"
+          onClick={() => setSwitcherOpen(true)}
+          className="relative h-9 w-9 rounded-full p-[3px] shrink-0 hover:opacity-90 transition-opacity"
+          style={RING_STYLE}
+        >
+          <UserAvatar user={user} size={30} />
+        </button>
+      </div>
       <AccountSwitcher
         user={user}
         open={switcherOpen}
