@@ -32,6 +32,7 @@ export default function ApplicationFormSettings({ settings, update }) {
         <Row k="sendCopy" label="Send responders a copy of their response" desc="Emailed to the applicant after submitting" {...p} />
         <Row k="allowEditing" label="Allow response editing" desc="Responses can be changed after being submitted (until staff review them)" {...p} />
         <Row k="oneResponsePerUser" label="Limit to 1 response" desc="Requires sign in" {...p} />
+        <Row k="discordAlert" label="Discord alert on new submission" desc="Notify the staff Discord channel whenever an applicant submits" {...p} />
       </Group>
       <Group title="Presentation" subtitle="Manage how the form and responses are presented">
         <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-2">Form presentation</p>

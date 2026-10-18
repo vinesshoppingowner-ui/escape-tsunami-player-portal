@@ -19,12 +19,12 @@ const SETTINGS_SECTIONS = [
   { id: 'sec-access', label: 'Access & Limits' },
 ];
 
-export default function ApplicationEditor({ open, onClose, application, onSave }) {
+export default function ApplicationEditor({ open, onClose, application, initialTab = 'questions', onSave }) {
   const { toast } = useToast();
   const [form, setForm] = useState({});
   const [questions, setQuestions] = useState([]);
   const [settings, setSettings] = useState(defaultSettings());
-  const [tab, setTab] = useState('questions');
+  const [tab, setTab] = useState(initialTab);
   const [activeId, setActiveId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -35,13 +35,13 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
   useEffect(() => {
     if (!open) return;
     const a = application || {};
-    setForm({ title: a.title || '', description: a.description || '', icon: a.icon || '📋', status: a.status || 'draft', category: a.category || 'General', success_message: a.success_message || '', auto_close_at: a.auto_close_at || '' });
+    setForm({ title: a.title || '', description: a.description || '', icon: a.icon || '📋', status: a.status || 'draft', category: a.category || 'General', success_message: a.success_message || '', auto_close_at: a.auto_close_at || '', slug: a.slug || '' });
     setQuestions(safeParse(a.questions, []));
     setSettings({ ...defaultSettings(), ...safeParse(a.settings, {}) });
-    setTab('questions');
+    setTab(initialTab || 'questions');
     skipDirty.current = true;
     setDirty(false);
-  }, [application, open]);
+  }, [application, open, initialTab]);
 
   useEffect(() => {
     if (!open) return;
@@ -81,8 +81,8 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
     if (questions.length === 0) { toast({ title: 'Add at least one question', variant: 'destructive' }); return; }
     setSaving(true);
     try {
-      // Generate a unique slug from the title
-      let slug = generateSlug(form.title);
+      // Generate or preserve custom slug
+      let slug = (form.slug || '').trim() ? generateSlug(form.slug) : generateSlug(form.title);
       const existing = await base44.entities.Application.filter({ slug }, { limit: 5 });
       const conflicts = (existing?.items || []).filter((a) => a.id !== application?.id);
       if (conflicts.length) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
@@ -184,7 +184,7 @@ export default function ApplicationEditor({ open, onClose, application, onSave }
                 </div>
               </div>
               {questions.map((q, i) => (
-                <QuestionEditor key={q.id} question={q} index={i} total={questions.length} active={q.id === activeId}
+                <QuestionEditor key={q.id} question={q} allQuestions={questions} index={i} total={questions.length} active={q.id === activeId}
                   onFocus={() => setActiveId(q.id)} onUpdate={updateQuestion}
                   onRemove={() => setQuestions(questions.filter((x) => x.id !== q.id))}
                   onDuplicate={() => addQuestion(i, q)}

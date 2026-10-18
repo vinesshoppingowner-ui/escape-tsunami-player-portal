@@ -5,7 +5,7 @@ import FormToggle from './FormToggle';
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
 const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload', code: 'const x = "code snippet"', youtube: '▶ YouTube Video (watch or submit link)' };
 
-export default function QuestionEditor({ question, index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
+export default function QuestionEditor({ question, allQuestions = [], index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });
   const opts = question.options || [];
   const hasOptions = ['dropdown', 'radio', 'checkbox'].includes(question.type);
@@ -118,6 +118,13 @@ export default function QuestionEditor({ question, index, total, active, onFocus
                   className="h-9 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2 flex-1 min-w-[120px]"
                 >
                   <option value="">Always show</option>
+                  {allQuestions
+                    .filter((oq) => oq.id !== question.id)
+                    .map((oq, idx) => (
+                      <option key={oq.id} value={oq.id}>
+                        Q{idx + 1}: {(oq.text || 'Untitled').slice(0, 40)}
+                      </option>
+                    ))}
                 </select>
                 <select
                   value={question.showIf?.operator || 'equals'}

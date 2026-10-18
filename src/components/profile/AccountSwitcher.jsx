@@ -23,7 +23,8 @@ const navItems = [
 export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef }) {
   const dropdownRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
-  const { totalCount, newTotalCount } = useLiveApplicationResponses(isOwner(user));
+  const canManageApps = isOwner(user) || user?.role === 'staff';
+  const { totalCount, newTotalCount } = useLiveApplicationResponses(canManageApps);
 
   useLayoutEffect(() => {
     if (open && anchorRef?.current) {
@@ -122,7 +123,7 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
                   {item.label}
                 </Link>
               ))}
-              {isOwner(user) && (
+              {canManageApps && (
                 <Link
                   to="/manage-applications"
                   onClick={onClose}

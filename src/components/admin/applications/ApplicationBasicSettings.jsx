@@ -22,7 +22,7 @@ export default function ApplicationBasicSettings({ form, setField }) {
         </div>
       </div>
       <div>
-        <Label className="text-xs text-slate-400 mb-1.5 block">Icon</Label>
+        <Label className="text-xs text-slate-400 mb-1.5 block">Preset Icon</Label>
         <div className="flex flex-wrap gap-1">
           {Object.entries(APP_ICONS).map(([name, Icon]) => {
             const val = `lucide:${name}`;
@@ -30,6 +30,12 @@ export default function ApplicationBasicSettings({ form, setField }) {
               <button key={name} type="button" title={name} onClick={() => setField('icon', val)} className={`h-9 w-9 rounded-lg flex items-center justify-center border ${form.icon === val ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white'}`}><Icon className="h-4 w-4" /></button>
             );
           })}
+        </div>
+        <Label className="text-xs text-slate-400 mt-3 mb-1.5 block">Or Emoji Icon</Label>
+        <div className="flex flex-wrap gap-1">
+          {ICONS.map((emoji) => (
+            <button key={emoji} type="button" onClick={() => setField('icon', emoji)} className={`h-9 w-9 rounded-lg flex items-center justify-center text-base border ${form.icon === emoji ? 'bg-cyan-500/20 border-cyan-500/40 text-white' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>{emoji}</button>
+          ))}
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
@@ -40,6 +46,18 @@ export default function ApplicationBasicSettings({ form, setField }) {
         <div>
           <Label className="text-xs text-slate-400 mb-1.5 block">Auto-close at</Label>
           <Input type="datetime-local" value={closeValue} onChange={(e) => setField('auto_close_at', e.target.value ? new Date(e.target.value).toISOString() : '')} className={inputCls} />
+        </div>
+      </div>
+      <div>
+        <Label className="text-xs text-slate-400 mb-1.5 block">Custom URL Slug</Label>
+        <div className="flex items-center rounded-md border border-white/10 bg-white/5 overflow-hidden">
+          <span className="px-3 text-xs text-slate-500 select-none border-r border-white/10">/apply/</span>
+          <input
+            value={form.slug || ''}
+            onChange={(e) => setField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+            placeholder="auto-generated-from-title"
+            className="flex-1 h-9 px-3 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+          />
         </div>
       </div>
       <div>
