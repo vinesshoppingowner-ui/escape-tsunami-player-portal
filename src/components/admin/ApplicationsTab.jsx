@@ -3,13 +3,14 @@ import { base44 } from '@/api/base44Client';
 import AppIcon from '@/components/apply/AppIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, FileText, Pencil, Trash2, Users, Link2, ShieldBan, FileSpreadsheet } from 'lucide-react';
+import { Loader2, Plus, FileText, Pencil, Trash2, Users, Link2, ShieldBan, FileSpreadsheet, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
 import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import { safeParse } from '@/lib/safeParse';
+import { useLiveApplicationResponses } from '@/hooks/useLiveApplications';
 
 const STATUS_STYLES = {
   draft: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
@@ -19,6 +20,7 @@ const STATUS_STYLES = {
 
 export default function ApplicationsTab() {
   const { toast } = useToast();
+  const { countsByApp, newCountsByApp } = useLiveApplicationResponses(true);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -93,29 +95,38 @@ export default function ApplicationsTab() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((app) => (
-            <div key={app.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 flex items-center gap-4">
+          {filtered.map((app) => {
+            const totalForApp = countsByApp[app.id] ?? app.response_count ?? 0;
+            const newForApp = newCountsByApp[app.id] || 0;
+            return (
+            <div key={app.id} onClick={() => setViewingApp(app)} className="cursor-pointer rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 flex items-center gap-4 transition-colors">
               <AppIcon icon={app.icon} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-white truncate">{app.title}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${STATUS_STYLES[app.status] || STATUS_STYLES.draft}`}>{app.status}</span>
+                  {newForApp > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 animate-pulse shrink-0">
+                      <Sparkles className="h-2.5 w-2.5" /> {newForApp} New
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 truncate mt-0.5">{app.description || 'No description'}</p>
                 <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
                   <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> {safeParse(app.questions, []).length} questions</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {app.response_count || 0} responses</span>
+                  <span className={`flex items-center gap-1 ${totalForApp > 0 ? 'text-cyan-300 font-medium' : ''}`}><Users className="h-3 w-3" /> {totalForApp} response{totalForApp === 1 ? '' : 's'}</span>
                   <span>{app.category}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/apply/${app.slug || app.id}`); toast({ title: 'Application link copied' }); }} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Copy application link"><Link2 className="h-4 w-4" /></button>
                 <button onClick={() => setViewingApp(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="View responses"><Users className="h-4 w-4" /></button>
                 <button onClick={() => openEditor(app)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" title="Edit"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => setConfirmDelete(app)} className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400" title="Delete"><Trash2 className="h-4 w-4" /></button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

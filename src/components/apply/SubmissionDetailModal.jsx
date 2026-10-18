@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { formatAnswer } from '@/lib/applicationTypes';
-import { Star, X, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Star, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import UploadedFileAttachment from '@/components/apply/UploadedFileAttachment';
 import {
   Dialog,
   DialogContent,
@@ -39,12 +40,9 @@ export default function SubmissionDetailModal({ response, onClose }) {
                 <StatusIcon className="h-3 w-3" /> {meta.label}
                 {response.attempt > 1 && <span className="ml-1 text-amber-300">· Attempt #{response.attempt}</span>}
               </div>
-              <DialogTitle className="font-display text-xl font-bold text-white">{response.application_title || 'Application'}</DialogTitle>
+              <DialogTitle className="font-display text-xl font-bold text-white pr-6">{response.application_title || 'Application'}</DialogTitle>
               <p className="mt-1 text-xs text-slate-500">Submitted {new Date(response.created_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors shrink-0">
-              <X className="h-5 w-5" />
-            </button>
           </div>
         </DialogHeader>
 
@@ -76,6 +74,8 @@ export default function SubmissionDetailModal({ response, onClose }) {
                     <div className="text-xs text-slate-400">{q.text}{q.required && <span className="text-rose-400 ml-1">*</span>}</div>
                     {val === null ? (
                       <div className="mt-0.5 text-sm italic text-slate-600">{q.required ? 'Not answered' : 'Skipped'}</div>
+                    ) : q.type === 'file' && typeof answers[q.id] === 'string' && answers[q.id].startsWith('file:') ? (
+                      <div className="mt-2"><UploadedFileAttachment value={answers[q.id]} /></div>
                     ) : q.type === 'rating' ? (
                       <div className="mt-1 flex gap-0.5">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={`h-4 w-4 ${answers[q.id] >= n ? 'fill-amber-400 text-amber-400' : 'text-slate-700'}`} />)}</div>
                     ) : (

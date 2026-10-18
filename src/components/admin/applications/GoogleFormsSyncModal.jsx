@@ -155,7 +155,7 @@ export default function GoogleFormsSyncModal({ open, onClose, onSynced, onImport
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 border border-white/10 bg-[#0c0e16] text-white overflow-hidden flex flex-col rounded-2xl">
-        <div className="px-6 pt-5 pb-4 border-b border-white/[0.08] flex items-center justify-between gap-3">
+        <div className="px-6 pt-5 pb-4 pr-12 border-b border-white/[0.08] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center shrink-0">
               <FileSpreadsheet className="h-5 w-5 text-violet-300" />

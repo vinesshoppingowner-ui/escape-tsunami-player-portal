@@ -6,6 +6,7 @@ import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import UserAvatar from '@/components/profile/UserAvatar';
 import { RING_STYLE } from '@/components/profile/ProfileMenu';
+import { useLiveApplicationResponses } from '@/hooks/useLiveApplications';
 
 const tierConfig = (user) => {
   if (isOwner(user)) return { label: 'Owner', icon: Crown, gradient: 'from-amber-400 to-orange-500', text: 'text-amber-300' };
@@ -21,6 +22,7 @@ const navItems = [
 export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef }) {
   const dropdownRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
+  const { totalCount, newTotalCount } = useLiveApplicationResponses(isOwner(user));
 
   useLayoutEffect(() => {
     if (open && anchorRef?.current) {
@@ -123,10 +125,22 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
                 <Link
                   to="/manage-applications"
                   onClick={onClose}
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
                 >
-                  <FileText className="h-3.5 w-3.5 text-slate-400" />
-                  Manage Applications
+                  <span className="flex items-center gap-2.5">
+                    <FileText className="h-3.5 w-3.5 text-slate-400" />
+                    Manage Applications
+                  </span>
+                  <span className="flex items-center gap-1">
+                    {newTotalCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[9px] font-bold uppercase animate-pulse">
+                        New
+                      </span>
+                    )}
+                    <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-200 text-[11px] font-semibold tabular-nums">
+                      {totalCount}
+                    </span>
+                  </span>
                 </Link>
               )}
             </div>

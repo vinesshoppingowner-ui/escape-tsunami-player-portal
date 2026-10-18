@@ -107,8 +107,12 @@ export default async function(req) {
       attempt,
     });
 
-    // Post-response work: email copy + Discord alert (fire-and-forget)
-    const postResponse = [];
+    // Post-response work: increment response_count + email copy + Discord alert
+    const postResponse = [
+      base44.asServiceRole.entities.Application.update(app.id, {
+        response_count: (app.response_count || 0) + 1,
+      }),
+    ];
     if (settings.sendCopy && user.email) {
       const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       const body = questions.map((q) => `<p><b>${esc(q.text)}</b><br/>${esc(answersToSave[q.id] ?? '—')}</p>`).join('');

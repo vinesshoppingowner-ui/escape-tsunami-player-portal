@@ -5,9 +5,11 @@ import AppIcon from '@/components/apply/AppIcon';
 import SubmissionDetailModal from '@/components/apply/SubmissionDetailModal';
 import SiteNav from '@/components/SiteNav';
 import { useAuth } from '@/lib/AuthContext';
+import { isOwner } from '@/lib/isOwner';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { safeParse } from '@/lib/safeParse';
-import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw } from 'lucide-react';
+import { useLiveApplicationResponses, isNewSubmission } from '@/hooks/useLiveApplications';
+import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles } from 'lucide-react';
 
 const STATUS_ICONS = {
   submitted: { icon: Clock, color: 'text-slate-400' },
@@ -25,6 +27,8 @@ const statusLabel = (s) => STATUS_LABELS[s] || (s ? s.replace(/_/g, ' ') : 'Subm
 
 export default function Applications() {
   const { user, isLoadingAuth } = useAuth();
+  const canManage = isOwner(user) || user?.role === 'staff';
+  const { totalCount: totalSubmittedCount, newTotalCount } = useLiveApplicationResponses(canManage);
   const [applications, setApplications] = useState([]);
   const [myResponses, setMyResponses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +57,26 @@ export default function Applications() {
         setLoading(false);
       }
     })();
+
+    if (!user?.id) return;
+    const unsubscribe = base44.entities.ApplicationResponse.subscribe((event) => {
+      if (!event?.data && event?.type !== 'delete') return;
+      if (event.data?.created_by_id && event.data.created_by_id !== user.id) return;
+      setMyResponses((prev) => {
+        if (event.type === 'create' && event.data) {
+          if (prev.some((r) => r.id === event.data.id)) return prev;
+          return [event.data, ...prev];
+        }
+        if (event.type === 'update' && event.data) {
+          return prev.map((r) => (r.id === event.data.id ? event.data : r));
+        }
+        if (event.type === 'delete') {
+          return prev.filter((r) => r.id !== event.id);
+        }
+        return prev;
+      });
+    });
+    return () => unsubscribe?.();
   }, [user?.id, isLoadingAuth]);
 
   const isExpired = (app) => app.auto_close_at && new Date(app.auto_close_at) < new Date();
@@ -126,13 +150,32 @@ export default function Applications() {
         {/* Hero */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500/10 via-blue-600/5 to-transparent border border-white/10 p-6 sm:p-8 mb-8">
           <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-3">
-              <FileText className="h-3.5 w-3.5" /> Applications
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 mb-3">
+                <FileText className="h-3.5 w-3.5" /> Applications
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Open Applications</h1>
+              <p className="mt-2 text-slate-400">Apply for staff roles, community programs, and more.</p>
+              {!user && <p className="mt-3 text-sm text-amber-300/80">Sign in to apply for open positions.</p>}
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Open Applications</h1>
-            <p className="mt-2 text-slate-400">Apply for staff roles, community programs, and more.</p>
-            {!user && <p className="mt-3 text-sm text-amber-300/80">Sign in to apply for open positions.</p>}
+            {canManage && (
+              <Link
+                to="/manage-applications"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-cyan-500/30 text-sm font-semibold text-white shrink-0 transition-colors"
+              >
+                <Shield className="h-4 w-4 text-cyan-300" />
+                <span>Manage Applications</span>
+                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-bold tabular-nums">
+                  {totalSubmittedCount}
+                </span>
+                {newTotalCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold uppercase animate-pulse">
+                    <Sparkles className="h-2.5 w-2.5" /> {newTotalCount} New
+                  </span>
+                )}
+              </Link>
+            )}
           </div>
         </div>
 
@@ -152,7 +195,15 @@ export default function Applications() {
                     className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-3 flex items-center justify-between gap-3 transition-colors group"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-white">{r.application_title || 'Application'}{r._total > 1 && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">{r._total} attempts</span>}</div>
+                      <div className="text-sm font-medium text-white flex items-center gap-2 flex-wrap">
+                        <span>{r.application_title || 'Application'}</span>
+                        {isNewSubmission(r.created_date) && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 animate-pulse">
+                            <Sparkles className="h-2.5 w-2.5" /> New
+                          </span>
+                        )}
+                        {r._total > 1 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">{r._total} attempts</span>}
+                      </div>
                       <div className="text-xs text-slate-500">Submitted {new Date(r.created_date).toLocaleDateString()}</div>
                       {r.applicant_feedback && <div className="mt-1 text-xs text-slate-300 truncate"><span className="text-slate-500">Feedback: </span>{r.applicant_feedback}</div>}
                     </div>

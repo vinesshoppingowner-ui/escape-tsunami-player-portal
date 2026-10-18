@@ -35,7 +35,7 @@ export const defaultQuestion = () => ({
   maxLength: 0,
   showIf: null,
   validation: null,
-  fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'txt'],
+  fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'txt'],
   maxFileSize: 5,
   youtubeUrl: '',
 });

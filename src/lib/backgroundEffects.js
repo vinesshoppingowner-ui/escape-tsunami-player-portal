@@ -5,7 +5,9 @@ import createSummer from '@/lib/fx/summer';
 import createStars from '@/lib/fx/stars';
 import createBubbles from '@/lib/fx/bubbles';
 
-export const canUseBgEffects = () => true;
+import { isOwner } from '@/lib/isOwner';
+
+export const canUseBgEffects = (user) => isOwner(user);
 
 export const BG_EFFECTS = {
   none: { label: 'None', icon: '🚫' },

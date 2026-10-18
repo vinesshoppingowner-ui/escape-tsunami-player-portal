@@ -32,7 +32,7 @@ export default function ResponsesBoard({ app, onBack }) {
   const { toast } = useToast();
   const [responses, setResponses] = useState(null);
   const [error, setError] = useState(false);
-  const [tab, setTab] = useState('pending');
+  const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('newest');
   const [openId, setOpenId] = useState(null);
@@ -40,6 +40,7 @@ export default function ResponsesBoard({ app, onBack }) {
   const [tag, setTag] = useState('all');
   const [selected, setSelected] = useState([]);
   const [showInsights, setShowInsights] = useState(true);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const questions = safeParse(app.questions, []);
 
@@ -54,7 +55,33 @@ export default function ResponsesBoard({ app, onBack }) {
     }
   };
 
-  useEffect(() => { load(); }, [app.id]);
+  useEffect(() => {
+    load();
+    const unsubscribe = base44.entities.ApplicationResponse.subscribe((event) => {
+      if (!event?.data && event?.type !== 'delete') return;
+      if (event.data?.application_id && event.data.application_id !== app.id) return;
+      setResponses((prev) => {
+        if (!prev) return prev;
+        if (event.type === 'create' && event.data) {
+          if (prev.some((r) => r.id === event.data.id)) return prev;
+          toast({ title: `New submission from ${event.data.roblox_username || 'applicant'}!` });
+          return [event.data, ...prev];
+        }
+        if (event.type === 'update' && event.data) {
+          return prev.map((r) => (r.id === event.data.id ? event.data : r));
+        }
+        if (event.type === 'delete') {
+          return prev.filter((r) => r.id !== event.id);
+        }
+        return prev;
+      });
+    });
+    const timer = setInterval(() => setNowMs(Date.now()), 15000);
+    return () => {
+      unsubscribe?.();
+      clearInterval(timer);
+    };
+  }, [app.id]);
 
   if (error) return (
     <div className="rounded-2xl bg-rose-500/[0.04] border border-rose-500/15 p-8 text-center">
@@ -171,14 +198,25 @@ export default function ResponsesBoard({ app, onBack }) {
           <p className="text-sm text-slate-500">{responses.length ? 'No responses match.' : 'No responses yet.'}</p>
         </div>
       ) : (
-        <div className="space-y-2">{shown.map((r) => <ResponseListItem key={r.id} response={r} onOpen={() => setOpenId(r.id)}
+        <div className="space-y-2">{shown.map((r) => <ResponseListItem key={r.id} response={r} nowMs={nowMs} onOpen={() => setOpenId(r.id)}
           selected={selected.includes(r.id)}
           onSelect={() => setSelected((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))}
           onStar={async () => { try { replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred })); } catch {} }} />)}</div>
       )}
 
       {openIdx >= 0 && (
-        <ResponseViewer responses={shown} index={openIdx} application={app} onIndex={(i) => setOpenId(shown[i]?.id ?? null)} onClose={() => setOpenId(null)} onUpdate={replace} />
+        <ResponseViewer
+          responses={shown}
+          index={openIdx}
+          application={app}
+          onIndex={(i) => setOpenId(shown[i]?.id ?? null)}
+          onClose={() => setOpenId(null)}
+          onUpdate={replace}
+          onDelete={(id) => {
+            setResponses((rs) => rs.filter((r) => r.id !== id));
+            setOpenId(null);
+          }}
+        />
       )}
     </div>
   );
