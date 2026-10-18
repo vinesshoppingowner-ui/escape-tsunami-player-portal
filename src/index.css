@@ -545,6 +545,71 @@ img, video { max-width: 100%; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.05);
 }
 
+/* ===== Radial Score Studio Portal Cards ===== */
+.studio-card {
+  box-sizing: border-box;
+  padding: 22px;
+  background: linear-gradient(145deg, #20242e, #191c24);
+  border: 1px solid #353a46;
+  border-radius: 15px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.055), 0 8px 20px rgba(0, 0, 0, 0.16);
+  color: #eef1f5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.studio-card:hover {
+  border-color: #4b5662;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+.studio-ring {
+  position: relative;
+  flex: none;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  animation: ring-fill 1.15s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.studio-ring::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: #1c202b;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.studio-ring::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg, transparent 0deg, transparent 218deg, rgba(245, 158, 11, 0.24) 226deg, transparent 240deg);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+}
+.studio-track {
+  position: relative;
+  height: 7px;
+  margin-top: 18px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #10b981 0%, #10b981 42%, #d3a743 72%, #f59e0b 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.32);
+}
+@keyframes ring-fill {
+  from {
+    transform: rotate(-35deg);
+    filter: brightness(0.8);
+  }
+  to {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-ring {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* ===== Home Page — Neon Pulse ===== */
 .home-page {
   position: relative;

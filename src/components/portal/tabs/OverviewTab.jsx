@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, ArrowRight, Bell, Scale, BookOpen, Trophy } from 'lucide-react';
 import AccountStanding from '@/components/moderations/AccountStanding';
+import SecurityCard from '@/components/portal/SecurityCard';
+import GoodStandingTips from '@/components/portal/GoodStandingTips';
 import QuickLinks from '@/components/portal/QuickLinks';
 import PortalBugReports from '@/components/portal/PortalBugReports';
 
@@ -91,6 +93,12 @@ export default function OverviewTab({ portal, onTabChange }) {
               : 'Clean slate — stay warning-free for 6 months to earn Veteran status.'
             : 'Resolve your active moderations to continue your progress.'}
         </p>
+      </div>
+
+      {/* Companion Studio Cards: Account & Security + Ways to stay in Good Standing */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SecurityCard user={user} robloxUsername={savedUsername} />
+        <GoodStandingTips />
       </div>
 
       {/* Quick links */}
