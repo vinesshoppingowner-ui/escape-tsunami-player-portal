@@ -11,7 +11,8 @@ import ProfileMenu from '@/components/profile/ProfileMenu';
 import { useUserPrefs } from '@/lib/userPrefs';
 import { useAutoHideNav } from '@/hooks/useAutoHideNav';
 
-const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
+import { SITE_CONFIG } from '@/site.config';
+const GAME_URL = SITE_CONFIG.links.robloxGame;
 
 export default function SiteNav() {
   const location = useLocation();
@@ -44,19 +45,9 @@ export default function SiteNav() {
     })();
   }, [location.pathname]);
 
-  const directLinks = [
-    { label: 'Home', to: '/', icon: Home },
-    { label: 'Portal', to: '/portal', icon: LogIn },
-    { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-    { label: 'Applications', to: '/applications', icon: FileText },
-  ];
+  const directLinks = SITE_CONFIG.nav.directLinks;
   const dropdownLinks = [];
-  const mobileLinks = [
-    { label: 'Home', to: '/', icon: Home },
-    { label: 'Member Portal', to: '/portal', icon: LogIn },
-    { label: 'My Appeals', to: '/my-appeals', icon: Scale },
-    { label: 'Applications', to: '/applications', icon: FileText },
-  ];
+  const mobileLinks = SITE_CONFIG.nav.mobileLinks;
 
   const BANNER_COLORS = {
     cyan: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-200',
