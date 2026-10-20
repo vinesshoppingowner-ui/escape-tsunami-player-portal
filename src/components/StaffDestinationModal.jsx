@@ -6,12 +6,20 @@ import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import { isObjectId } from '@/lib/applicationSlug';
 import AppIcon from '@/components/apply/AppIcon';
-import { Shield, Users, ArrowRight, LogOut, Home, FileText } from 'lucide-react';
+import UserAvatar from '@/components/profile/UserAvatar';
+import { 
+  Shield, 
+  Users, 
+  ArrowRight, 
+  ExternalLink, 
+  LogOut, 
+  Home, 
+  FileText,
+  Sparkles
+} from 'lucide-react';
 
 const STAFF_URL = 'https://staff.escapetsunamifordevelopers.com/';
 
-// Full-screen overlay shown to staff accounts who haven't picked a destination yet.
-// Blocks access to everything until they choose — members portal, staff website, home, or the linked application.
 export default function StaffDestinationModal() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -70,29 +78,57 @@ export default function StaffDestinationModal() {
 
   if (!shouldShow) return null;
 
+  const displayName = user?.full_name || user?.display_name || user?.username || user?.email?.split('@')[0] || 'Staff Member';
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0a0c] p-4 sm:p-5 overflow-y-auto">
-      <div className="w-full max-w-3xl my-auto">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-10">
-          <div className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl border border-blue-500/20 mb-4 sm:mb-5">
-            <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-blue-400" strokeWidth={1.5} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090e] p-4 sm:p-6 overflow-y-auto">
+      {/* Background Ambient Glows */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-cyan-600/10 blur-[130px]" />
+        <div className="absolute top-1/3 right-1/4 h-96 w-96 rounded-full bg-amber-600/10 blur-[140px]" />
+      </div>
+
+      <div className="relative w-full max-w-3xl my-auto">
+        {/* Header with User Identity */}
+        <div className="text-center mb-8 sm:mb-10">
+          <div className="relative inline-flex items-center justify-center mb-4">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl ring-2 ring-white/10 p-1 bg-white/[0.03] backdrop-blur-md shadow-2xl flex items-center justify-center">
+              {user?.avatar_url ? (
+                <UserAvatar user={user} className="h-full w-full rounded-xl object-cover" />
+              ) : (
+                <div className="h-full w-full rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 flex items-center justify-center text-cyan-300 font-bold text-xl">
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#07090e] ring-2 ring-[#07090e]">
+              <span className="h-3 w-3 rounded-full bg-emerald-400" />
+            </span>
           </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold text-slate-300 mb-3">
+            <Sparkles className="h-3 w-3 text-cyan-400" />
+            <span>Staff Account Active</span>
+          </div>
+
           <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-white px-2">
-            Welcome back, {user?.full_name || user?.email?.split('@')[0] || 'Staff'}
+            Welcome back, {displayName}
           </h1>
-          <p className="mt-2 sm:mt-2.5 text-slate-400 text-sm sm:text-base">Choose where to go.</p>
+          <p className="mt-2 text-slate-400 text-sm sm:text-base">
+            Choose your workspace to begin.
+          </p>
         </div>
 
-        {/* Direct Application Link card when visiting /apply/:id */}
+        {/* Direct Application Stepper Card (Conditional) */}
         {applySlugOrId && (
           <button
+            type="button"
             onClick={chooseApplication}
-            className="group relative mb-3 sm:mb-4 w-full text-left rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#111827] to-blue-600/15 border border-cyan-500/40 p-5 sm:p-6 hover:border-cyan-400 hover:from-cyan-500/20 hover:to-blue-600/20 transition-all duration-200 active:scale-[0.99]"
+            className="group relative mb-4 w-full text-left rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-cyan-500/40 p-5 sm:p-6 hover:border-cyan-400 hover:bg-[#131e38] transition-all duration-200 active:scale-[0.99] shadow-lg shadow-cyan-950/20"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3.5 min-w-0">
-                <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
                   {linkedApp?.icon ? (
                     <AppIcon icon={linkedApp.icon} className="h-6 w-6 text-cyan-300" emojiClass="text-2xl" />
                   ) : (
@@ -100,7 +136,7 @@ export default function StaffDestinationModal() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-cyan-300 uppercase tracking-widest font-semibold">Direct Application Link</p>
+                  <p className="text-[10px] text-cyan-300 uppercase tracking-widest font-semibold">Direct Link Detected</p>
                   <h2 className="text-base sm:text-lg font-semibold text-white leading-tight truncate mt-0.5">
                     {linkedApp?.title || `Application (${applySlugOrId})`}
                   </h2>
@@ -110,83 +146,96 @@ export default function StaffDestinationModal() {
                 </div>
               </div>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-300 group-hover:gap-2.5 transition-all shrink-0">
-                Continue to Application <ArrowRight className="h-4 w-4" />
+                Continue <ArrowRight className="h-4 w-4" />
               </span>
             </div>
           </button>
         )}
 
-        {/* Portal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        {/* Primary Destination Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Members Portal */}
           <button
+            type="button"
             onClick={chooseMembers}
-            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-5 sm:p-6 hover:border-cyan-500/40 hover:bg-[#131c2e] transition-all duration-200 active:scale-[0.98] sm:active:scale-100"
+            className="group relative flex flex-col justify-between text-left rounded-2xl bg-[#0c121e]/90 backdrop-blur-md border border-white/10 p-6 sm:p-7 hover:border-cyan-500/50 hover:bg-[#10192b] hover:scale-[1.01] transition-all duration-200 active:scale-[0.99] shadow-xl shadow-cyan-950/10"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
-                <Users className="h-5 w-5 text-cyan-400" strokeWidth={1.5} />
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="h-12 w-12 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center group-hover:scale-105 group-hover:bg-cyan-500/20 transition-all duration-200 shrink-0">
+                  <Users className="h-6 w-6 text-cyan-400" strokeWidth={1.75} />
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                  Player Workspace
+                </span>
               </div>
-              <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-semibold text-white leading-tight">Members Portal</h2>
-                <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-semibold mt-0.5">Player Portal</p>
-              </div>
+
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Members Portal</h2>
+              <p className="mt-2.5 text-xs sm:text-sm text-slate-400 leading-relaxed">
+                View your personal account standing, manage appeals, claim community rewards, and check applications.
+              </p>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-4 sm:mb-5">
-              View your moderation history, submit appeals, track applications, and manage your account standing.
-            </p>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400 group-hover:gap-2.5 transition-all">
-              Enter Members Portal <ArrowRight className="h-3.5 w-3.5" />
-            </span>
+
+            <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-400 group-hover:gap-2 transition-all">
+                Enter Portal <ArrowRight className="h-4 w-4" />
+              </span>
+              <span className="text-xs text-slate-500">Internal</span>
+            </div>
           </button>
 
           {/* Staff Portal */}
           <button
+            type="button"
             onClick={chooseStaff}
-            className="group relative text-left rounded-2xl bg-[#111827] border border-[#1e293b] p-5 sm:p-6 hover:border-amber-500/40 hover:bg-[#1c1810] transition-all duration-200 active:scale-[0.98] sm:active:scale-100"
+            className="group relative flex flex-col justify-between text-left rounded-2xl bg-[#14120e]/90 backdrop-blur-md border border-white/10 p-6 sm:p-7 hover:border-amber-500/50 hover:bg-[#1a1712] hover:scale-[1.01] transition-all duration-200 active:scale-[0.99] shadow-xl shadow-amber-950/10"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#1e293b] border border-[#3a3520] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
-                <Shield className="h-5 w-5 text-amber-400" strokeWidth={1.5} />
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center group-hover:scale-105 group-hover:bg-amber-500/20 transition-all duration-200 shrink-0">
+                  <Shield className="h-6 w-6 text-amber-400" strokeWidth={1.75} />
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                  Internal Workspace
+                  <ExternalLink className="h-3 w-3" />
+                </span>
               </div>
-              <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-semibold text-white leading-tight">Staff Portal</h2>
-                <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-semibold mt-0.5 truncate">staff.escapetsunamifordevelopers.com</p>
-              </div>
+
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Staff Portal</h2>
+              <p className="mt-2.5 text-xs sm:text-sm text-slate-400 leading-relaxed">
+                Review candidate applications, manage disciplinary appeals, view live audits, and open admin tools.
+              </p>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-4 sm:mb-5">
-              Manage applications, review appeals, issue moderations, and access staff tools and analytics.
-            </p>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 group-hover:gap-2.5 transition-all">
-              Enter Staff Portal <ArrowRight className="h-3.5 w-3.5" />
-            </span>
+
+            <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-400 group-hover:gap-2 transition-all">
+                Launch Staff Dashboard <ExternalLink className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-xs text-slate-500">External</span>
+            </div>
           </button>
         </div>
 
-        {/* Home page option */}
-        <button
-          onClick={chooseHome}
-          className="group mt-3 w-full flex items-center justify-between rounded-2xl bg-[#111827] border border-[#1e293b] px-4 sm:px-5 py-3.5 sm:py-4 hover:bg-[#161f2e] hover:border-white/10 transition-all duration-200 active:scale-[0.99]"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-[#1e293b] border border-[#2a3a52] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0">
-              <Home className="h-4 w-4 text-slate-300" strokeWidth={1.5} />
-            </div>
-            <div className="text-left min-w-0">
-              <p className="text-sm font-medium text-white">Go to Home Page</p>
-              <p className="text-xs text-slate-500">Browse the public landing page</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-        </button>
-
-        {/* Sign out */}
-        <div className="mt-6 sm:mt-8 text-center">
+        {/* Secondary Navigation Actions */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
           <button
-            onClick={() => logout(true)}
-            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+            type="button"
+            onClick={chooseHome}
+            className="inline-flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-white/[0.04]"
           >
-            <LogOut className="h-3.5 w-3.5" /> Sign out
+            <Home className="h-3.5 w-3.5 text-slate-400" />
+            <span>Return to Main Website</span>
+          </button>
+
+          <span className="hidden sm:inline-block text-slate-700">•</span>
+
+          <button
+            type="button"
+            onClick={() => logout(true)}
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-rose-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-rose-500/[0.05]"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
