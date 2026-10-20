@@ -135,10 +135,9 @@ All routes are registered in `src/App.jsx`:
 - `AppIcon.jsx` — Renders either a Lucide icon (`lucide:Name`) or an emoji for an application.
 
 ### Profile & User Settings (`src/components/profile/`)
+- `SettingsDialog.jsx` — All-in-one user settings & preferences modal (Appearance, Theme Colors, Backgrounds, Glass Slider, Display, Account & Profile, Navigation, Quick Login Passcode, Notifications, and Privacy — all consolidated in this single file).
 - `ProfileMenu.jsx` & `AccountSwitcher.jsx` — Top-right user avatar button and dropdown menu.
-- `SettingsDialog.jsx` — Full user preferences modal (Account, Appearance, Display, Navigation, Notifications, Privacy, Quick Login).
-- `AppearanceSettings.jsx`, `AccentPicker.jsx`, `AccentHexInput.jsx`, `BackgroundPicker.jsx`, `BackgroundEffectPicker.jsx`, `GlassSlider.jsx` — Theme customization controls.
-- `QuickLoginSettings.jsx` & `PasscodeKeypad.jsx` — 4-digit PIN passcode setup for fast sign-in.
+- `PasscodeKeypad.jsx` — 4-digit PIN keypad component used by `Login.jsx` and `SettingsDialog.jsx`.
 - `UserAvatar.jsx` — Displays custom uploaded avatar, Roblox headshot, or initials.
 
 ### Application Management & Admin Components (`src/components/admin/`)
@@ -246,7 +245,6 @@ Because staff moderation tools moved to your separate Staff Website, the followi
   - `src/components/home/LatestUpdates.jsx`
   - `src/components/moderations/AdminVerifyButton.jsx`, `src/components/moderations/DevSandbox.jsx`, `src/components/moderations/ModerationCard.jsx`
   - `src/components/portal/PatchNotes.jsx`
-  - `src/components/profile/AppealStylePicker.jsx`
   - `src/hooks/use-mobile.jsx`, `src/hooks/useLiveChatLogs.js`
   - `src/lib/appealDecision.js`, `src/lib/appealSla.js`, `src/lib/discordWebhook.js`, `src/lib/escalation.js`, `src/lib/evasionDetect.js`, `src/lib/messageAudience.js`, `src/lib/moderationBulk.js`, `src/lib/moderationEmails.js`, `src/lib/renderBridge.js`, `src/lib/responseTemplates.js`, `src/lib/staffLog.js`, `src/lib/staffPermissions.js`, `src/lib/staffStats.js`, `src/lib/staffUndo.js`, `src/lib/userLookup.js`
 - **External Roblox / Render Server Scripts (if managed in a separate repo):**
