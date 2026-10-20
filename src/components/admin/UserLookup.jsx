@@ -11,7 +11,7 @@ import DeleteAccountButton from '@/components/admin/DeleteAccountButton';
 import PortalAccountManager from '@/components/admin/portal/PortalAccountManager';
 import StaffPasscodePanel from '@/components/admin/portal/StaffPasscodePanel';
 import { useToast } from '@/components/ui/use-toast';
-import { findUserByRobloxUsername } from '@/lib/userLookup';
+import { findUserByRobloxUsername, findUserByAccountId } from '@/lib/userLookup';
 import { isOwner } from '@/lib/isOwner';
 
 
@@ -77,7 +77,34 @@ export default function UserLookup() {
     }
   };
 
-  const searchRoblox = async (username) => {
+  const searchRoblox = async (rawQuery) => {
+    // Support searching directly by Portal Account ID (resolves to linked Roblox username or portal account)
+    let username = rawQuery;
+    let preloadedAccount = null;
+    if (/^[0-9a-fA-F]{20,36}$/.test(rawQuery)) {
+      preloadedAccount = await findUserByAccountId(rawQuery);
+      const linkedName = preloadedAccount?.roblox_username || preloadedAccount?.data?.roblox_username;
+      if (linkedName) {
+        username = linkedName;
+      } else if (preloadedAccount) {
+        setRobloxProfile({
+          userId: 'Unlinked',
+          username: preloadedAccount.full_name || preloadedAccount.email?.split('@')[0] || 'Portal User',
+          displayName: preloadedAccount.custom_display_name || preloadedAccount.data?.custom_display_name || preloadedAccount.full_name || 'Portal User',
+          description: preloadedAccount.bio || preloadedAccount.data?.bio || '',
+          createdDate: preloadedAccount.created_date,
+          isBanned: Boolean(preloadedAccount.banned || preloadedAccount.data?.banned),
+          headshot: null,
+          fullBody: null,
+          groups: [],
+          moderations: [],
+          appeals: [],
+          websiteAccount: preloadedAccount,
+        });
+        return;
+      }
+    }
+
     // Looked up server-side so browser CORS / flaky public proxies can't break it
     let res;
     try {
@@ -86,7 +113,7 @@ export default function UserLookup() {
       throw new Error(`Roblox lookup failed — ${e.response?.data?.error || e.message}. Try again in a moment.`);
     }
     const userData = res.user;
-    if (!userData) throw new Error(`No Roblox user found with username "${username}"`);
+    if (!userData) throw new Error(`No Roblox user or Portal Account ID found matching "${rawQuery}"`);
     const userId = userData.id;
     const headData = { data: [{ imageUrl: res.headshot }] };
     const bodyData = { data: [{ imageUrl: res.fullBody }] };
@@ -283,7 +310,7 @@ export default function UserLookup() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && search()}
-            placeholder={platform === 'roblox' ? 'Enter Roblox username…' : 'Enter Discord user ID…'}
+            placeholder={platform === 'roblox' ? 'Enter Roblox username or Portal Account ID…' : 'Enter Discord user ID…'}
             className="bg-slate-950/60 border-white/15 text-white pl-9"
           />
         </div>
@@ -412,6 +439,11 @@ function RobloxResult({ profile, onReload }) {
         </div>
         {profile.websiteAccount ? (
           <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Info className="h-4 w-4 text-slate-400 shrink-0" />
+              <span className="text-slate-500">Account ID:</span>
+              <span className="text-cyan-300 font-mono text-xs">{profile.websiteAccount.id}</span>
+            </div>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-slate-400 shrink-0" />
               <span className="text-slate-500">Email:</span>

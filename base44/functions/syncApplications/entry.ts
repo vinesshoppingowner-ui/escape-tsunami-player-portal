@@ -78,6 +78,89 @@ export default async function(req: Request): Promise<Response> {
       return Response.json(await fetchAllBundle());
     }
 
+    // --- LOOKUP PORTAL ACCOUNT BY ACCOUNT ID, EMAIL, OR ROBLOX USERNAME ---
+    // Allows the external Staff Website (staff.escapetsunamifordevelopers.com)
+    // to search a player's full portal account info using their Portal Account ID, email, or username.
+    if (action === 'lookup_account') {
+      const q = String(body.account_id || body.query || body.id || body.email || body.roblox_username || '').trim();
+      if (!q) {
+        return Response.json({ error: 'account_id or query is required' }, { status: 400 });
+      }
+
+      let foundUser: any = null;
+
+      // 1. Direct ID lookup
+      if (/^[0-9a-fA-F]{20,36}$/.test(q) || body.account_id || body.id) {
+        foundUser = await base44.asServiceRole.entities.User.get(q).catch(() => null);
+      }
+
+      // 2. Fallback scan across users by ID, email, or roblox_username
+      if (!foundUser) {
+        const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 1000).catch(() => []);
+        const lower = q.toLowerCase();
+        foundUser = (allUsers || []).find((u: any) => {
+          const idMatch = String(u.id || '').toLowerCase() === lower;
+          const emailMatch = String(u.email || '').toLowerCase() === lower;
+          const rbx = String(u.roblox_username || u.data?.roblox_username || '').toLowerCase();
+          return idMatch || emailMatch || (rbx && rbx === lower);
+        }) || null;
+      }
+
+      if (!foundUser) {
+        return Response.json({ status: 'not_found', account: null }, { status: 404 });
+      }
+
+      const rbxName = foundUser.roblox_username || foundUser.data?.roblox_username || null;
+      const [moderationsPage, appealsPage, appsPage, bugReportsPage, streakPage] = await Promise.all([
+        rbxName
+          ? base44.asServiceRole.entities.Moderation.filter({ roblox_username: rbxName }, { sort: '-moderation_date', limit: 100 }).catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+        rbxName
+          ? base44.asServiceRole.entities.Appeal.filter({ roblox_username: rbxName }, { sort: '-created_date', limit: 100 }).catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+        base44.asServiceRole.entities.ApplicationResponse.filter(
+          rbxName
+            ? { $or: [{ submitted_by_email: foundUser.email }, { roblox_username: rbxName }] }
+            : { submitted_by_email: foundUser.email },
+          { sort: '-created_date', limit: 100 }
+        ).catch(() => ({ items: [] })),
+        rbxName
+          ? base44.asServiceRole.entities.BugReport.filter({ roblox_username: rbxName }, { sort: '-created_date', limit: 50 }).catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+        rbxName
+          ? base44.asServiceRole.entities.UserStreak.filter({ roblox_username: rbxName }, { sort: '-created_date', limit: 1 }).catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+      ]);
+
+      return Response.json({
+        status: 'ok',
+        account: {
+          id: foundUser.id,
+          email: foundUser.email,
+          full_name: foundUser.full_name || null,
+          display_name: foundUser.custom_display_name || foundUser.data?.custom_display_name || foundUser.full_name || null,
+          bio: foundUser.bio || foundUser.data?.bio || '',
+          role: foundUser.role || 'user',
+          is_owner: Boolean(foundUser.is_owner || foundUser.data?.is_owner),
+          roblox_username: rbxName,
+          roblox_user_id: foundUser.roblox_user_id || foundUser.data?.roblox_user_id || null,
+          discord_id: foundUser.discord_id || foundUser.data?.discord_id || null,
+          discord_username: foundUser.discord_username || foundUser.data?.discord_username || null,
+          created_date: foundUser.created_date,
+          last_seen: foundUser.last_seen || foundUser.data?.last_seen || null,
+          last_ip: foundUser.last_ip || foundUser.data?.last_ip || null,
+          banned: Boolean(foundUser.banned || foundUser.data?.banned),
+          banned_reason: foundUser.banned_reason || foundUser.data?.banned_reason || null,
+          appeals_locked: Boolean(foundUser.appeals_locked || foundUser.data?.appeals_locked),
+        },
+        moderations: moderationsPage?.items || [],
+        appeals: appealsPage?.items || [],
+        application_responses: appsPage?.items || [],
+        bug_reports: bugReportsPage?.items || [],
+        streak: streakPage?.items?.[0] || null,
+      });
+    }
+
     if (action === 'upsert_application' && body.application) {
       const a = body.application;
       if (!a.title) {

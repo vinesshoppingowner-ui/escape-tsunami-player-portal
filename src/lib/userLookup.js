@@ -34,26 +34,61 @@ export async function findUserByRobloxUsername(username) {
   return null;
 }
 
-// Search for a portal account by email or Roblox username.
-// If the query contains '@', searches by email; otherwise by Roblox username.
+// Search for a portal account by Portal Account ID.
+export async function findUserByAccountId(accountId) {
+  if (!accountId) return null;
+  const clean = String(accountId).trim();
+  if (!clean) return null;
+
+  try {
+    const direct = await base44.entities.User.get(clean);
+    if (direct && direct.id) return direct;
+  } catch {}
+
+  try {
+    const users = await base44.entities.User.filter({ id: clean }, '-created_date', 5);
+    if (users?.length > 0) return users[0];
+  } catch {}
+
+  try {
+    const allUsers = await base44.entities.User.list('-created_date', 1000);
+    const lower = clean.toLowerCase();
+    return allUsers.find((u) => String(u.id || '').toLowerCase() === lower) || null;
+  } catch {}
+
+  return null;
+}
+
+// Search for a portal account by Portal Account ID, email, or Roblox username.
 export async function findUserByEmailOrUsername(query) {
   if (!query) return null;
-  const isEmail = query.includes('@');
+  const q = String(query).trim();
+  if (!q) return null;
 
+  // Check if query looks like a 24-char hex ObjectId or UUID Account ID
+  const looksLikeAccountId = /^[0-9a-fA-F]{20,36}$/.test(q) || /^[0-9a-fA-F-]{32,36}$/.test(q);
+  if (looksLikeAccountId) {
+    const byId = await findUserByAccountId(q);
+    if (byId) return byId;
+  }
+
+  const isEmail = q.includes('@');
   if (isEmail) {
-    // Exact email match (fast path)
     try {
-      const users = await base44.entities.User.filter({ email: query }, '-created_date', 5);
+      const users = await base44.entities.User.filter({ email: q }, '-created_date', 5);
       if (users.length > 0) return users[0];
     } catch {}
-    // Case-insensitive fallback
     try {
       const allUsers = await base44.entities.User.list('-created_date', 1000);
-      const lower = query.toLowerCase();
+      const lower = q.toLowerCase();
       return allUsers.find((u) => u.email?.toLowerCase() === lower) || null;
     } catch {}
     return null;
   }
 
-  return findUserByRobloxUsername(query);
+  const byUsername = await findUserByRobloxUsername(q);
+  if (byUsername) return byUsername;
+
+  // Fallback: check if any user ID matches exact query
+  return findUserByAccountId(q);
 }

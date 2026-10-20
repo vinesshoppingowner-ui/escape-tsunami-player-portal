@@ -36,7 +36,7 @@ export default function PortalAccountManager() {
     try {
       const found = await findUserByEmailOrUsername(q);
       if (!found) {
-        setError('No portal account found with that email or Roblox username.');
+        setError('No portal account found with that Account ID, email, or Roblox username.');
         return;
       }
       setAccount(found);
@@ -77,7 +77,7 @@ export default function PortalAccountManager() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && search()}
-            placeholder="Enter email or Roblox username…"
+            placeholder="Enter Portal Account ID, email, or Roblox username…"
             className="bg-slate-950/60 border-white/15 text-white pl-9"
           />
         </div>
@@ -120,7 +120,7 @@ export default function PortalAccountManager() {
       {!loading && !account && !error && (
         <div className="rounded-2xl bg-white/[0.03] border border-white/10 py-20 text-center text-slate-500">
           <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Search by email or Roblox username to manage a portal account.</p>
+          <p className="text-sm">Search by Portal Account ID, email, or Roblox username to view and manage a portal account.</p>
         </div>
       )}
     </div>
@@ -161,6 +161,7 @@ function AccountInfoCard({ account, currentUser }) {
             ))}
           </div>
           <div className="mt-3 grid sm:grid-cols-2 gap-2">
+            <InfoRow icon={KeyRound} label="Account ID" value={account.id || '—'} mono />
             <InfoRow icon={Mail} label="Email" value={account.email} />
             <InfoRow icon={UserIcon} label="Roblox" value={robloxUsername || 'Not linked'} />
             <InfoRow icon={Shield} label="Role" value={account.role || 'user'} />

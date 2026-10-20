@@ -98,11 +98,11 @@ export default function SecurityCard({ user, robloxUsername }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="flex flex-col gap-2.5">
         {rows.map((r) => (
           <div
             key={r.key}
-            className="flex items-center gap-3 p-3 rounded-[12px] bg-[#1c202b] border border-[#303541] hover:border-[#4b5662] transition-colors"
+            className="flex items-center gap-3 p-3.5 rounded-[12px] bg-[#1c202b] border border-[#303541] hover:border-[#4b5662] transition-colors overflow-hidden"
           >
             <div
               className="h-9 w-9 rounded-[9px] flex items-center justify-center shrink-0"
@@ -116,11 +116,11 @@ export default function SecurityCard({ user, robloxUsername }) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-[#a0a7b4]">{r.label}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-medium text-[#a0a7b4] whitespace-nowrap">{r.label}</span>
                 {r.badge && (
                   <span
-                    className="px-1.5 py-0.2 rounded-full text-[9px] font-semibold tracking-wide uppercase"
+                    className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold tracking-wide uppercase leading-none shrink-0"
                     style={{
                       color: r.badge.color,
                       background: r.badge.bg,
@@ -131,12 +131,17 @@ export default function SecurityCard({ user, robloxUsername }) {
                   </span>
                 )}
               </div>
-              <div className="text-sm font-medium text-[#f3f5f7] truncate tabular-nums mt-0.5">
+              <div
+                className={`text-sm font-medium text-[#f3f5f7] truncate tabular-nums mt-0.5 ${
+                  r.key === 'id' ? 'font-mono text-xs' : ''
+                }`}
+                title={r.value}
+              >
                 {r.value}
               </div>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 shrink-0 ml-1">
               {r.externalHref && (
                 <a
                   href={r.externalHref}
