@@ -8,15 +8,15 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import { Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Portal from './pages/Portal';
-import MyAppeals from './pages/MyAppeals';
-import Applications from './pages/Applications';
-import Apply from './pages/Apply';
-import ManageApplications from './pages/ManageApplications';
-import Notifications from './pages/Notifications';
+import HomePage from './pages/HomePage';
+import MemberPortalPage from './pages/MemberPortalPage';
+import MyAppealsPage from './pages/MyAppealsPage';
+import ApplicationsDirectoryPage from './pages/ApplicationsDirectoryPage';
+import ApplicationFormPage from './pages/ApplicationFormPage';
+import ManageApplicationsPage from './pages/ManageApplicationsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
-import RobloxCallback from './pages/RobloxCallback';
+import RobloxOAuthCallbackPage from './pages/RobloxOAuthCallbackPage';
 
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -64,17 +64,17 @@ const AuthenticatedApp = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/portal" element={<Portal />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/portal" element={<MemberPortalPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/apply/:id" element={<Apply />} />
+        <Route path="/apply/:id" element={<ApplicationFormPage />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/my-appeals" element={<MyAppeals />} />
-          <Route path="/applications" element={<Applications />} />
-          <Route path="/manage-applications" element={<ManageApplications />} />
-          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/my-appeals" element={<MyAppealsPage />} />
+          <Route path="/applications" element={<ApplicationsDirectoryPage />} />
+          <Route path="/manage-applications" element={<ManageApplicationsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
-          <Route path="/roblox-callback" element={<RobloxCallback />} />
+          <Route path="/roblox-callback" element={<RobloxOAuthCallbackPage />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

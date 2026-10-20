@@ -1,77 +1,53 @@
-# Base44 Project
+# Escape Tsunami Player Portal
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+Official player portal and application system for **Escape Tsunami For Developers** on Roblox.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+> **Using ChatGPT, Gemini, Claude, or Cursor in VS Code?**
+> Point your AI to **[`PROJECT_MAP.md`](./PROJECT_MAP.md)**! It contains a complete map of every file, page, component, and backend function so the AI knows immediately where to find and edit anything you ask for.
 
-## Prerequisites
+---
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+## Quick File Guide
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+| Feature | Where to Edit |
+| --- | --- |
+| **Branding, Navbar & Footer Links** | `src/site.config.js` |
+| **URL Routes** | `src/App.jsx` |
+| **Home Page (`/`)** | `src/pages/HomePage.jsx` & `src/components/home/` |
+| **Member Portal (`/portal`)** | `src/pages/MemberPortalPage.jsx` & `src/components/portal/` |
+| **My Appeals (`/my-appeals`)** | `src/pages/MyAppealsPage.jsx` & `src/components/appeals/` |
+| **Open Applications (`/applications`)** | `src/pages/ApplicationsDirectoryPage.jsx` |
+| **Application Form (`/apply/:id`)** | `src/pages/ApplicationFormPage.jsx` & `src/components/apply/` |
+| **Manage Applications (`/manage-applications`)** | `src/pages/ManageApplicationsPage.jsx` & `src/components/admin/` |
+| **Notifications (`/notifications`)** | `src/pages/NotificationsPage.jsx` |
+| **Profile & Settings Modal** | `src/components/profile/` |
+| **Backend Functions** | `base44/functions/` |
+| **Database Schemas** | `base44/entities/` |
 
-## Run Locally
+*(See [`PROJECT_MAP.md`](./PROJECT_MAP.md) for the full file-by-file breakdown.)*
 
-Run the full local development environment from the project root:
+---
 
+## Running Locally in VS Code
+
+### 1. Install Dependencies
 ```bash
+npm install
+```
+
+### 2. Run the Development Server
+To run the full local development environment (frontend + backend functions) with the Base44 CLI:
+```bash
+npm install -g base44@latest
 base44 dev
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
-
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
-
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
-```
-
-In a Base44 project this lives in `base44/config.jsonc`.
-
-## Run Only The Frontend
-
-If you only want to work on the frontend against the hosted Base44 backend, run:
-
+Or to run just the Vite frontend against your hosted Base44 backend:
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Vite.
-
-## Use The Hosted Backend
-
-For frontend-only development, create or update `.env.local` in the project root:
-
+### 3. Build for Production
 ```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
-```
-
-`VITE_BASE44_APP_ID` identifies the Base44 app.
-
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
-
-```bash
-base44 dashboard open
-```
-
-## Docs & Support
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+npm run build
+``
