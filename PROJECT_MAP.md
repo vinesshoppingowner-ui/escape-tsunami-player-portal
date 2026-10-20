@@ -5,6 +5,24 @@
 
 ---
 
+## 0. What to Tell ChatGPT / Gemini to Read First
+
+When you open this project in VS Code and talk to ChatGPT, Gemini, Claude, or Cursor, **copy and paste this exact prompt** to get started:
+
+> *"Read `PROJECT_MAP.md` and `src/site.config.js` first so you know how the whole website is structured. Then read the specific file we need to edit based on the map."*
+
+### Which extra files to give the AI depending on your task:
+- **Changing links, text, navbar, or footer:** Tell it to read `src/site.config.js` and `src/components/SiteNav.jsx`
+- **Editing the Home page:** Tell it to read `src/pages/HomePage.jsx`
+- **Editing the Member Portal:** Tell it to read `src/pages/MemberPortalPage.jsx` and `src/hooks/usePortalData.js`
+- **Editing Applications (Applicant view):** Tell it to read `src/pages/ApplicationsDirectoryPage.jsx` and `src/pages/ApplicationFormPage.jsx`
+- **Editing Application Builder / Reviewer (Staff view):** Tell it to read `src/pages/ManageApplicationsPage.jsx` and `src/components/admin/ApplicationsTab.jsx`
+- **Editing Appeals & Appeal Chat:** Tell it to read `src/pages/MyAppealsPage.jsx` and `src/components/appeals/AppealChat.jsx`
+- **Changing colors, fonts, or styles:** Tell it to read `src/index.css` and `tailwind.config.js`
+- **Replacing the Base44 Backend / Database:** Tell it to read `src/api/base44Client.js`, `src/lib/AuthContext.jsx`, and the `base44/` folder
+
+---
+
 ## 1. Quick-Find Cheat Sheet ("Where do I edit X?")
 
 | What you want to change | Exact File Path |
@@ -186,3 +204,51 @@ Each folder under `base44/functions/<functionName>/entry.ts` is a Deno serverles
 - `UserStreak.jsonc` — Daily login streak progress for rewards.
 - `SiteSettings.jsonc` — Global site toggles (maintenance mode, banners, portal lock, Google Sheet sync settings).
 - `Announcement.jsonc` — Site-wide announcements displayed in the top banner.
+
+---
+
+## 7. Files You Can Remove or Replace After Leaving Base44
+
+Once this website is no longer hosted on Base44 (after October 21st), here is the exact breakdown of what you can delete or replace:
+
+### A. Base44-Specific Platform Files (Replace or Delete When Moving to Your Own Backend/Hosting)
+1. **`base44/config.jsonc` & `base44/connectors/`** — Base44 platform configuration files. Safe to delete once off Base44.
+2. **`base44/workflows/`** — Base44 workflow JSON files (`Auto Assign Appeals.jsonc`, `Auto Expire Temp Bans.jsonc`). Move these cron schedules to your new backend (e.g., Supabase, Firebase, Node/Express, or Render).
+3. **`base44/entities/*.jsonc`** — Keep these briefly so ChatGPT/Gemini can convert them into SQL/Supabase/MongoDB tables for your new database, then delete them.
+4. **`base44/functions/*/entry.ts`** — Deno serverless functions using `npm:@base44/sdk`. Ask ChatGPT/Gemini to convert the ones you still need into standard Node.js/Express or Supabase Edge Functions, then delete the `base44/` folder.
+5. **`src/api/base44Client.js` & `src/lib/app-params.js`** — Initializes `@base44/sdk`. Replace `src/api/base44Client.js` with your new backend client (or a compatibility wrapper so you don't have to rewrite every `base44.entities.*` call across the frontend!).
+6. **`vite.config.js` & `package.json`** — Remove `@base44/vite-plugin` from `vite.config.js` and uninstall `@base44/sdk` + `@base44/vite-plugin` from `package.json` once `src/api/base44Client.js` is replaced.
+
+### B. Legacy Page Re-Export Shims (Safe to Delete Anytime)
+These 8 tiny 1-line files only exist as backwards-compatible redirects to the renamed `*Page.jsx` files:
+- `src/pages/Home.jsx`
+- `src/pages/Portal.jsx`
+- `src/pages/MyAppeals.jsx`
+- `src/pages/Applications.jsx`
+- `src/pages/Apply.jsx`
+- `src/pages/ManageApplications.jsx`
+- `src/pages/Notifications.jsx`
+- `src/pages/RobloxCallback.jsx`
+
+### C. Unused / Disconnected Frontend Files (140 Files — Safe to Delete if You Don't Plan to Re-Enable Them Here)
+Because staff moderation tools moved to your separate Staff Website, the following files are **not imported by any active page** in `src/App.jsx` and can be deleted to shrink the repo:
+- **Unused Pages:**
+  - `src/pages/BugReports.jsx`
+  - `src/pages/OAuthConsent.jsx`
+- **Old Admin Dashboard Tabs & Panels (everything in `src/components/admin/` EXCEPT `ApplicationsTab.jsx` and `src/components/admin/applications/*`):**
+  - `src/components/admin/AdminMoreMenu.jsx`, `AdminOverview.jsx`, `AppealAISummary.jsx`, `AppealReviewModal.jsx`, `AppealsTab.jsx`, `BloxlinkLookup.jsx`, `DashboardTab.jsx`, `DeleteAccountButton.jsx`, `KnowledgeBaseTab.jsx`, `LiveChatTab.jsx`, `ModerationsTab.jsx`, `MusicTab.jsx`, `QuickPunishButton.jsx`, `StaffLogsTab.jsx`, `UserInfoModal.jsx`, `UserLookup.jsx`, `UserLookupAppeals.jsx`, `UsersTab.jsx`, `WebsiteBansTab.jsx`
+  - Entire folders: `src/components/admin/appeals/`, `src/components/admin/dashboard/`, `src/components/admin/discord/`, `src/components/admin/evasion/`, `src/components/admin/livechat/`, `src/components/admin/messaging/`, `src/components/admin/moderations/`, `src/components/admin/performance/`, `src/components/admin/players/`, `src/components/admin/portal/`, `src/components/admin/reports/`, `src/components/admin/stafflogs/`, `src/components/admin/users/`, `src/components/admin/watchlist/`
+- **Unused Analytics Folder:**
+  - Entire folder: `src/components/analytics/` (12 files)
+- **Other Unreferenced Components & Helpers:**
+  - `src/components/SectionLabel.jsx`
+  - `src/components/bugreports/BugReportCard.jsx`, `src/components/bugreports/BugReportStats.jsx`
+  - `src/components/home/LatestUpdates.jsx`
+  - `src/components/moderations/AdminVerifyButton.jsx`, `src/components/moderations/DevSandbox.jsx`, `src/components/moderations/ModerationCard.jsx`
+  - `src/components/portal/PatchNotes.jsx`
+  - `src/components/profile/AppealStylePicker.jsx`
+  - `src/hooks/use-mobile.jsx`, `src/hooks/useLiveChatLogs.js`
+  - `src/lib/appealDecision.js`, `src/lib/appealSla.js`, `src/lib/discordWebhook.js`, `src/lib/escalation.js`, `src/lib/evasionDetect.js`, `src/lib/messageAudience.js`, `src/lib/moderationBulk.js`, `src/lib/moderationEmails.js`, `src/lib/renderBridge.js`, `src/lib/responseTemplates.js`, `src/lib/staffLog.js`, `src/lib/staffPermissions.js`, `src/lib/staffStats.js`, `src/lib/staffUndo.js`, `src/lib/userLookup.js`
+- **External Roblox / Render Server Scripts (if managed in a separate repo):**
+  - `scripts/chrome-profile-cleaner.ps1`
+  - `render-server/` and `src/render-server/` (Lua scripts & Discord poller)

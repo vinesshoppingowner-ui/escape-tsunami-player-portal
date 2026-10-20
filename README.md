@@ -3,7 +3,13 @@
 Official player portal and application system for **Escape Tsunami For Developers** on Roblox.
 
 > **Using ChatGPT, Gemini, Claude, or Cursor in VS Code?**
-> Point your AI to **[`PROJECT_MAP.md`](./PROJECT_MAP.md)**! It contains a complete map of every file, page, component, and backend function so the AI knows immediately where to find and edit anything you ask for.
+> Tell your AI:
+> **`"Read PROJECT_MAP.md and src/site.config.js first"`**
+>
+> [`PROJECT_MAP.md`](./PROJECT_MAP.md) contains:
+> 1. **Exact prompts & which files to tell ChatGPT/Gemini to read** for every task (Section 0)
+> 2. **A "Where do I edit X?" cheat sheet** for every page, component, and backend function (Sections 1–6)
+> 3. **A complete list of Base44 files & 140 unused files you can safely delete/replace** after moving off Base44 (Section 7)
 
 ---
 
@@ -50,4 +56,4 @@ npm run dev
 ### 3. Build for Production
 ```bash
 npm run build
-``
+`
