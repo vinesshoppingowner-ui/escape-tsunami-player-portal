@@ -96,6 +96,20 @@
       "description": "Whether new appeals are automatically assigned to staff",
       "default": false
     },
+    "sheet_sync_enabled": {
+      "type": "boolean",
+      "description": "Whether submitted applications sync to the owner's Google Sheet",
+      "default": false
+    },
+    "sheet_sync_spreadsheet_id": {
+      "type": "string",
+      "description": "Google Sheets spreadsheet ID or URL where application responses are synced"
+    },
+    "sheet_sync_tab_name": {
+      "type": "string",
+      "description": "Tab name in the spreadsheet for application data",
+      "default": "Applications"
+    },
     "updated_by": {
       "type": "string",
       "description": "Email of the owner who last updated settings"

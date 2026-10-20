@@ -123,6 +123,7 @@ export default async function(req) {
         message: `New application submitted for **${app.title}** by ${user.roblox_username || 'Unknown'} (attempt ${attempt}).`,
       }));
     }
+    postResponse.push(base44.asServiceRole.functions.invoke('syncApplicationToSheet', { response_id: response.id }));
     if (postResponse.length) await Promise.allSettled(postResponse);
 
     return Response.json({ ok: true, response });

@@ -25,6 +25,7 @@ import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
 import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import ApplicationSyncModal from './applications/ApplicationSyncModal';
+import GoogleSheetSyncSettings from './applications/GoogleSheetSyncSettings';
 import { safeParse } from '@/lib/safeParse';
 import { defaultSettings } from '@/lib/applicationTypes';
 import { generateSlug } from '@/lib/applicationSlug';
@@ -68,6 +69,7 @@ export default function ApplicationsTab() {
   const [blacklistOpen, setBlacklistOpen] = useState(false);
   const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [sheetSyncOpen, setSheetSyncOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -254,6 +256,14 @@ export default function ApplicationsTab() {
           </Button>
           <Button
             size="sm"
+            variant="ghost"
+            onClick={() => setSheetSyncOpen(true)}
+            className="text-emerald-200 hover:text-white hover:bg-emerald-500/15 border border-emerald-500/30 bg-emerald-500/10"
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Sheet Sync
+          </Button>
+          <Button
+            size="sm"
             onClick={() => openEditor(null, 'questions')}
             className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
           >
@@ -411,6 +421,8 @@ export default function ApplicationsTab() {
       />
 
       <GoogleFormsSyncModal open={googleSyncOpen} onClose={() => setGoogleSyncOpen(false)} onSynced={load} />
+
+      <GoogleSheetSyncSettings open={sheetSyncOpen} onClose={() => setSheetSyncOpen(false)} />
 
       <ApplicationSyncModal
         open={syncModalOpen}

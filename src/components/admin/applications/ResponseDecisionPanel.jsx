@@ -59,6 +59,7 @@ export default function ResponseDecisionPanel({ response, application, onUpdate,
       }
       toast({ title: `Decision saved (${RESPONSE_STATUS[nextStatus]?.label || nextStatus})` });
       onUpdate(updated);
+      base44.functions.invoke('syncApplicationToSheet', { response_id: response.id }).catch(() => {});
       if (autoAdvance && onNextUnreviewed) onNextUnreviewed(updated.id);
     } finally {
       setSaving(false);
