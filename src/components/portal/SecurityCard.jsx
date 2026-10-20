@@ -56,8 +56,9 @@ export default function SecurityCard({ user, robloxUsername }) {
       icon: Fingerprint,
       label: 'Portal Account ID',
       value: user.id || '—',
+      hint: 'Save this ID — admins use it to look up & verify your account.',
       copyable: Boolean(user.id),
-      badge: null,
+      badge: { text: 'Save ID', color: '#38bdf8', bg: 'rgba(56,189,248,.1)', border: 'rgba(56,189,248,.28)' },
     },
   ];
 
@@ -139,6 +140,11 @@ export default function SecurityCard({ user, robloxUsername }) {
               >
                 {r.value}
               </div>
+              {r.hint && (
+                <div className="text-[11px] text-[#8b95a5] mt-1 leading-snug">
+                  {r.hint}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1 shrink-0 ml-1">
