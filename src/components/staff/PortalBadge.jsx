@@ -19,8 +19,10 @@ export default function PortalBadge({ email, url, autoSignIn = false }) {
           {autoSignIn ? 'Scan to sign in instantly' : 'Scan to open the sign-in page'}
         </p>
 
-        <div className="mx-auto mt-4 w-fit rounded-xl border border-slate-200 bg-white p-2.5">
-          <QrCode value={url} size={216} alt={`Portal badge for ${email}`} />
+        <div className="mx-auto mt-4 w-fit rounded-[18px] bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-500 p-[2px] shadow-[0_8px_24px_rgba(56,189,248,0.28)]">
+          <div className="rounded-[16px] bg-white p-2.5">
+            <QrCode value={url} size={216} alt={`Portal badge for ${email}`} />
+          </div>
         </div>
 
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Account</p>
