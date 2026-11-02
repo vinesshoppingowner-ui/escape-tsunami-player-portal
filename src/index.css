@@ -537,6 +537,30 @@ html[data-fx] .min-h-screen.bg-slate-950 { background: transparent !important; }
 html, body { -webkit-tap-highlight-color: transparent; }
 img, video { max-width: 100%; }
 
+/* ===== Printable member access badges ===== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+  }
+  .badge-card {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1;
+  }
+}
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);

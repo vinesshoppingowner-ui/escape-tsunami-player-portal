@@ -15,7 +15,8 @@ import PasscodeKeypad from "@/components/profile/PasscodeKeypad";
 const INPUT = "w-full h-11 rounded-lg border border-white/10 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/60 transition-colors";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const badgeEmail = new URLSearchParams(window.location.search).get("email") || "";
+  const [email, setEmail] = useState(badgeEmail);
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(() => isRememberEnabled());
   const [capsLock, setCapsLock] = useState(false);
@@ -37,8 +38,9 @@ export default function Login() {
   useEffect(() => {
     loadCredentials().then((c) => {
       if (!c) return;
-      setEmail(c.email || "");
       setSavedEmail(c.email || "");
+      if (badgeEmail) return;
+      setEmail(c.email || "");
       if (c.password) setPassword(c.password);
     });
   }, []);
@@ -181,6 +183,15 @@ export default function Login() {
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
+          {badgeEmail && (
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+              <span className="truncate">
+                Badge scanned — signing in as <strong>{badgeEmail}</strong>
+              </span>
+            </div>
+          )}
+
           {savedEmail && email === savedEmail && (
             <div className="mb-3 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between gap-2 text-xs text-cyan-200">
               <span className="inline-flex items-center gap-1.5 truncate">
@@ -209,7 +220,7 @@ export default function Login() {
               <label htmlFor="email" className="text-xs font-medium text-slate-300">Email address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" aria-hidden="true" />
-                <input id="email" type="email" autoComplete="email" autoFocus placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={`${INPUT} pr-3`} required />
+                <input id="email" type="email" autoComplete="email" autoFocus={!badgeEmail} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={`${INPUT} pr-3`} required />
               </div>
             </div>
 
@@ -228,6 +239,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyUp={(e) => setCapsLock(e.getModifierState && e.getModifierState("CapsLock"))}
+                  autoFocus={Boolean(badgeEmail)}
                   className={`${INPUT} pr-10`}
                   required
                 />
