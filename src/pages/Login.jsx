@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { loadCredentials, saveCredentials, isRememberEnabled, setRememberEnabled } from "@/lib/savedLogin";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn, AlertTriangle, KeyRound, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, LogIn, AlertTriangle, KeyRound, CheckCircle2, QrCode } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import AppleIcon from "@/components/AppleIcon";
@@ -11,7 +11,8 @@ import { safeReturnTo } from "@/lib/authReturnTo";
 import { markJustLoggedIn } from "@/lib/userPrefs";
 import { isPasscodeLoginAvailable, tryPasscodeLogin } from "@/lib/passcodeLogin";
 import PasscodeKeypad from "@/components/profile/PasscodeKeypad";
-import { readBadgeLogin } from "@/lib/badgeLogin";
+import { readBadgeLogin, decodeBadgeCredentials } from "@/lib/badgeLogin";
+import QrScannerDialog from "@/components/auth/QrScannerDialog";
 
 const INPUT = "w-full h-11 rounded-lg border border-white/10 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/60 transition-colors";
 
@@ -30,6 +31,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passcodeError, setPasscodeError] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
   const returnTo = safeReturnTo();
   const hasPasscode = isPasscodeLoginAvailable();
 
@@ -105,6 +107,32 @@ export default function Login() {
     base44.auth.loginWithProvider("apple", appleReturnTo);
   };
 
+  // A scanned badge code carries the same sign-in link a phone camera would open.
+  const handleBadgeScan = (text) => {
+    setScannerOpen(false);
+    let params = null;
+    try {
+      params = new URL(text, window.location.origin).searchParams;
+    } catch {
+      params = null;
+    }
+    const decoded = decodeBadgeCredentials(params?.get("badge"));
+    const scannedEmail = (decoded?.email || params?.get("email") || "").trim();
+    if (!scannedEmail) {
+      setError("That code isn't a portal badge. Ask a staff member for a new one.");
+      return;
+    }
+    setError("");
+    if (decoded?.password) {
+      setEmail(decoded.email);
+      setPassword(decoded.password);
+      performLogin(decoded.email, decoded.password);
+    } else {
+      setEmail(scannedEmail);
+      setPassword("");
+    }
+  };
+
   const handlePasscode = (code) => {
     if (tryPasscodeLogin(code)) {
       markJustLoggedIn();
@@ -115,6 +143,7 @@ export default function Login() {
   };
 
   return (
+    <>
     <AuthLayout
       icon={LogIn}
       title="Welcome back"
@@ -298,8 +327,24 @@ export default function Login() {
               {loading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Logging in...</>) : (<>Sign in to Portal <ArrowRight className="w-4 h-4 ml-1.5" /></>)}
             </button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="mt-3 w-full h-10 rounded-lg border border-white/10 bg-white/[0.03] text-xs font-medium text-slate-200 flex items-center justify-center gap-2 hover:bg-white/[0.08] hover:border-cyan-400/40 transition-colors"
+          >
+            <QrCode className="w-4 h-4 text-cyan-400" />
+            Scan access badge
+          </button>
         </>
       )}
     </AuthLayout>
+
+    <QrScannerDialog
+      open={scannerOpen}
+      onClose={() => setScannerOpen(false)}
+      onResult={handleBadgeScan}
+    />
+    </>
   );
 }
