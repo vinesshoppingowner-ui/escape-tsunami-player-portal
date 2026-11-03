@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { QrCode, Shield } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import SiteNav from '@/components/SiteNav';
@@ -29,6 +29,12 @@ export default function ManageApplicationsPage() {
               <h1 className="font-display text-3xl font-bold tracking-tight">Manage Applications</h1>
               <p className="mt-1 text-sm text-slate-400">Create, edit, and review application forms and applicant submissions.</p>
             </div>
+            <Link
+              to="/staff/qr-badges"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/10"
+            >
+              <QrCode className="h-3.5 w-3.5" /> Access badges
+            </Link>
           </div>
         </div>
         <ApplicationsTab />
