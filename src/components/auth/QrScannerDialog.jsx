@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Loader2, AlertTriangle, ScanLine } from 'lucide-react';
+import { X, Loader2, AlertTriangle, ScanLine, Check } from 'lucide-react';
 
 const loadJsQr = () =>
   new Promise((resolve, reject) => {
@@ -28,6 +28,8 @@ export default function QrScannerDialog({ open, onClose, onResult }) {
 
   const [starting, setStarting] = useState(true);
   const [error, setError] = useState('');
+  const [detected, setDetected] = useState(false);
+  const lockTimerRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -36,9 +38,11 @@ export default function QrScannerDialog({ open, onClose, onResult }) {
     foundRef.current = false;
     setError('');
     setStarting(true);
+    setDetected(false);
 
     const stop = () => {
       cancelAnimationFrame(rafRef.current);
+      clearTimeout(lockTimerRef.current);
       const stream = streamRef.current;
       streamRef.current = null;
       if (stream) stream.getTracks().forEach((track) => track.stop());
@@ -126,8 +130,9 @@ export default function QrScannerDialog({ open, onClose, onResult }) {
             const value = await detect(el);
             if (value && !foundRef.current) {
               foundRef.current = true;
-              stop();
-              onResultRef.current?.(value);
+              cancelAnimationFrame(rafRef.current);
+              setDetected(true);
+              lockTimerRef.current = setTimeout(() => onResultRef.current?.(value), 1000);
               return;
             }
           } catch {
@@ -190,7 +195,28 @@ export default function QrScannerDialog({ open, onClose, onResult }) {
             </div>
           )}
 
-          {!error && !starting && (
+          {detected && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="relative aspect-square w-[64%] max-w-[246px]">
+                <span className="qr-lock absolute inset-0 rounded-[26px] border-2 border-emerald-300 bg-emerald-400/15" />
+                <span className="absolute inset-0 rounded-[26px] ring-2 ring-emerald-300/90 shadow-[0_0_0_9999px_rgba(4,7,13,0.74),0_0_45px_rgba(52,211,153,0.55)]" />
+
+                <span className="absolute left-0 top-0 h-11 w-11 rounded-tl-[22px] border-l-2 border-t-2 border-emerald-300 drop-shadow-[0_0_9px_rgba(52,211,153,0.95)]" />
+                <span className="absolute right-0 top-0 h-11 w-11 rounded-tr-[22px] border-r-2 border-t-2 border-emerald-300 drop-shadow-[0_0_9px_rgba(52,211,153,0.95)]" />
+                <span className="absolute bottom-0 left-0 h-11 w-11 rounded-bl-[22px] border-b-2 border-l-2 border-emerald-300 drop-shadow-[0_0_9px_rgba(52,211,153,0.95)]" />
+                <span className="absolute bottom-0 right-0 h-11 w-11 rounded-br-[22px] border-b-2 border-r-2 border-emerald-300 drop-shadow-[0_0_9px_rgba(52,211,153,0.95)]" />
+
+                <div className="qr-pop absolute inset-0 flex flex-col items-center justify-center gap-2.5">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400 text-[#04120c] shadow-[0_0_30px_rgba(52,211,153,0.85)]">
+                    <Check className="h-7 w-7" strokeWidth={3} />
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-200">Badge detected</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!error && !starting && !detected && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="relative aspect-square w-[64%] max-w-[246px]">
                 <span className="qr-halo absolute -inset-14 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.22),transparent_70%)]" />
@@ -218,9 +244,9 @@ export default function QrScannerDialog({ open, onClose, onResult }) {
 
           {!error && !starting && (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-4">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-100/85 backdrop-blur">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-                Scanning
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur ${detected ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-100' : 'border-white/10 bg-black/50 text-cyan-100/85'}`}>
+                <span className={`h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] ${detected ? '' : 'animate-pulse'}`} />
+                {detected ? 'Code locked' : 'Scanning'}
               </span>
             </div>
           )}
