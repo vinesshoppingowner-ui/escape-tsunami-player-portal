@@ -1,23 +1,20 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, ThumbsUp, Heart, Play, LogIn } from 'lucide-react';
-import { useReducedMotion } from 'framer-motion';
+import { Eye, ThumbsUp, Heart, Play, LogIn, Users, Zap, Trophy, Moon, Waves, ShieldCheck, MessageCircle } from 'lucide-react';
+import { useInView, useReducedMotion } from 'framer-motion';
 import SiteNav from '@/components/SiteNav';
-import DiscordInviteSection from '@/components/home/DiscordInviteSection';
 import { useGameStats } from '@/hooks/useGameStats';
 import { useAuth } from '@/lib/AuthContext';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
-import CountUp from '@/components/home/CountUp';
-import FeaturesRow from '@/components/home/FeaturesRow';
-import HowToPlay from '@/components/home/HowToPlay';
-import HomeFAQ from '@/components/home/HomeFAQ';
-import StaffSection from '@/components/home/StaffSection';
-import HomeFooter from '@/components/home/HomeFooter';
-import SocialProof from '@/components/home/SocialProof';
-import StickyPlayButton from '@/components/home/StickyPlayButton';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+
+/* ─── Shared constants ─────────────────────────────────────────────── */
 
 const GAME_URL = 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers';
 const GAME_ICON_FALLBACK = 'https://tr.rbxcdn.com/180DAY-acc19bee7d79dc93900a4b042adad2e3/256/256/Image/Png/noFilter';
 const GAME_NAME = 'Escape Tsunami For Developers';
+const DISCORD_URL = 'https://discord.gg/xtfdNZukN7';
+const ROBLOX_GROUP_URL = 'https://www.roblox.com/groups/103398581793479/Escape-Tsunami-For-Developers';
 
 const fmtNum = (n) => {
   if (n == null) return '—';
@@ -36,6 +33,246 @@ function relativeTime(date) {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
 }
+
+/* ─── Sections ─────────────────────────────────────────────────────── */
+
+function CountUp({ value, loading, error, suffix = '' }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-50px' });
+  const reduceMotion = useReducedMotion();
+  const [display, setDisplay] = useState(0);
+
+  const showDash = loading || error || value == null;
+
+  useEffect(() => {
+    if (showDash || !inView) return;
+    if (reduceMotion) { setDisplay(value); return; }
+    const startVal = 0;
+    const endVal = value;
+    const startTime = Date.now();
+    const duration = 1500;
+    let raf;
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.floor(startVal + (endVal - startVal) * eased));
+      if (progress < 1) raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [showDash, inView, value, reduceMotion]);
+
+  if (showDash) return <span ref={ref}>—</span>;
+  return <span ref={ref}>{fmtNum(display)}{suffix}</span>;
+}
+
+function SocialProof({ stats, loading, error }) {
+  const visits = !loading && !error ? stats?.visits : null;
+  const playing = !loading && !error ? stats?.playing : null;
+
+  return (
+    <div className="text-center py-6">
+      <p className="text-base sm:text-lg text-slate-300">
+        {visits != null ? (
+          <>Join <span className="font-bold text-white">{fmtNum(visits)}+</span> players who have survived the wave</>
+        ) : (
+          <>Join the community</>
+        )}
+      </p>
+      {playing != null && playing > 0 && (
+        <p className="text-xs text-cyan-400 mt-1">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+          {fmtNum(playing)} playing right now
+        </p>
+      )}
+    </div>
+  );
+}
+
+const FEATURES = [
+  { icon: Users, title: 'Collect Developers', desc: 'Build your dream team from a roster of unique Developers, each with their own perks.' },
+  { icon: Zap, title: 'Upgrade & Rebirth', desc: 'Boost your stats and rebirth for permanent multipliers that stack with every cycle.' },
+  { icon: Trophy, title: 'Leaderboards', desc: 'Climb the global rankings and prove you are the fastest survivor out there.' },
+  { icon: Moon, title: 'Earn Offline', desc: 'Your Developers keep earning coins even while you are away. Come back to a payday.' },
+];
+
+function FeaturesRow() {
+  return (
+    <section className="max-w-[1220px] mx-auto px-5 md:px-[86px] py-16">
+      <h2 className="font-display text-2xl sm:text-3xl font-bold text-center mb-2">Why players love it</h2>
+      <p className="text-center text-slate-400 text-sm mb-10 max-w-xl mx-auto">Four reasons to jump in today</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {FEATURES.map((f) => (
+          <div key={f.title} className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 hover:border-cyan-500/20 transition-colors">
+            <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-3">
+              <f.icon className="h-5 w-5 text-cyan-400" />
+            </div>
+            <h3 className="font-semibold text-white text-sm">{f.title}</h3>
+            <p className="mt-1 text-xs text-slate-400 leading-relaxed">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const STEPS = [
+  { icon: LogIn, title: 'Join', desc: 'Jump into the game on Roblox. It is free to play on every device.' },
+  { icon: Users, title: 'Collect', desc: 'Collect your favorite Developers and build a squad that fits your playstyle.' },
+  { icon: Waves, title: 'Survive', desc: 'Outrun towering tsunamis, upgrade your gear, and climb the leaderboards.' },
+];
+
+function HowToPlay() {
+  return (
+    <section className="max-w-[1220px] mx-auto px-5 md:px-[86px] py-16">
+      <h2 className="font-display text-2xl sm:text-3xl font-bold text-center mb-10">How to play</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {STEPS.map((s, i) => (
+          <div key={s.title} className="relative text-center">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500/15 to-blue-600/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3">
+              <s.icon className="h-6 w-6 text-cyan-400" />
+            </div>
+            <div className="text-xs font-mono text-cyan-300 mb-1">STEP {i + 1}</div>
+            <h3 className="font-semibold text-white text-sm">{s.title}</h3>
+            <p className="mt-1 text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const FAQS = [
+  { q: 'Is it free?', a: 'Yes! Escape Tsunami for Developers is completely free to play on Roblox. You can optionally purchase in-game boosts and cosmetics, but the core game is free forever.' },
+  { q: 'Does it work on mobile?', a: 'Yes, the game works on all devices that support Roblox: phones, tablets, PCs, and consoles. The controls are optimized for touch and keyboard.' },
+  { q: 'How do rebirths work?', a: 'When you rebirth, your progress resets but you earn a permanent multiplier that boosts all future earnings. The more you rebirth, the faster you grow.' },
+  { q: 'Can I appeal a ban or warning?', a: 'Yes. If you have been moderated in-game, you can view your moderation history and submit an appeal through the Member Portal. Our staff team reviews every appeal.' },
+  { q: 'Do my Developers keep earning while I am offline?', a: 'Yes! Your Developers continue generating coins even when you are not playing. Log back in to collect your earnings.' },
+];
+
+function HomeFAQ() {
+  return (
+    <section className="max-w-[800px] mx-auto px-5 md:px-8 py-16">
+      <h2 className="font-display text-2xl sm:text-3xl font-bold text-center mb-8">Frequently asked questions</h2>
+      <Accordion type="single" collapsible className="space-y-2">
+        {FAQS.map((f, i) => (
+          <AccordionItem key={i} value={`item-${i}`} className="rounded-xl bg-white/[0.03] border border-white/10 px-4">
+            <AccordionTrigger className="text-sm font-medium text-white text-left hover:no-underline">
+              {f.q}
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-slate-400 leading-relaxed">
+              {f.a}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </section>
+  );
+}
+
+function StaffSection() {
+  return (
+    <section className="max-w-[1220px] mx-auto px-5 md:px-[86px] py-16">
+      <div className="rounded-3xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-8 sm:p-12 text-center">
+        <div className="h-14 w-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="h-7 w-7 text-cyan-400" />
+        </div>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold mb-3">How we keep the game fair</h2>
+        <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
+          Our moderation team works around the clock to keep Escape Tsunami for Developers fun and safe for everyone.
+          If you have been moderated, you can view your full history and submit an appeal through the Member Portal.
+        </p>
+        <Link
+          to="/portal"
+          className="inline-flex items-center gap-2 mt-6 px-6 py-2.5 rounded-full bg-white/[0.06] border border-white/15 text-sm font-semibold text-white hover:bg-white/[0.1] transition-colors"
+        >
+          Visit Member Portal
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function DiscordInviteSection() {
+  return (
+    <section className="home-discord-section">
+      <div className="home-discord-card">
+        <div className="home-discord-glow" />
+        <div className="home-discord-content">
+          <div className="home-discord-icon-wrap">
+            <MessageCircle className="home-discord-icon" />
+          </div>
+          <div className="home-discord-text">
+            <h3 className="home-discord-title">Join our Discord</h3>
+            <p className="home-discord-desc">
+              Connect with the community, get updates, and talk to the team.
+            </p>
+          </div>
+          <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="home-discord-btn">
+            Join Server
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeFooter() {
+  return (
+    <footer className="border-t border-white/[0.08] mt-8">
+      <div className="max-w-[1220px] mx-auto px-5 md:px-[86px] py-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Game</h4>
+            <a href={ROBLOX_GROUP_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">
+              Play on Roblox
+            </a>
+            <a href={ROBLOX_GROUP_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">
+              Roblox Group
+            </a>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Portal</h4>
+            <Link to="/portal" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Member Portal</Link>
+            <Link to="/bug-reports" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">Report a Bug</Link>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Community</h4>
+            <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Discord Server</a>
+            <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">Community Guidelines</a>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Support</h4>
+            <Link to="/portal" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Submit an Appeal</Link>
+            <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">Contact Staff</a>
+          </div>
+        </div>
+        <div className="pt-6 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} Escape Tsunami for Developers. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function StickyPlayButton() {
+  return (
+    <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0B0D13]/95 backdrop-blur-xl border-t border-white/10 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <a
+        href={GAME_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="home-btn home-btn-primary w-full justify-center"
+      >
+        <Play className="home-glyph" /> Play on Roblox
+        <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-black/25">FREE</span>
+      </a>
+    </div>
+  );
+}
+
+/* ─── Page ─────────────────────────────────────────────────────────── */
 
 export default function HomePage() {
   const { stats: live, loading: statsLoading, error: statsError } = useGameStats();
