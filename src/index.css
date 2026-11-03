@@ -561,6 +561,44 @@ img, video { max-width: 100%; }
   }
 }
 
+/* ===== QR badge scanner ===== */
+@keyframes qr-sweep {
+  0% { top: 4%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 96%; opacity: 0; }
+}
+.qr-sweep {
+  animation: qr-sweep 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes qr-halo {
+  0%, 100% { opacity: 0.35; transform: scale(0.94); }
+  50% { opacity: 0.75; transform: scale(1.05); }
+}
+.qr-halo {
+  animation: qr-halo 4.5s ease-in-out infinite;
+}
+
+@keyframes qr-corner {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+.qr-corner {
+  animation: qr-corner 1.9s ease-in-out infinite;
+}
+
+@keyframes qr-grid-pan {
+  from { background-position: 0 0; }
+  to { background-position: 0 24px; }
+}
+.qr-grid {
+  background-image: radial-gradient(rgba(165, 243, 252, 0.55) 0.8px, transparent 0.9px);
+  background-size: 24px 24px;
+  opacity: 0.16;
+  animation: qr-grid-pan 3.2s linear infinite;
+}
+
 /* Reusable liquid glass utility */
 .liquid-glass {
   backdrop-filter: blur(12px) saturate(1.6);
