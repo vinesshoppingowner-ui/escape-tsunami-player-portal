@@ -12,6 +12,7 @@ import { markJustLoggedIn } from "@/lib/userPrefs";
 import { isPasscodeLoginAvailable, tryPasscodeLogin } from "@/lib/passcodeLogin";
 import PasscodeKeypad from "@/components/profile/PasscodeKeypad";
 import { readBadgeLogin, decodeBadgeCredentials } from "@/lib/badgeLogin";
+import { isBadgeRevoked, BADGE_REVOKED_MESSAGE } from "@/lib/badgeRevocation";
 import QrScannerDialog from "@/components/auth/QrScannerDialog";
 
 const INPUT = "w-full h-11 rounded-lg border border-white/10 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/60 transition-colors";
@@ -80,7 +81,19 @@ export default function Login() {
     const url = new URL(window.location.href);
     url.searchParams.delete("badge");
     window.history.replaceState({}, "", url.pathname + url.search + url.hash);
-    performLogin(badgeEmail, badgePassword);
+    let cancelled = false;
+    isBadgeRevoked(badgeEmail).then((revoked) => {
+      if (cancelled) return;
+      if (revoked) {
+        setPassword("");
+        setError(BADGE_REVOKED_MESSAGE);
+        return;
+      }
+      performLogin(badgeEmail, badgePassword);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleGoogle = () => {
@@ -108,7 +121,7 @@ export default function Login() {
   };
 
   // A scanned badge code carries the same sign-in link a phone camera would open.
-  const handleBadgeScan = (text) => {
+  const handleBadgeScan = async (text) => {
     setScannerOpen(false);
     let params = null;
     try {
@@ -120,6 +133,11 @@ export default function Login() {
     const scannedEmail = (decoded?.email || params?.get("email") || "").trim();
     if (!scannedEmail) {
       setError("That code isn't a portal badge. Ask a staff member for a new one.");
+      return;
+    }
+    if (await isBadgeRevoked(scannedEmail)) {
+      setPassword("");
+      setError(BADGE_REVOKED_MESSAGE);
       return;
     }
     setError("");

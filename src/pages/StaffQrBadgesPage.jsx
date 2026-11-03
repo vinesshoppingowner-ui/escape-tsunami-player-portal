@@ -9,6 +9,8 @@ import PortalBadge from '@/components/staff/PortalBadge';
 import QrModeSelector from '@/components/staff/QrModeSelector';
 import QrContentFields from '@/components/staff/QrContentFields';
 import { encodeBadgeCredentials } from '@/lib/badgeLogin';
+import { isBadgeRevoked } from '@/lib/badgeRevocation';
+import BadgeRevocations from '@/components/staff/BadgeRevocations';
 import { PORTAL_PAGES, PORTAL_URL, QR_MODES } from '@/lib/qrActions';
 
 const emptyForm = {
@@ -59,7 +61,7 @@ export default function StaffQrBadgesPage() {
     setCard(null);
   };
 
-  const generate = (e) => {
+  const generate = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -67,6 +69,10 @@ export default function StaffQrBadgesPage() {
       const clean = form.email.trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
         setError('Enter a valid email address.');
+        return;
+      }
+      if (await isBadgeRevoked(clean)) {
+        setError("This account's badges are revoked — restore them below before printing a new one.");
         return;
       }
       setCard(
@@ -233,6 +239,10 @@ export default function StaffQrBadgesPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-8 max-w-2xl">
+          <BadgeRevocations />
         </div>
       </main>
     </div>

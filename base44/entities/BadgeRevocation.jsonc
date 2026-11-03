@@ -1,0 +1,81 @@
+{
+  "name": "BadgeRevocation",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Lowercase email of the member whose printed sign-in badges no longer work"
+    },
+    "revoked_by": {
+      "type": "string",
+      "description": "Email of the staff member who revoked this account's badges"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional note on why the badges were revoked"
+    }
+  },
+  "required": [
+    "email"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        },
+        {
+          "user_condition": {
+            "data.is_owner": true
+          }
+        }
+      ]
+    }
+  }
+}
