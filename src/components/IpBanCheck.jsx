@@ -121,15 +121,49 @@ export default function IpBanCheck({ children }) {
     })();
   }, [user, isLoadingAuth]);
 
-  if (status === 'banned') {
-    return (
-      <>
-        <div className="pointer-events-none select-none" aria-hidden>{children}</div>
-        <BanOverlay user={user} />
-      </>
-    );
-  }
+  const isBanned = status === 'banned' || Boolean(user?.data?.banned);
 
+  // Secondary parent-level watchdog so removing or hiding the ban overlay in DevTools immediately reloads the page
+  useEffect(() => {
+    if (!isBanned) return;
+    let active = true;
+    const checkOverlay = () => {
+      if (!active) return;
+      const el = document.querySelector('[data-ban-overlay="active"]');
+      if (!el || !document.body.contains(el)) {
+        active = false;
+        window.location.reload();
+        return;
+      }
+      const style = window.getComputedStyle(el);
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        parseFloat(style.opacity || '1') < 0.8 ||
+        style.pointerEvents === 'none'
+      ) {
+        active = false;
+        window.location.reload();
+      }
+    };
+    const timer = setInterval(checkOverlay, 250);
+    const observer = new MutationObserver(checkOverlay);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden'],
+    });
+    return () => {
+      active = false;
+      clearInterval(timer);
+      observer.disconnect();
+    };
+  }, [isBanned]);
+
+  if (isBanned) {
+    return <BanOverlay user={user} />;
+  }
 
   return children;
 }
