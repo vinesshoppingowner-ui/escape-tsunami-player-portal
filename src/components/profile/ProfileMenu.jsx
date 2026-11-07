@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import AccountSwitcher from '@/components/profile/AccountSwitcher';
 import UserAvatar from '@/components/profile/UserAvatar';
 import NotificationsBell from '@/components/moderations/NotificationsBell';
+import OwnerRobloxLinkModal from '@/components/admin/OwnerRobloxLinkModal';
 
 // Portal-themed 4-color ring: cyan, violet, amber, rose
 export const RING_STYLE = {
@@ -15,6 +16,7 @@ export default function ProfileMenu() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [initialTab, setInitialTab] = useState('appearance');
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [ownerLinkOpen, setOwnerLinkOpen] = useState(false);
   const btnRef = useRef(null);
 
   if (!user) {
@@ -50,9 +52,14 @@ export default function ProfileMenu() {
           setInitialTab(tab);
           setSettingsOpen(true);
         }}
+        onOpenOwnerLink={() => {
+          setSwitcherOpen(false);
+          setOwnerLinkOpen(true);
+        }}
         anchorRef={btnRef}
       />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} defaultTab={initialTab} />
+      <OwnerRobloxLinkModal open={ownerLinkOpen} onClose={() => setOwnerLinkOpen(false)} />
     </>
   );
 }

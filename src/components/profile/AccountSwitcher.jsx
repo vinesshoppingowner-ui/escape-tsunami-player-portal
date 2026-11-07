@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell } from 'lucide-react';
+import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell, Link2 } from 'lucide-react';
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import UserAvatar from '@/components/profile/UserAvatar';
@@ -20,7 +20,7 @@ const navItems = [
   { to: '/notifications', label: 'Notifications', icon: Bell },
 ];
 
-export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef }) {
+export default function AccountSwitcher({ user, open, onClose, onOpenSettings, onOpenOwnerLink, anchorRef }) {
   const dropdownRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
   const canManageApps = isOwner(user) || user?.role === 'staff';
@@ -144,6 +144,21 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
                     </span>
                   </span>
                 </Link>
+              )}
+              {isOwner(user) && onOpenOwnerLink && (
+                <button
+                  type="button"
+                  onClick={onOpenOwnerLink}
+                  className="w-full flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-sm text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Link2 className="h-3.5 w-3.5 text-amber-400" />
+                    Link Player Roblox
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold uppercase">
+                    Owner
+                  </span>
+                </button>
               )}
             </div>
 
