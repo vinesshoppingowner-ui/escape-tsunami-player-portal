@@ -24,7 +24,7 @@ import {
 } from '@/lib/passcodeLogin';
 import PasscodeKeypad from '@/components/profile/PasscodeKeypad';
 import UserAvatar, { clearAvatarCache } from '@/components/profile/UserAvatar';
-import AccountIdentityQr from '@/components/profile/AccountIdentityQr';
+
 import { RING_STYLE } from '@/components/profile/ProfileMenu';
 
 const TABS = [
@@ -466,7 +466,6 @@ function AccountTab({ user, prefs, set }) {
     <>
       <ProfileCustomizationSection user={user} />
       <AccountDetailsSection user={user} set={set} />
-      <AccountIdentityQr user={user} />
       <QuickLoginSection user={user} />
       <SettingsCard icon={Compass} title="Navigation" desc="Where you start and how the top bar behaves.">
         <SegmentedSetting

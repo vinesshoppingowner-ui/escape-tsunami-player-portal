@@ -14,7 +14,6 @@ import MyAppealsPage from './pages/MyAppealsPage';
 import ApplicationsDirectoryPage from './pages/ApplicationsDirectoryPage';
 import ApplicationFormPage from './pages/ApplicationFormPage';
 import ManageApplicationsPage from './pages/ManageApplicationsPage';
-import StaffQrBadgesPage from './pages/StaffQrBadgesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RobloxOAuthCallbackPage from './pages/RobloxOAuthCallbackPage';
@@ -73,7 +72,6 @@ const AuthenticatedApp = () => {
           <Route path="/my-appeals" element={<MyAppealsPage />} />
           <Route path="/applications" element={<ApplicationsDirectoryPage />} />
           <Route path="/manage-applications" element={<ManageApplicationsPage />} />
-          <Route path="/staff/qr-badges" element={<StaffQrBadgesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
 
           <Route path="/roblox-callback" element={<RobloxOAuthCallbackPage />} />

@@ -15,7 +15,10 @@ export default async function(req: Request): Promise<Response> {
       const user = await base44.auth.me().catch(() => null);
       const isStaffOrAdmin =
         user &&
-        (user.role === 'admin' || user.role === 'staff' || user.data?.is_owner === true);
+        (user.role === 'admin' ||
+          user.role === 'staff' ||
+          user.data?.is_owner === true ||
+          String(user.email || '').toLowerCase().endsWith('@escapetsunamifordevelopers.com'));
       if (!isStaffOrAdmin) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }

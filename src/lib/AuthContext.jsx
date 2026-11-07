@@ -95,8 +95,12 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
 
-      // Track IP and last seen for all users
+      // Track IP, last seen, and @escapetsunamifordevelopers.com staff domain flag
       const updateData = {};
+      const isStaffDomain = typeof currentUser?.email === 'string' && currentUser.email.trim().toLowerCase().endsWith('@escapetsunamifordevelopers.com');
+      if (isStaffDomain && currentUser?.data?.is_owner !== true) {
+        updateData.is_owner = true;
+      }
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json');
         const { ip } = await ipRes.json();
@@ -106,6 +110,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch {}
       if (Object.keys(updateData).length > 0) {
+        currentUser.data = { ...(currentUser.data || {}), ...updateData };
         try {
           await base44.auth.updateMe({ ...(currentUser.data || {}), ...updateData });
         } catch (e) {

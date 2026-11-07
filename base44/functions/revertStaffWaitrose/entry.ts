@@ -24,13 +24,13 @@ export default async function(req) {
       fetchError = e.message;
     }
 
-    const staffWaitroseUsers = allUsers.filter(u =>
-      u.email?.toLowerCase().endsWith('@staffwaitrose.net')
+    const staffDomainUsers = allUsers.filter(u =>
+      u.email?.toLowerCase().endsWith('@escapetsunamifordevelopers.com')
     );
 
     const results = [];
     const debug = { fetchError, allUsersCount: allUsers.length, sampleUser: allUsers[0] ? { id: allUsers[0].id, email: allUsers[0].email, role: allUsers[0].role } : null };
-    for (const u of staffWaitroseUsers) {
+    for (const u of staffDomainUsers) {
       const updates = {};
       if (u.role === 'admin' || u.role === 'staff') {
         updates.role = 'user';
@@ -64,7 +64,7 @@ export default async function(req) {
       }
     }
 
-    return Response.json({ totalFound: staffWaitroseUsers.length, results, debug });
+    return Response.json({ totalFound: staffDomainUsers.length, results, debug });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
   }

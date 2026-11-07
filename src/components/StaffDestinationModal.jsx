@@ -14,8 +14,7 @@ import {
   ExternalLink, 
   LogOut, 
   Home, 
-  FileText,
-  QrCode
+  FileText
 } from 'lucide-react';
 
 const STAFF_URL = 'https://staff.escapetsunamifordevelopers.com/';
@@ -74,11 +73,6 @@ export default function StaffDestinationModal() {
   const chooseHome = () => {
     markRoleChecked();
     navigate('/', { replace: true });
-  };
-
-  const chooseBadges = () => {
-    markRoleChecked();
-    navigate('/staff/qr-badges', { replace: true });
   };
 
   if (!shouldShow) return null;
@@ -204,24 +198,6 @@ export default function StaffDestinationModal() {
             </div>
           </button>
         </div>
-
-        {/* Member access badges */}
-        <button
-          type="button"
-          onClick={chooseBadges}
-          className="group mt-4 flex w-full items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#0c121e] p-4 transition-all duration-150 hover:border-cyan-500/40 hover:bg-[#0f1726] active:scale-[0.99]"
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-500/20 bg-cyan-500/10">
-              <QrCode className="h-4 w-4 text-cyan-400" strokeWidth={1.75} />
-            </div>
-            <div className="min-w-0 text-left">
-              <p className="text-sm font-semibold leading-tight text-white">Member Access Badges</p>
-              <p className="text-[11px] text-slate-400">Print QR badges that open sign-in pre-filled</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-slate-500 group-hover:text-cyan-300" />
-        </button>
 
         {/* Minimal Footer Actions */}
         <div className="mt-7 flex items-center justify-center gap-5 text-xs sm:text-sm">
