@@ -109,18 +109,12 @@ export default async function(req) {
       mailto_reply_url: mailtoReplyUrl,
     };
 
-    // Collect Google Group email + registered staff/admin/owner emails so staff always receive the alert
+    // Only send to the Google Group address and @escapetsunamifordevelopers.com Google Group members
     const staffRecipients = new Set([GROUP_EMAIL]);
     const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 200).catch(() => []);
     for (const u of allUsers || []) {
       const em = String(u.email || '').trim().toLowerCase();
-      if (
-        em &&
-        (u.role === 'admin' ||
-          u.role === 'staff' ||
-          u.data?.is_owner === true ||
-          em.endsWith('@escapetsunamifordevelopers.com'))
-      ) {
+      if (em && em.endsWith('@escapetsunamifordevelopers.com')) {
         staffRecipients.add(em);
       }
     }
