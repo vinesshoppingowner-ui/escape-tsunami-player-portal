@@ -26,16 +26,18 @@
         <mj-column>
           <mj-text mj-class="h" font-size="24px" line-height="1.25" padding="0 0 8px">New Ownership Support Request</mj-text>
           <mj-text mj-class="muted" font-size="14px" line-height="1.6" padding="0 0 20px">Ticket {{ticket_id}} submitted by {{first_name}} ({{sender_email}}).</mj-text>
+          <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Player Email:</strong> {{sender_email}}</mj-text>
           <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Roblox Username:</strong> {{roblox_username}}</mj-text>
           <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Subject:</strong> {{subject_line}}</mj-text>
           <mj-text font-size="15px" line-height="1.7" padding="0 0 24px"><strong>Message:</strong> {{message_body}}</mj-text>
-          <mj-button href="https://escapetsunamifordevelopers.com/portal" padding="0 0 24px">Open Portal</mj-button>
+          <mj-button href="{{reply_url}}" padding="0 0 12px">Reply Directly to {{first_name}}</mj-button>
+          <mj-text mj-class="muted" font-size="13px" line-height="1.6" padding="0 0 24px">Important: Do not use Gmail's Reply button on this notification, as that replies to the group instead of the player. Use the button above to reply directly to {{sender_email}}.</mj-text>
         </mj-column>
       </mj-section>
       <mj-section background-color="#6366f1" padding="26px 36px 30px" border-radius="0 0 6px 6px">
         <mj-column>
           <mj-text mj-class="h" align="center" font-size="17px" color="#000000" padding="0 0 8px">Escape Tsunami Player Portal</mj-text>
-          <mj-text align="center" font-size="12px" line-height="1.7" color="#000000" padding="0 0 6px">Reply directly to {{sender_email}} to assist this member.</mj-text>
+          <mj-text align="center" font-size="12px" line-height="1.7" color="#000000" padding="0 0 6px">Click "Reply Directly to {{first_name}}" above to send your response to {{sender_email}}.</mj-text>
         </mj-column>
       </mj-section>
     </mj-wrapper>

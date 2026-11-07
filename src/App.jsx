@@ -17,6 +17,7 @@ import ManageApplicationsPage from './pages/ManageApplicationsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RobloxOAuthCallbackPage from './pages/RobloxOAuthCallbackPage';
+import SupportReplyPage from './pages/SupportReplyPage';
 
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/portal" element={<MemberPortalPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/apply/:id" element={<ApplicationFormPage />} />
+        <Route path="/support-reply" element={<SupportReplyPage />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppealsPage />} />
           <Route path="/applications" element={<ApplicationsDirectoryPage />} />

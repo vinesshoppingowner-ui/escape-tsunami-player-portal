@@ -1,16 +1,75 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const GROUP_EMAIL = 'support@escapetsunamifordevelopers.com';
+const SITE_ORIGIN = 'https://escapetsunamifordevelopers.com';
+
+function isStaffOrOwner(user) {
+  if (!user) return false;
+  const email = String(user.email || '').trim().toLowerCase();
+  return (
+    user.role === 'admin' ||
+    user.role === 'staff' ||
+    user.data?.is_owner === true ||
+    email.endsWith('@escapetsunamifordevelopers.com')
+  );
+}
 
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
     if (!user || !user.email) {
-      return Response.json({ error: 'Please sign in to submit an Ownership Support request.' }, { status: 401 });
+      return Response.json({ error: 'Please sign in to continue.' }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));
+
+    // Staff / Ownership direct reply to a player's ticket
+    if (body.action === 'staff_reply') {
+      if (!isStaffOrOwner(user)) {
+        return Response.json({ error: 'Only Ownership and Staff can send support replies.' }, { status: 403 });
+      }
+      const targetEmail = String(body.to_email || '').trim().toLowerCase();
+      const ticketId = String(body.ticket_id || 'OWN-SUPPORT').trim();
+      const subjectLine = String(body.subject || 'Ownership Support Inquiry').trim();
+      const replyBody = String(body.reply_message || '').trim();
+
+      if (!targetEmail || !replyBody) {
+        return Response.json({ error: 'Recipient email and reply message are required.' }, { status: 400 });
+      }
+
+      // Verify targetEmail belongs to a registered app user
+      const matchedUsers = await base44.asServiceRole.entities.User.filter({ email: targetEmail }).catch(() => []);
+      if (!matchedUsers || matchedUsers.length === 0) {
+        return Response.json({ error: 'Could not find a registered portal member with that email.' }, { status: 404 });
+      }
+
+      const staffName =
+        user.custom_display_name ||
+        user.data?.custom_display_name ||
+        user.full_name ||
+        user.roblox_username ||
+        user.data?.roblox_username ||
+        'Ownership Support';
+
+      const sendRes = await base44.asServiceRole.integrations.Core.SendEmail({
+        to: matchedUsers[0].email,
+        template_name: 'OwnershipSupportReply',
+        category: 'transactional',
+        variables: {
+          ticket_id: ticketId,
+          subject_line: subjectLine,
+          reply_body: replyBody,
+          staff_name: staffName,
+        },
+      });
+
+      return Response.json({
+        ok: true,
+        sent: sendRes?.success !== false,
+      });
+    }
+
     const subjectLine = String(body.subject || '').trim();
     const messageBody = String(body.message || '').trim();
 
@@ -24,6 +83,15 @@ export default async function(req) {
     const ticketId = 'OWN-' + Date.now().toString(36).toUpperCase().slice(-6);
     const firstName = user.custom_display_name || user.data?.custom_display_name || user.full_name || user.roblox_username || user.data?.roblox_username || user.email.split('@')[0];
     const robloxUsername = user.roblox_username || user.data?.roblox_username || 'Not linked';
+
+    const replyParams = new URLSearchParams({
+      ticket: ticketId,
+      to: user.email,
+      name: firstName,
+      subject: subjectLine,
+      msg: messageBody.slice(0, 600),
+    });
+    const replyUrl = `${SITE_ORIGIN}/support-reply?${replyParams.toString()}`;
 
     // 1. Send automatic confirmation email to the authenticated player
     const [confirmResult, alertResult] = await Promise.allSettled([
@@ -50,6 +118,7 @@ export default async function(req) {
           ticket_id: ticketId,
           subject_line: subjectLine,
           message_body: messageBody,
+          reply_url: replyUrl,
         },
       }),
     ]);
