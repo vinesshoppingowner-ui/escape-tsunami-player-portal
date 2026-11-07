@@ -9,59 +9,122 @@ function isOwnerUser(user) {
   return Boolean(user.role === 'admin' || user.is_owner || user.data?.is_owner || isStaffMail);
 }
 
-async function resolveRobloxIdentity(input) {
+const ROBLOX_HOSTS = ['https://users.roblox.com', 'https://users.roproxy.com'];
+const THUMB_HOSTS = ['https://thumbnails.roblox.com', 'https://thumbnails.roproxy.com'];
+
+async function resolveRobloxIdentity(input, clientResolved = null) {
   const raw = String(input || '').trim();
   if (!raw) return null;
 
+  // If the client already resolved the Roblox user from the browser, use it if valid
+  if (clientResolved && clientResolved.name) {
+    return {
+      id: clientResolved.id || '',
+      name: String(clientResolved.name).trim(),
+      displayName: clientResolved.displayName || clientResolved.name,
+      headshot: clientResolved.headshot || null,
+      unverifiedApi: Boolean(clientResolved.unverifiedApi),
+    };
+  }
+
   let userObj = null;
+  let rateLimited = false;
+
   if (/^\d+$/.test(raw)) {
-    const res = await fetch(`https://users.roblox.com/v1/users/${raw}`, {
-      signal: AbortSignal.timeout(10000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.id && data.name) {
-        userObj = {
-          id: data.id,
-          name: data.name,
-          displayName: data.displayName || data.name,
-        };
+    for (const host of ROBLOX_HOSTS) {
+      try {
+        const res = await fetch(`${host}/v1/users/${raw}`, {
+          headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(6000),
+        });
+        if (res.status === 429) {
+          rateLimited = true;
+          continue;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.id && data.name) {
+            userObj = {
+              id: String(data.id),
+              name: data.name,
+              displayName: data.displayName || data.name,
+            };
+            break;
+          }
+        }
+      } catch {
+        // try next host
       }
     }
   } else {
-    const res = await fetch('https://users.roblox.com/v1/usernames/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [raw], excludeBannedUsers: false }),
-      signal: AbortSignal.timeout(10000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const match = data?.data?.[0];
-      if (match) {
-        userObj = {
-          id: match.id,
-          name: match.name,
-          displayName: match.displayName || match.name,
-        };
+    for (const host of ROBLOX_HOSTS) {
+      try {
+        const res = await fetch(`${host}/v1/usernames/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0',
+          },
+          body: JSON.stringify({ usernames: [raw], excludeBannedUsers: false }),
+          signal: AbortSignal.timeout(6000),
+        });
+        if (res.status === 429) {
+          rateLimited = true;
+          continue;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          const match = data?.data?.[0];
+          if (match) {
+            userObj = {
+              id: String(match.id),
+              name: match.name,
+              displayName: match.displayName || match.name,
+            };
+            break;
+          } else if (Array.isArray(data?.data) && data.data.length === 0) {
+            // Definitively not found on Roblox
+            return null;
+          }
+        }
+      } catch {
+        // try next host
       }
     }
+  }
+
+  // Fallback: if Roblox API rate-limited (429) on all hosts and the input is a valid Roblox username or ID,
+  // allow the owner to link directly using the provided username/ID so a 429 never blocks owner actions.
+  if (!userObj && rateLimited && /^[A-Za-z0-9_]{3,20}$/.test(raw)) {
+    return {
+      id: /^\d+$/.test(raw) ? raw : '',
+      name: raw,
+      displayName: raw,
+      headshot: null,
+      unverifiedApi: true,
+    };
   }
 
   if (!userObj) return null;
 
   let headshot = null;
-  try {
-    const thumbRes = await fetch(
-      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userObj.id}&size=150x150&format=Png&isCircular=false`,
-      { signal: AbortSignal.timeout(8000) }
-    );
-    if (thumbRes.ok) {
-      const thumbData = await thumbRes.json();
-      headshot = thumbData?.data?.[0]?.imageUrl || null;
+  if (userObj.id) {
+    for (const thumbHost of THUMB_HOSTS) {
+      try {
+        const thumbRes = await fetch(
+          `${thumbHost}/v1/users/avatar-headshot?userIds=${userObj.id}&size=150x150&format=Png&isCircular=false`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        if (thumbRes.ok) {
+          const thumbData = await thumbRes.json();
+          headshot = thumbData?.data?.[0]?.imageUrl || null;
+          if (headshot) break;
+        }
+      } catch {
+        // optional headshot
+      }
     }
-  } catch {
-    // optional headshot
   }
 
   return { ...userObj, headshot };
@@ -104,12 +167,12 @@ export default async function(req) {
 
     // Legacy self-verify fallback if called with { username } only
     if (action === 'self' && body.username && !body.email) {
-      const robloxUser = await resolveRobloxIdentity(body.username);
+      const robloxUser = await resolveRobloxIdentity(body.username, body.clientResolved);
       if (!robloxUser) return Response.json({ error: 'That Roblox user was not found.' }, { status: 400 });
 
       await base44.asServiceRole.entities.User.update(actor.id, {
         roblox_username: robloxUser.name,
-        roblox_user_id: String(robloxUser.id),
+        roblox_user_id: String(robloxUser.id || ''),
       });
 
       await base44.asServiceRole.entities.VerificationRequest.create({
@@ -119,7 +182,7 @@ export default async function(req) {
         reviewer_note: `Admin-verified for ${actor.email} by ${actor.email}`,
       });
 
-      return Response.json({ username: robloxUser.name, roblox_user_id: String(robloxUser.id) });
+      return Response.json({ username: robloxUser.name, roblox_user_id: String(robloxUser.id || '') });
     }
 
     // Actions: 'preview' and 'confirm'
@@ -145,8 +208,8 @@ export default async function(req) {
       );
     }
 
-    // Resolve Roblox account via Roblox API
-    const robloxUser = await resolveRobloxIdentity(robloxInput);
+    // Resolve Roblox account via Roblox API (or browser-resolved fallback)
+    const robloxUser = await resolveRobloxIdentity(robloxInput, body.clientResolved);
     if (!robloxUser) {
       return Response.json(
         { error: `Could not find a Roblox account matching "${robloxInput}". Check the username or ID.` },
@@ -160,7 +223,7 @@ export default async function(req) {
       const uName = String(u.roblox_username || u.data?.roblox_username || '').toLowerCase();
       const uId = String(u.roblox_user_id || u.data?.roblox_user_id || '');
       return (
-        (uId && uId === String(robloxUser.id)) ||
+        (robloxUser.id && uId && uId === String(robloxUser.id)) ||
         (uName && uName === robloxUser.name.toLowerCase())
       );
     });
@@ -207,7 +270,6 @@ export default async function(req) {
         );
       }
 
-      // If another user had this Roblox account and forceOverwrite is true, unlink it from the old user
       if (conflictRecord && forceOverwrite) {
         await base44.asServiceRole.entities.User.update(conflictRecord.id, {
           roblox_username: '',
@@ -215,16 +277,16 @@ export default async function(req) {
         });
       }
 
-      // Update target portal user with the resolved Roblox username and ID
       await base44.asServiceRole.entities.User.update(targetUser.id, {
         roblox_username: robloxUser.name,
-        roblox_user_id: String(robloxUser.id),
+        roblox_user_id: String(robloxUser.id || ''),
         roblox_verified_at: new Date().toISOString(),
       });
 
       const prevNote = hasDifferentExistingLink ? ` (replaced @${targetExistingUsername})` : '';
       const conflictNote = conflictRecord ? ` (moved from ${conflictRecord.email})` : '';
-      const auditSummary = `Linked @${robloxUser.name} (ID ${robloxUser.id}) for ${targetUser.email} by ${actor.email}${prevNote}${conflictNote}`;
+      const idLabel = robloxUser.id ? ` (ID ${robloxUser.id})` : '';
+      const auditSummary = `Linked @${robloxUser.name}${idLabel} for ${targetUser.email} by ${actor.email}${prevNote}${conflictNote}`;
 
       await Promise.allSettled([
         base44.asServiceRole.entities.VerificationRequest.create({

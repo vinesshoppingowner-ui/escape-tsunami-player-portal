@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import {
   X,
   Search,
@@ -59,6 +60,44 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
 
   if (!open) return null;
 
+  const resolveFromBrowser = async (rawInput) => {
+    const raw = rawInput.trim();
+    try {
+      let match = null;
+      if (/^\d+$/.test(raw)) {
+        const r = await fetch(`https://users.roproxy.com/v1/users/${raw}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.id && d?.name) match = { id: String(d.id), name: d.name, displayName: d.displayName || d.name };
+        }
+      } else {
+        const r = await fetch('https://users.roproxy.com/v1/usernames/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ usernames: [raw], excludeBannedUsers: false }),
+        });
+        if (r.ok) {
+          const d = await r.json();
+          const m = d?.data?.[0];
+          if (m?.id && m?.name) match = { id: String(m.id), name: m.name, displayName: m.displayName || m.name };
+        }
+      }
+      if (!match) return null;
+      let headshot = null;
+      try {
+        const tr = await fetch(
+          `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${match.id}&size=150x150&format=Png&isCircular=false`
+        );
+        if (tr.ok) {
+          headshot = (await tr.json())?.data?.[0]?.imageUrl || null;
+        }
+      } catch {}
+      return { ...match, headshot };
+    } catch {
+      return null;
+    }
+  };
+
   const handlePreview = async (e) => {
     e?.preventDefault();
     setError('');
@@ -73,10 +112,12 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
 
     setLoadingPreview(true);
     try {
+      const clientResolved = await resolveFromBrowser(robloxInput);
       const res = await base44.functions.invoke('adminVerifyRoblox', {
         action: 'preview',
         email: email.trim(),
         robloxInput: robloxInput.trim(),
+        clientResolved,
       });
       if (res?.data?.error) {
         setError(res.data.error);
@@ -104,7 +145,8 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
       const res = await base44.functions.invoke('adminVerifyRoblox', {
         action: 'confirm',
         email: preview.targetUser.email,
-        robloxInput: String(preview.robloxUser.id),
+        robloxInput: String(preview.robloxUser.id || preview.robloxUser.name),
+        clientResolved: preview.robloxUser,
         forceOverwrite,
       });
       if (res?.data?.error) {
@@ -274,9 +316,7 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
                       className="h-14 w-14 rounded-xl bg-white/5 border border-white/10 object-cover shrink-0"
                     />
                   ) : (
-                    <div className="h-14 w-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-300 font-bold shrink-0">
-                      R
-                    </div>
+                    <RobloxAvatar username={preview.robloxUser.name} size={56} />
                   )}
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-cyan-300">
@@ -286,11 +326,17 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
                       {preview.robloxUser.displayName || preview.robloxUser.name}
                     </div>
                     <div className="text-xs text-cyan-300 truncate">@{preview.robloxUser.name}</div>
-                    <div className="text-[11px] text-slate-500 font-mono">
-                      ID: {preview.robloxUser.id}
-                    </div>
+                    {preview.robloxUser.id && (
+                      <div className="text-[11px] text-slate-500 font-mono">
+                        ID: {preview.robloxUser.id}
+                      </div>
+                    )}
                     <a
-                      href={`https://www.roblox.com/users/${preview.robloxUser.id}/profile`}
+                      href={
+                        preview.robloxUser.id
+                          ? `https://www.roblox.com/users/${preview.robloxUser.id}/profile`
+                          : `https://www.roblox.com/search/users?keyword=${encodeURIComponent(preview.robloxUser.name)}`
+                      }
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-white"
