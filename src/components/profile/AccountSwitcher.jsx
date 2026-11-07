@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell } from 'lucide-react';
+import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell, RefreshCw } from 'lucide-react';
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import UserAvatar from '@/components/profile/UserAvatar';
 import { RING_STYLE } from '@/components/profile/ProfileMenu';
 import { useLiveApplicationResponses } from '@/hooks/useLiveApplications';
+import { useToast } from '@/components/ui/use-toast';
 
 const tierConfig = (user) => {
   if (isOwner(user)) return { label: 'Owner', icon: Crown, gradient: 'from-amber-400 to-orange-500', text: 'text-amber-300' };
@@ -21,10 +22,48 @@ const navItems = [
 ];
 
 export default function AccountSwitcher({ user, open, onClose, onOpenSettings, anchorRef }) {
+  const { toast } = useToast();
   const dropdownRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [reloadingAll, setReloadingAll] = useState(false);
   const canManageApps = isOwner(user) || user?.role === 'staff';
+  const isVinesOwner = String(user?.email || '').trim().toLowerCase() === 'vinesshoppingowner@gmail.com';
   const { totalCount, newTotalCount } = useLiveApplicationResponses(canManageApps);
+
+  const handleReloadEveryone = async () => {
+    if (!isVinesOwner || reloadingAll) return;
+    setReloadingAll(true);
+    try {
+      const token = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      sessionStorage.setItem('et_force_reload_token', token);
+      const list = await base44.entities.SiteSettings.list('-updated_date', 1);
+      const existing = list?.[0];
+      if (existing?.id) {
+        await base44.entities.SiteSettings.update(existing.id, {
+          force_reload_token: token,
+          updated_by: user.email,
+        });
+      } else {
+        await base44.entities.SiteSettings.create({
+          force_reload_token: token,
+          updated_by: user.email,
+        });
+      }
+      toast({
+        title: "Reloaded everyone's active website",
+        description: 'All active browser tabs across the portal are refreshing now.',
+      });
+      onClose();
+    } catch (err) {
+      toast({
+        title: 'Failed to broadcast reload',
+        description: err?.message || 'Could not update SiteSettings.',
+        variant: 'destructive',
+      });
+    } finally {
+      setReloadingAll(false);
+    }
+  };
 
   useLayoutEffect(() => {
     if (open && anchorRef?.current) {
@@ -149,6 +188,17 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
 
             {/* Footer */}
             <div className="border-t border-white/10 px-1.5 py-1.5 space-y-0.5">
+              {isVinesOwner && (
+                <button
+                  type="button"
+                  disabled={reloadingAll}
+                  onClick={handleReloadEveryone}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 text-amber-400 shrink-0 ${reloadingAll ? 'animate-spin' : ''}`} />
+                  Reload Everyone's Active Website
+                </button>
+              )}
               <button
                 onClick={() => { onOpenSettings(); onClose(); }}
                 className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"

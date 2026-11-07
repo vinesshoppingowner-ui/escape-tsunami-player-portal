@@ -110,6 +110,10 @@
       "description": "Tab name in the spreadsheet for application data",
       "default": "Applications"
     },
+    "force_reload_token": {
+      "type": "string",
+      "description": "Broadcast token to immediately reload all active browser sessions"
+    },
     "updated_by": {
       "type": "string",
       "description": "Email of the owner who last updated settings"
