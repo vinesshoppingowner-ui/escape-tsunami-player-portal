@@ -11,7 +11,7 @@
 
 import {
   Home, LogIn, Scale, FileText,
-  MessageCircle, BookOpen, Bug,
+  MessageCircle, BookOpen, Bug, Mail,
   Waves,
 } from 'lucide-react';
 
@@ -58,6 +58,7 @@ export const SITE_CONFIG = {
     links: [
       { label: 'Join Discord',          href: 'https://discord.gg/NCBqfpwPuT', icon: MessageCircle, external: true },
       { label: 'Community Guidelines', href: 'https://discord.gg/NCBqfpwPuT', icon: BookOpen,      external: true },
+      { label: 'Email Ownership',       href: 'mailto:support@escapetsunamifordevelopers.com?subject=Ownership%20Support%20Request%20%E2%80%94%20Escape%20Tsunami', icon: Mail, external: true },
       { label: 'Report a Bug',          to:   '/bug-reports',                  icon: Bug,           external: false },
     ],
     copyright: 'Escape Tsunami for Developers Player Portal',
