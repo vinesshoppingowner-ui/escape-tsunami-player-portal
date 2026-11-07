@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, ThumbsUp, Heart, Play, LogIn, Users, Zap, Trophy, Moon, Waves, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Eye, ThumbsUp, Heart, Play, LogIn, Users, Zap, Trophy, Moon, Waves, ShieldCheck, MessageCircle, Mail, Copy, Check } from 'lucide-react';
 import { useInView, useReducedMotion } from 'framer-motion';
 import SiteNav from '@/components/SiteNav';
 import { useGameStats } from '@/hooks/useGameStats';
 import { useAuth } from '@/lib/AuthContext';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { SITE_CONFIG } from '@/site.config';
 
 /* ─── Shared constants ─────────────────────────────────────────────── */
 
@@ -15,6 +16,7 @@ const GAME_ICON_FALLBACK = 'https://tr.rbxcdn.com/180DAY-acc19bee7d79dc93900a4b0
 const GAME_NAME = 'Escape Tsunami For Developers';
 const DISCORD_URL = 'https://discord.gg/xtfdNZukN7';
 const ROBLOX_GROUP_URL = 'https://www.roblox.com/groups/103398581793479/Escape-Tsunami-For-Developers';
+const SUPPORT_EMAIL = SITE_CONFIG?.links?.supportEmail || 'support@escapetsunamifordevelopers.com';
 
 const fmtNum = (n) => {
   if (n == null) return '—';
@@ -218,6 +220,67 @@ function DiscordInviteSection() {
   );
 }
 
+function OwnershipSupportSection() {
+  const [copied, setCopied] = useState(false);
+  const mailtoHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`;
+
+  const copyEmail = () => {
+    navigator.clipboard?.writeText(SUPPORT_EMAIL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <section className="max-w-[1220px] mx-auto px-5 md:px-[86px] mt-10">
+      <div className="relative overflow-hidden rounded-[22px] bg-[#0d1122]/90 border border-cyan-500/25 p-7 sm:p-9 shadow-[0_18px_55px_rgba(0,0,0,0.28)]">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at 15% 50%, rgba(34,211,238,0.12), transparent 55%)',
+          }}
+        />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start sm:items-center gap-5">
+            <div className="h-14 w-14 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
+              <Mail className="h-6 w-6 text-cyan-300" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[11px] font-semibold uppercase tracking-wider text-amber-300 mb-2">
+                Ownership Support Only
+              </div>
+              <h3 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
+                Email Ownership Support
+              </h3>
+              <p className="text-sm text-slate-400 mt-1 max-w-xl leading-relaxed">
+                Need direct assistance from Ownership? Email our official support group at{' '}
+                <span className="text-cyan-300 font-medium">{SUPPORT_EMAIL}</span>. Please use this channel strictly for ownership-level support inquiries.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <a
+              href={mailtoHref}
+              className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-bold transition-transform hover:-translate-y-0.5"
+            >
+              <Mail className="h-4 w-4" />
+              Email Ownership
+            </a>
+            <button
+              type="button"
+              onClick={copyEmail}
+              className="inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.12] transition-colors"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
+              {copied ? 'Copied' : 'Copy Email'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomeFooter() {
   return (
     <footer className="border-t border-white/[0.08] mt-8">
@@ -245,6 +308,7 @@ function HomeFooter() {
           <div>
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Support</h4>
             <Link to="/portal" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Submit an Appeal</Link>
+            <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`} className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Email Ownership ({SUPPORT_EMAIL})</a>
             <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">Contact Staff</a>
           </div>
         </div>
@@ -392,6 +456,7 @@ export default function HomePage() {
       <HomeFAQ />
       <StaffSection />
       <DiscordInviteSection />
+      <OwnershipSupportSection />
       <HomeFooter />
 
       <StickyPlayButton />

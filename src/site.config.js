@@ -45,8 +45,9 @@ export const SITE_CONFIG = {
 
   // ── EXTERNAL LINKS ───────────────────────────────────────
   links: {
-    robloxGame: 'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers',
-    discord:    'https://discord.gg/NCBqfpwPuT',
+    robloxGame:   'https://www.roblox.com/games/103398581793479/Escape-Tsunami-For-Developers',
+    discord:      'https://discord.gg/NCBqfpwPuT',
+    supportEmail: 'support@escapetsunamifordevelopers.com',
   },
 
   // ── FOOTER ──────────────────────────────────────────────
