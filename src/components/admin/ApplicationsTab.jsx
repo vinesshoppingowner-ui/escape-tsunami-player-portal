@@ -26,9 +26,6 @@ import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel'
 import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import ApplicationSyncModal from './applications/ApplicationSyncModal';
 import GoogleSheetSyncSettings from './applications/GoogleSheetSyncSettings';
-import OwnerRobloxLinkModal from './OwnerRobloxLinkModal';
-import { useAuth } from '@/lib/AuthContext';
-import { isOwner } from '@/lib/isOwner';
 import { safeParse } from '@/lib/safeParse';
 import { defaultSettings } from '@/lib/applicationTypes';
 import { generateSlug } from '@/lib/applicationSlug';
@@ -59,8 +56,6 @@ function getSettingBadges(app) {
 
 export default function ApplicationsTab() {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const ownerAccess = isOwner(user);
   const { responses: allLiveResponses, countsByApp, newCountsByApp, totalCount, unreviewedCount } = useLiveApplicationResponses(true);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +70,6 @@ export default function ApplicationsTab() {
   const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [sheetSyncOpen, setSheetSyncOpen] = useState(false);
-  const [ownerLinkOpen, setOwnerLinkOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -236,16 +230,6 @@ export default function ApplicationsTab() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {ownerAccess && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setOwnerLinkOpen(true)}
-              className="text-amber-200 hover:text-white hover:bg-amber-500/15 border border-amber-500/30 bg-amber-500/10"
-            >
-              <Link2 className="h-4 w-4 mr-1.5" /> Link Player Roblox
-            </Button>
-          )}
           <Button
             size="sm"
             variant="ghost"
@@ -458,8 +442,6 @@ export default function ApplicationsTab() {
       <GoogleFormsSyncModal open={googleSyncOpen} onClose={() => setGoogleSyncOpen(false)} onSynced={load} />
 
       <GoogleSheetSyncSettings open={sheetSyncOpen} onClose={() => setSheetSyncOpen(false)} />
-
-      <OwnerRobloxLinkModal open={ownerLinkOpen} onClose={() => setOwnerLinkOpen(false)} />
 
       <ApplicationSyncModal
         open={syncModalOpen}

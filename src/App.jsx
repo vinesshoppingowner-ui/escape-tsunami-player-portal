@@ -36,6 +36,7 @@ import LandingRedirect from '@/components/LandingRedirect';
 import BackgroundEffectLayer from '@/components/BackgroundEffectLayer';
 import WelcomeModal from '@/components/WelcomeModal';
 import StaffDestinationModal from '@/components/StaffDestinationModal';
+import AutoRefreshOnPublish from '@/components/AutoRefreshOnPublish';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useUserPrefs } from '@/lib/userPrefs';
 
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
   return (
     <IpBanCheck>
       <MaintenanceGuard>
+        <AutoRefreshOnPublish />
         <AccentApplier />
         <BackgroundEffectLayer />
         {!isLoading && <LandingRedirect />}
