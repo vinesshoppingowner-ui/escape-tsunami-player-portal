@@ -5,6 +5,7 @@ import { WEBSITE_BAN_TYPE } from '@/lib/banAppealGuard';
 import BanAppealForm from '@/components/BanAppealForm';
 import BanAppealStatus from '@/components/BanAppealStatus';
 import { getBanStart, appealCoversBan } from '@/lib/banStart';
+import UserAvatar from '@/components/profile/UserAvatar';
 
 export default function BanOverlay({ user }) {
   const overlayRef = useRef(null);
@@ -92,12 +93,16 @@ export default function BanOverlay({ user }) {
           {/* Crossed-out PFP */}
           <div className="relative mx-auto w-20 h-20 mb-4">
             <div className="w-20 h-20 rounded-full bg-white/[0.06] border-2 border-white/15 flex items-center justify-center overflow-hidden">
-              <svg viewBox="0 0 24 24" className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="3" width="16" height="18" rx="2" strokeDasharray="3 2" />
-                <path d="M4 9 L20 20" stroke="currentColor" strokeWidth="2" />
-                <circle cx="12" cy="11" r="3.5" />
-                <path d="M5 21 L19 21" />
-              </svg>
+              {user ? (
+                <UserAvatar user={user} size={76} />
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="3" width="16" height="18" rx="2" strokeDasharray="3 2" />
+                  <path d="M4 9 L20 20" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="12" cy="11" r="3.5" />
+                  <path d="M5 21 L19 21" />
+                </svg>
+              )}
             </div>
             {/* Red prohibition slash overlay */}
             <svg className="absolute inset-0 w-20 h-20 text-rose-500 pointer-events-none" viewBox="0 0 80 80" fill="none">
