@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { SITE_CONFIG } from '@/site.config';
+import OwnershipSupportModal from '@/components/home/OwnershipSupportModal';
 
 /* ─── Shared constants ─────────────────────────────────────────────── */
 
@@ -222,6 +223,7 @@ function DiscordInviteSection() {
 
 function OwnershipSupportSection() {
   const [copied, setCopied] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const mailtoHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`;
 
   const copyEmail = () => {
@@ -252,19 +254,26 @@ function OwnershipSupportSection() {
                 Email Ownership Support
               </h3>
               <p className="text-sm text-slate-400 mt-1 max-w-xl leading-relaxed">
-                Need direct assistance from Ownership? Email our official support group at{' '}
-                <span className="text-cyan-300 font-medium">{SUPPORT_EMAIL}</span>. Please use this channel strictly for ownership-level support inquiries.
+                Need direct assistance from Ownership? Send a support request below to{' '}
+                <span className="text-cyan-300 font-medium">{SUPPORT_EMAIL}</span> and receive an instant confirmation email receipt.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <a
-              href={mailtoHref}
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
               className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-bold transition-transform hover:-translate-y-0.5"
             >
               <Mail className="h-4 w-4" />
-              Email Ownership
+              Message Ownership
+            </button>
+            <a
+              href={mailtoHref}
+              className="inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.12] transition-colors"
+            >
+              Email App
             </a>
             <button
               type="button"
@@ -277,6 +286,11 @@ function OwnershipSupportSection() {
           </div>
         </div>
       </div>
+      <OwnershipSupportModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        supportEmail={SUPPORT_EMAIL}
+      />
     </section>
   );
 }
