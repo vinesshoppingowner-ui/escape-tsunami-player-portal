@@ -4,7 +4,6 @@ export const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'moderations', label: 'Moderations', icon: Shield },
   { id: 'appeals', label: 'Appeals', icon: ScrollText },
-  { id: 'rewards', label: 'Rewards', icon: Trophy },
   { id: 'security', label: 'Security', icon: Lock },
   { id: 'support', label: 'Support', icon: LifeBuoy },
 ];

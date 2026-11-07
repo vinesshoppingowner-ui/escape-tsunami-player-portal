@@ -20,17 +20,21 @@ export default function SupportReplyPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    document.title = `Reply to ${playerName} · Ownership Support`;
-  }, [playerName]);
-
   const allowed = isOwner(user) || user?.role === 'staff';
+  const mode = params.get('mode') || '';
 
   const gmailComposeUrl = toEmail
     ? `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}&su=${encodeURIComponent(`Re: ${subjectLine} (${ticketId})`)}&body=${encodeURIComponent(
         `Hi ${playerName},\n\n\n\n---\nTicket ${ticketId}: "${subjectLine}"\n${originalMsg}`
       )}`
     : null;
+
+  useEffect(() => {
+    document.title = `Reply to ${playerName} · Ownership Support`;
+    if (mode === 'gmail' && gmailComposeUrl) {
+      window.location.replace(gmailComposeUrl);
+    }
+  }, [playerName, mode, gmailComposeUrl]);
 
   const handleSend = async (e) => {
     e.preventDefault();

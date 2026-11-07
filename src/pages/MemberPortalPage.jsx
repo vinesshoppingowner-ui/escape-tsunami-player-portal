@@ -17,7 +17,6 @@ import PortalFooter from '@/components/portal/PortalFooter';
 import OverviewTab from '@/components/portal/tabs/OverviewTab';
 import ModerationsTab from '@/components/portal/tabs/ModerationsTab';
 import AppealsTab from '@/components/portal/tabs/AppealsTab';
-import RewardsTab from '@/components/portal/tabs/RewardsTab';
 import SecurityTab from '@/components/portal/tabs/SecurityTab';
 import SupportTab from '@/components/portal/tabs/SupportTab';
 
@@ -25,7 +24,6 @@ const TAB_LABELS = {
   overview: 'Overview',
   moderations: 'Moderations',
   appeals: 'Appeals',
-  rewards: 'Rewards',
   security: 'Security',
   support: 'Support',
 };
@@ -211,7 +209,6 @@ export default function MemberPortalPage() {
                   {activeTab === 'overview' && <OverviewTab portal={portal} onTabChange={handleTabChange} />}
                   {activeTab === 'moderations' && <ModerationsTab portal={portal} onOpenAppeal={openAppeal} />}
                   {activeTab === 'appeals' && <AppealsTab portal={portal} onOpenDetails={() => setAppealModalOpen(true)} />}
-                  {activeTab === 'rewards' && <RewardsTab portal={portal} />}
                   {activeTab === 'security' && <SecurityTab portal={portal} />}
                   {activeTab === 'support' && <SupportTab />}
                 </motion.div>

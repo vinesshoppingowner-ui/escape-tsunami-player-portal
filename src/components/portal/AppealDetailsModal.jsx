@@ -28,7 +28,7 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-slate-950 border-white/15 text-white sm:max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="text-white text-lg flex items-center gap-2">
             <ScrollText className="h-5 w-5 text-cyan-400" /> Your Appeals
@@ -39,16 +39,16 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
         {appeals.length === 0 ? (
           <div className="py-12 text-center text-sm text-slate-500">No appeals submitted yet.</div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             {appeals.map((a) => {
               const mod = modMap[a.moderation_id];
               const StatusIcon = STATUS_ICON[a.status] || Clock;
               return (
-                <div key={a.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-5">
+                <div key={a.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 min-w-0 overflow-hidden">
                   <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium mb-2">The Incident</div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 break-words [overflow-wrap:anywhere]">
                     <span className="text-white font-semibold">{mod?.moderation_type || 'Moderation'}</span>
-                    {mod?.reason && <span className="text-slate-400">\u2014 {mod.reason}</span>}
+                    {mod?.reason && <span className="text-slate-400">— {mod.reason}</span>}
                   </div>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
                     {mod?.moderation_date && (
@@ -69,9 +69,9 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
                   </div>
 
                   <div className="mt-4 text-[11px] uppercase tracking-wider text-slate-500 font-medium mb-1">Your Appeal</div>
-                  <p className="text-sm text-slate-300">{a.appeal_reason}</p>
+                  <p className="text-sm text-slate-300 break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{a.appeal_reason}</p>
 
-                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Decision</span>
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[a.status] || ''}`}>
@@ -90,15 +90,19 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
                   </div>
 
                   {a.staff_response ? (
-                    <div className="mt-3 flex items-start gap-2 rounded-lg bg-slate-900/50 border border-white/10 p-3">
+                    <div className="mt-3 flex items-start gap-2 rounded-lg bg-slate-900/50 border border-white/10 p-3 min-w-0">
                       <MessageSquare className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium text-slate-400 mb-0.5">Staff response</div>
-                        <p className="text-sm text-slate-200">{a.staff_response}</p>
+                        <p className="text-sm text-slate-200 break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{a.staff_response}</p>
                       </div>
                     </div>
+                  ) : a.status === 'Approved' || a.status === 'Denied' ? (
+                    <p className="mt-3 text-xs text-slate-500">
+                      Appeal {a.status.toLowerCase()} {a.decided_by ? `by ${a.decided_by}` : 'by staff'}.
+                    </p>
                   ) : (
-                    <p className="mt-3 text-xs text-slate-500">No decision yet \u2014 your appeal is awaiting review.</p>
+                    <p className="mt-3 text-xs text-slate-500">No decision yet — your appeal is awaiting review.</p>
                   )}
 
                   <div className="mt-4"><AppealChat appeal={a} /></div>
