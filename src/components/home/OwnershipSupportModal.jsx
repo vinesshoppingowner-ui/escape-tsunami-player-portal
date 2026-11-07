@@ -73,15 +73,8 @@ export default function OwnershipSupportModal({ open, onOpenChange, supportEmail
                 className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-xs font-bold"
               >
                 <LogIn className="h-3.5 w-3.5" />
-                Sign In to Send
+                Sign In to Message Ownership
               </Link>
-              <a
-                href={`mailto:${supportEmail}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`}
-                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.12]"
-              >
-                <Mail className="h-3.5 w-3.5" />
-                Open Email App Instead
-              </a>
             </div>
           </div>
         ) : ticketId ? (

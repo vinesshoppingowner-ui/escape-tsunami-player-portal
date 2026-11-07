@@ -221,17 +221,7 @@ function DiscordInviteSection() {
   );
 }
 
-function OwnershipSupportSection() {
-  const [copied, setCopied] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const mailtoHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`;
-
-  const copyEmail = () => {
-    navigator.clipboard?.writeText(SUPPORT_EMAIL);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
+function OwnershipSupportSection({ onOpenSupport }) {
   return (
     <section className="max-w-[1220px] mx-auto px-5 md:px-[86px] mt-10">
       <div className="relative overflow-hidden rounded-[22px] bg-[#0d1122]/90 border border-cyan-500/25 p-7 sm:p-9 shadow-[0_18px_55px_rgba(0,0,0,0.28)]">
@@ -251,11 +241,10 @@ function OwnershipSupportSection() {
                 Ownership Support Only
               </div>
               <h3 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
-                Email Ownership Support
+                Contact Ownership Support
               </h3>
               <p className="text-sm text-slate-400 mt-1 max-w-xl leading-relaxed">
-                Need direct assistance from Ownership? Send a support request below to{' '}
-                <span className="text-cyan-300 font-medium">{SUPPORT_EMAIL}</span> and receive an instant confirmation email receipt.
+                Need direct assistance from Ownership? Submit a request directly on the website and receive an instant confirmation email receipt.
               </p>
             </div>
           </div>
@@ -263,39 +252,20 @@ function OwnershipSupportSection() {
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
-              onClick={() => setModalOpen(true)}
+              onClick={onOpenSupport}
               className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-bold transition-transform hover:-translate-y-0.5"
             >
               <Mail className="h-4 w-4" />
               Message Ownership
             </button>
-            <a
-              href={mailtoHref}
-              className="inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.12] transition-colors"
-            >
-              Email App
-            </a>
-            <button
-              type="button"
-              onClick={copyEmail}
-              className="inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.12] transition-colors"
-            >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
-              {copied ? 'Copied' : 'Copy Email'}
-            </button>
           </div>
         </div>
       </div>
-      <OwnershipSupportModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        supportEmail={SUPPORT_EMAIL}
-      />
     </section>
   );
 }
 
-function HomeFooter() {
+function HomeFooter({ onOpenSupport }) {
   return (
     <footer className="border-t border-white/[0.08] mt-8">
       <div className="max-w-[1220px] mx-auto px-5 md:px-[86px] py-10">
@@ -322,7 +292,13 @@ function HomeFooter() {
           <div>
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Support</h4>
             <Link to="/portal" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Submit an Appeal</Link>
-            <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ownership Support Request — Escape Tsunami')}`} className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2">Email Ownership ({SUPPORT_EMAIL})</a>
+            <button
+              type="button"
+              onClick={onOpenSupport}
+              className="block text-left text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-2"
+            >
+              Message Ownership
+            </button>
             <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-cyan-400 transition-colors">Contact Staff</a>
           </div>
         </div>
@@ -356,6 +332,7 @@ export default function HomePage() {
   const { stats: live, loading: statsLoading, error: statsError } = useGameStats();
   const { user } = useAuth();
   const reduceMotion = useReducedMotion();
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
 
   const stats = [
     { icon: Eye, label: 'Total Visits', value: statsLoading ? null : live?.visits, countUp: true },
@@ -470,8 +447,13 @@ export default function HomePage() {
       <HomeFAQ />
       <StaffSection />
       <DiscordInviteSection />
-      <OwnershipSupportSection />
-      <HomeFooter />
+      <OwnershipSupportSection onOpenSupport={() => setSupportModalOpen(true)} />
+      <HomeFooter onOpenSupport={() => setSupportModalOpen(true)} />
+      <OwnershipSupportModal
+        open={supportModalOpen}
+        onOpenChange={setSupportModalOpen}
+        supportEmail={SUPPORT_EMAIL}
+      />
 
       <StickyPlayButton />
     </div>

@@ -26,52 +26,43 @@ export default async function(req) {
     const robloxUsername = user.roblox_username || user.data?.roblox_username || 'Not linked';
 
     // 1. Send automatic confirmation email to the authenticated player
-    const confirmRes = await base44.asServiceRole.integrations.Core.SendEmail({
-      to: user.email,
-      template_name: 'OwnershipSupportConfirmation',
-      category: 'transactional',
-      variables: {
-        first_name: firstName,
-        ticket_id: ticketId,
-        subject_line: subjectLine,
-        message_body: messageBody,
-      },
-    });
+    const [confirmResult, alertResult] = await Promise.allSettled([
+      base44.asServiceRole.integrations.Core.SendEmail({
+        to: user.email,
+        template_name: 'OwnershipSupportConfirmation',
+        category: 'transactional',
+        variables: {
+          first_name: firstName,
+          ticket_id: ticketId,
+          subject_line: subjectLine,
+          message_body: messageBody,
+        },
+      }),
+      // 2. Forward the support ticket once to the official Google Group email
+      base44.asServiceRole.integrations.Core.SendEmail({
+        to: GROUP_EMAIL,
+        template_name: 'OwnershipSupportAlert',
+        category: 'transactional',
+        variables: {
+          first_name: firstName,
+          sender_email: user.email,
+          roblox_username: robloxUsername,
+          ticket_id: ticketId,
+          subject_line: subjectLine,
+          message_body: messageBody,
+        },
+      }),
+    ]);
 
-    // 2. Forward the support ticket to the Google Group email + any registered staff/admin accounts on @escapetsunamifordevelopers.com
-    const alertVars = {
-      first_name: firstName,
-      sender_email: user.email,
-      roblox_username: robloxUsername,
-      ticket_id: ticketId,
-      subject_line: subjectLine,
-      message_body: messageBody,
-    };
-
-    const recipients = new Set([GROUP_EMAIL]);
-    const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 200).catch(() => []);
-    for (const u of allUsers || []) {
-      const em = String(u.email || '').trim().toLowerCase();
-      if (em && (u.role === 'admin' || u.data?.is_owner === true || em.endsWith('@escapetsunamifordevelopers.com'))) {
-        recipients.add(em);
-      }
+    if (confirmResult.status === 'rejected' && alertResult.status === 'rejected') {
+      const msg = alertResult.reason?.message || confirmResult.reason?.message || 'Failed to send support email.';
+      return Response.json({ error: msg }, { status: 429 });
     }
-
-    await Promise.allSettled(
-      Array.from(recipients).map((recipientEmail) =>
-        base44.asServiceRole.integrations.Core.SendEmail({
-          to: recipientEmail,
-          template_name: 'OwnershipSupportAlert',
-          category: 'transactional',
-          variables: alertVars,
-        })
-      )
-    );
 
     return Response.json({
       ok: true,
       ticket_id: ticketId,
-      confirmation_sent: confirmRes?.success !== false,
+      confirmation_sent: confirmResult.status === 'fulfilled' && confirmResult.value?.success !== false,
     });
   } catch (error) {
     return Response.json({ error: error.message || 'Failed to send support request' }, { status: 500 });
