@@ -92,9 +92,42 @@ export default async function(req) {
       msg: messageBody.slice(0, 600),
     });
     const replyUrl = `${SITE_ORIGIN}/support-reply?${replyParams.toString()}`;
+    const replySubject = `Re: ${subjectLine} (${ticketId})`;
+    const replyQuote = `Hi ${firstName},\n\n\n\n---\nTicket ${ticketId}: "${subjectLine}"\n${messageBody.slice(0, 500)}`;
+    const gmailReplyUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(user.email)}&su=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyQuote)}`;
+    const mailtoReplyUrl = `mailto:${user.email}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyQuote)}`;
+
+    const alertVars = {
+      first_name: firstName,
+      sender_email: user.email,
+      roblox_username: robloxUsername,
+      ticket_id: ticketId,
+      subject_line: subjectLine,
+      message_body: messageBody,
+      reply_url: replyUrl,
+      gmail_reply_url: gmailReplyUrl,
+      mailto_reply_url: mailtoReplyUrl,
+    };
+
+    // Collect Google Group email + registered staff/admin/owner emails so staff always receive the alert
+    const staffRecipients = new Set([GROUP_EMAIL]);
+    const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 200).catch(() => []);
+    for (const u of allUsers || []) {
+      const em = String(u.email || '').trim().toLowerCase();
+      if (
+        em &&
+        (u.role === 'admin' ||
+          u.role === 'staff' ||
+          u.data?.is_owner === true ||
+          em.endsWith('@escapetsunamifordevelopers.com'))
+      ) {
+        staffRecipients.add(em);
+      }
+    }
 
     // 1. Send automatic confirmation email to the authenticated player
-    const [confirmResult, alertResult] = await Promise.allSettled([
+    // 2. Send the alert to the Google Group + registered staff/admin accounts
+    const [confirmResult, ...alertResults] = await Promise.allSettled([
       base44.asServiceRole.integrations.Core.SendEmail({
         to: user.email,
         template_name: 'OwnershipSupportConfirmation',
@@ -106,22 +139,17 @@ export default async function(req) {
           message_body: messageBody,
         },
       }),
-      // 2. Forward the support ticket once to the official Google Group email
-      base44.asServiceRole.integrations.Core.SendEmail({
-        to: GROUP_EMAIL,
-        template_name: 'OwnershipSupportAlert',
-        category: 'transactional',
-        variables: {
-          first_name: firstName,
-          sender_email: user.email,
-          roblox_username: robloxUsername,
-          ticket_id: ticketId,
-          subject_line: subjectLine,
-          message_body: messageBody,
-          reply_url: replyUrl,
-        },
-      }),
+      ...Array.from(staffRecipients).map((recipientEmail) =>
+        base44.asServiceRole.integrations.Core.SendEmail({
+          to: recipientEmail,
+          from_name: `${firstName} via Ownership Support`,
+          template_name: 'OwnershipSupportAlert',
+          category: 'transactional',
+          variables: alertVars,
+        })
+      ),
     ]);
+    const alertResult = alertResults.find((r) => r.status === 'fulfilled') || alertResults[0];
 
     if (confirmResult.status === 'rejected' && alertResult.status === 'rejected') {
       const msg = alertResult.reason?.message || confirmResult.reason?.message || 'Failed to send support email.';
