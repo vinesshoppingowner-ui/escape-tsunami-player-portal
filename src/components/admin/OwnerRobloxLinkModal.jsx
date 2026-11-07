@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,9 +127,9 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
 
   const needsConfirmation = Boolean(preview?.conflictUser || preview?.existingLink);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[110] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[120] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -426,6 +427,7 @@ export default function OwnerRobloxLinkModal({ open, onClose, initialEmail = '' 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
