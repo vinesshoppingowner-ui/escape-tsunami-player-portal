@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle, Ban } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle, Ban, LayoutList, Layers, RotateCcw, Timer } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplyField from '@/components/apply/ApplyField';
 import ApplyReview from '@/components/apply/ApplyReview';
@@ -38,6 +38,8 @@ export default function ApplicationFormPage() {
   const [myResponses, setMyResponses] = useState([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [blacklisted, setBlacklisted] = useState(false);
+  const [forceSinglePage, setForceSinglePage] = useState(null);
+  const [remainingSec, setRemainingSec] = useState(null);
   const retake = getRetakeState(settings, myResponses);
 
   const loadApp = async () => {
@@ -90,8 +92,33 @@ export default function ApplicationFormPage() {
   }, [answers, draftKey]);
 
   const total = visibleQuestions.length;
+  const answerableQuestions = visibleQuestions.filter((q) => q.type !== 'section');
+  const answeredCount = answerableQuestions.filter((q) => !isEmpty(answers[q.id])).length;
   const current = step >= 0 && step < total ? visibleQuestions[step] : null;
-  const singlePage = total > 0 && total < 5 && settings.singlePageMode !== false;
+  const singlePage = forceSinglePage !== null ? forceSinglePage : Boolean(settings.singlePageMode || (total > 0 && total < 5 && settings.singlePageMode !== false));
+
+  useEffect(() => {
+    const mins = Number(settings.timeLimitMinutes) || 0;
+    if (!mins || step < 0 || submitted) return;
+    if (remainingSec === null) setRemainingSec(mins * 60);
+  }, [settings.timeLimitMinutes, step, submitted]);
+
+  useEffect(() => {
+    if (remainingSec === null || remainingSec <= 0 || submitted) return;
+    const t = setInterval(() => {
+      setRemainingSec((s) => (s !== null && s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [remainingSec, submitted]);
+
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey);
+    setAnswers({});
+    setError('');
+    toast({ title: 'Draft cleared' });
+  };
+
+  const termsText = settings.customTermsText?.trim() || 'I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.';
 
   const validateQuestion = (q) => validateField(q, answers[q.id]);
 
@@ -204,24 +231,60 @@ export default function ApplicationFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div
+      className={`min-h-screen bg-slate-950 text-white ${settings.blockCopyPaste ? 'apply-no-select' : ''}`}
+      onCopy={settings.blockCopyPaste ? (e) => e.preventDefault() : undefined}
+      onCut={settings.blockCopyPaste ? (e) => e.preventDefault() : undefined}
+      onContextMenu={settings.blockCopyPaste ? (e) => e.preventDefault() : undefined}
+    >
       <main className="max-w-2xl mx-auto px-5 pt-16 pb-24">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <Link to="/applications" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"><ChevronLeft className="h-4 w-4" /> All applications</Link>
-          <div className="text-xs text-slate-500">{!settings.disableAutosave && !editingId && Object.keys(answers).length > 0 && <span className="text-emerald-400/80 mr-3">Draft saved</span>}{step < 0 ? `${total} question${total !== 1 ? 's' : ''}` : singlePage ? 'All questions' : step >= total ? 'Review' : `Question ${step + 1} of ${total}`}</div>
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+            {remainingSec !== null && step >= 0 && (
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border font-mono font-semibold ${remainingSec <= 60 ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 animate-pulse' : 'bg-amber-500/10 border-amber-500/25 text-amber-300'}`}>
+                <Timer className="h-3.5 w-3.5" />
+                {Math.floor(remainingSec / 60)}:{String(remainingSec % 60).padStart(2, '0')}
+              </span>
+            )}
+            {!settings.disableAutosave && !editingId && Object.keys(answers).length > 0 && (
+              <span className="inline-flex items-center gap-2">
+                <span className="text-emerald-400/80">Draft saved</span>
+                <button type="button" onClick={clearDraft} className="text-slate-500 hover:text-rose-300 inline-flex items-center gap-0.5" title="Reset saved draft">
+                  <RotateCcw className="h-3 w-3" /> Reset
+                </button>
+              </span>
+            )}
+            {step >= 0 && total > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !singlePage;
+                  setForceSinglePage(next);
+                  if (next && step >= total) setStep(0);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-slate-300 hover:text-white transition-colors"
+                title="Switch between step-by-step and single-page view"
+              >
+                {singlePage ? <Layers className="h-3.5 w-3.5 text-cyan-400" /> : <LayoutList className="h-3.5 w-3.5 text-cyan-400" />}
+                {singlePage ? 'Step-by-step' : 'All on one page'}
+              </button>
+            )}
+            <span>{step < 0 ? `${answerableQuestions.length} question${answerableQuestions.length !== 1 ? 's' : ''}` : singlePage ? `${answeredCount}/${answerableQuestions.length} answered` : step >= total ? 'Review' : `Step ${step + 1} of ${total}`}</span>
+          </div>
         </div>
 
         {settings.showProgressBar === false ? <div className="mb-8" /> : step < 0 ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8" />
         ) : singlePage ? (
           <div className="h-1.5 rounded-full bg-white/5 mb-8 overflow-hidden">
-            <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${total ? Math.min((visibleQuestions.filter((q) => !isEmpty(answers[q.id])).length / total) * 100, 100) : 0}%` }} />
+            <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${answerableQuestions.length ? Math.min((answeredCount / answerableQuestions.length) * 100, 100) : 0}%` }} />
           </div>
         ) : (
           <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
-        <div ref={formRef} className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden">
+        <div ref={formRef} className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
@@ -245,7 +308,7 @@ export default function ApplicationFormPage() {
                   {error && <div className="flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
                   <label className="flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">
                     <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
-                    <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
+                    <span className="text-xs text-slate-400 leading-relaxed">{termsText}</span>
                   </label>
                   <div className="pl-1"><RespondingAs user={user} /></div>
                   <div className="flex items-center justify-between gap-3">
@@ -292,7 +355,7 @@ export default function ApplicationFormPage() {
                   {error && <div className="mt-4 flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
                   <label className="mt-6 flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">
                     <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />
-                    <span className="text-xs text-slate-400 leading-relaxed">I confirm my answers are my own original work. I have not used AI assistance, copied from others, or shared these questions unless explicitly permitted. Submitting false or plagiarized content may result in immediate rejection and a ban from future applications.</span>
+                    <span className="text-xs text-slate-400 leading-relaxed">{termsText}</span>
                   </label>
                   <div className="mt-2 pl-1"><RespondingAs user={user} /></div>
                   <div className="mt-6 flex items-center justify-between gap-3">

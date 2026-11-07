@@ -2,10 +2,12 @@ import { Pencil, Star } from 'lucide-react';
 import UploadedFileAttachment from '@/components/apply/UploadedFileAttachment';
 
 export function formatAnswer(q, a) {
+  if (q?.type === 'section') return null;
   if (a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0)) return null;
   if (q.type === 'yesno') return a ? 'Yes' : 'No';
   if (q.type === 'checkbox') return a.join(', ');
   if (q.type === 'rating') return `${a} / 5`;
+  if (q.type === 'scale') return `${a} / ${q.scaleMax || 10}`;
   if (q.type === 'file' && typeof a === 'string' && a.startsWith('file:')) {
     const [, filename] = a.split('|');
     return filename || 'Uploaded file';
@@ -17,6 +19,7 @@ export default function ApplyReview({ questions, answers, onEdit }) {
   return (
     <div className="space-y-2">
       {questions.map((q, i) => {
+        if (q.type === 'section') return null;
         const val = formatAnswer(q, answers[q.id]);
         return (
           <button type="button" key={q.id} onClick={() => onEdit(i)} className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 p-4 flex items-start gap-3 transition-colors group">

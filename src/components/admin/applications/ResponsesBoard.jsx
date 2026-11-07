@@ -22,6 +22,13 @@ const SORTS = [
   { value: 'rating', label: 'Highest staff rating' },
 ];
 const TAG_OPTS = [{ value: 'all', label: 'All tags' }, { value: 'starred', label: '★ Shortlisted' }, ...RESPONSE_TAGS.map((t) => ({ value: t, label: t }))];
+const AI_OPTS = [
+  { value: 'all', label: 'All AI recs' },
+  { value: 'accept', label: 'AI: Accept' },
+  { value: 'review', label: 'AI: Review' },
+  { value: 'reject', label: 'AI: Reject' },
+  { value: 'unchecked', label: 'AI: Unchecked' },
+];
 
 const safeCell = (v) => {
   const s = String(v ?? '');
@@ -38,6 +45,7 @@ export default function ResponsesBoard({ app, onBack }) {
   const [openId, setOpenId] = useState(null);
   const [bulk, setBulk] = useState(null);
   const [tag, setTag] = useState('all');
+  const [aiFilter, setAiFilter] = useState('all');
   const [selected, setSelected] = useState([]);
   const [showInsights, setShowInsights] = useState(true);
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -99,6 +107,11 @@ export default function ResponsesBoard({ app, onBack }) {
   const score = (r) => r.ai_score ?? -1;
   const shown = responses
     .filter((r) => (tag === 'all' || (tag === 'starred' ? r.starred : (r.tags || []).includes(tag))))
+    .filter((r) => {
+      if (aiFilter === 'all') return true;
+      if (aiFilter === 'unchecked') return r.ai_score === undefined || r.ai_score === null;
+      return r.ai_recommendation === aiFilter;
+    })
     .filter((r) => (tab === 'all' || r.status === tab) && (!q || [r.roblox_username, r.submitted_by_email].some((v) => v?.toLowerCase().includes(q.toLowerCase())) || Object.values(safeParse(r.answers, {})).some((v) => String(v ?? '').toLowerCase().includes(q.toLowerCase()))))
     .sort((a, b) => sort === 'oldest' ? new Date(a.created_date) - new Date(b.created_date)
       : sort === 'rating' ? (b.staff_rating || 0) - (a.staff_rating || 0)
@@ -186,6 +199,7 @@ export default function ResponsesBoard({ app, onBack }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
           <input id="resp-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search applicant or answers…" className="w-full h-9 pl-9 pr-3 rounded-lg bg-slate-900/60 border border-white/15 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50" />
         </div>
+        <CustomDropdown value={aiFilter} onChange={(v) => { setAiFilter(v); setSelected([]); }} options={AI_OPTS} className="w-40" />
         <CustomDropdown value={tag} onChange={(v) => { setTag(v); setSelected([]); }} options={TAG_OPTS} className="w-44" />
         <CustomDropdown value={sort} onChange={setSort} options={SORTS} className="w-48" />
         {shown.length > 0 && <button onClick={() => setSelected(selected.length === shown.length ? [] : shown.map((r) => r.id))} className="h-9 px-3 rounded-lg border border-white/10 text-xs text-slate-300 hover:text-white">{selected.length === shown.length ? 'Deselect all' : 'Select all'}</button>}
@@ -201,7 +215,19 @@ export default function ResponsesBoard({ app, onBack }) {
         <div className="space-y-2">{shown.map((r) => <ResponseListItem key={r.id} response={r} nowMs={nowMs} onOpen={() => setOpenId(r.id)}
           selected={selected.includes(r.id)}
           onSelect={() => setSelected((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))}
-          onStar={async () => { try { replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred })); } catch {} }} />)}</div>
+          onStar={async () => { try { replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred })); } catch {} }}
+          onQuickStatus={async (resp, nextStatus) => {
+            try {
+              const updated = await base44.entities.ApplicationResponse.update(resp.id, {
+                status: nextStatus,
+                reviewed_at: new Date().toISOString(),
+              });
+              replace(updated);
+              toast({ title: `Marked ${resp.roblox_username || 'applicant'} as ${nextStatus.replace('_', ' ')}` });
+            } catch {
+              toast({ title: 'Failed to update status', variant: 'destructive' });
+            }
+          }} />)}</div>
       )}
 
       {openIdx >= 0 && (

@@ -56,7 +56,7 @@ function getSettingBadges(app) {
 
 export default function ApplicationsTab() {
   const { toast } = useToast();
-  const { countsByApp, newCountsByApp, totalCount, unreviewedCount } = useLiveApplicationResponses(true);
+  const { responses: allLiveResponses, countsByApp, newCountsByApp, totalCount, unreviewedCount } = useLiveApplicationResponses(true);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -288,7 +288,11 @@ export default function ApplicationsTab() {
           {filtered.map((app) => {
             const totalForApp = countsByApp[app.id] ?? app.response_count ?? 0;
             const newForApp = newCountsByApp[app.id] || 0;
-            const qCount = safeParse(app.questions, []).length;
+            const appResps = (allLiveResponses || []).filter((r) => r.application_id === app.id);
+            const pendingForApp = appResps.filter((r) => r.status === 'submitted').length;
+            const acceptedForApp = appResps.filter((r) => r.status === 'accepted').length;
+            const rejectedForApp = appResps.filter((r) => r.status === 'rejected').length;
+            const qCount = safeParse(app.questions, []).filter((q) => q.type !== 'section').length;
             const settingBadges = getSettingBadges(app);
 
             return (
@@ -319,6 +323,21 @@ export default function ApplicationsTab() {
                       <span className={`flex items-center gap-1 ${totalForApp > 0 ? 'text-cyan-300 font-medium' : ''}`}>
                         <Users className="h-3 w-3" /> {totalForApp} response{totalForApp === 1 ? '' : 's'}
                       </span>
+                      {pendingForApp > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-medium">
+                          {pendingForApp} pending
+                        </span>
+                      )}
+                      {acceptedForApp > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-medium">
+                          {acceptedForApp} accepted
+                        </span>
+                      )}
+                      {rejectedForApp > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[10px] font-medium">
+                          {rejectedForApp} rejected
+                        </span>
+                      )}
                       <span>{app.category || 'General'}</span>
                       {app.slug && <span className="text-slate-600 font-mono">/apply/{app.slug}</span>}
                     </div>

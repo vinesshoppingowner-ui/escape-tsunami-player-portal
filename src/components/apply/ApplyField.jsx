@@ -1,9 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Star, Check, Play } from 'lucide-react';
+import { Star, Check, Play, ExternalLink, Gamepad2, MessageSquare, Info } from 'lucide-react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import FileUploadField from '@/components/apply/FileUploadField';
 import { extractYouTubeId } from '@/lib/applicationTypes';
+import { useAuth } from '@/lib/AuthContext';
 
 const inputCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 text-base rounded-xl focus-visible:ring-cyan-500/50';
 
@@ -19,14 +20,138 @@ function ChoiceRow({ selected, onClick, label, multi }) {
 }
 
 export default function ApplyField({ q, value, onChange, autoFocus }) {
+  const { user } = useAuth();
+  const linkedRoblox = user?.roblox_username || user?.data?.roblox_username || '';
+
   switch (q.type) {
-    case 'textarea':
+    case 'section':
       return (
-        <div>
-          <Textarea autoFocus={autoFocus} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || undefined} className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[160px] text-base rounded-xl focus-visible:ring-cyan-500/50" />
-          {q.maxLength > 0 && <div className="mt-1.5 text-right text-xs text-slate-500">{(value || '').length}/{q.maxLength}</div>}
+        <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-500/20 p-4 flex items-start gap-3">
+          <Info className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
+          <div className="text-sm text-slate-300 leading-relaxed">
+            {q.description || 'Read the section details above and click Next to continue.'}
+          </div>
         </div>
       );
+    case 'textarea': {
+      const text = value || '';
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const minLen = q.validation?.minLength || 0;
+      return (
+        <div>
+          <Textarea autoFocus={autoFocus} value={text} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || q.validation?.maxLength || undefined} className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[160px] text-base rounded-xl focus-visible:ring-cyan-500/50" />
+          <div className="mt-1.5 flex items-center justify-between text-xs text-slate-500">
+            <span>
+              {words} word{words === 1 ? '' : 's'} · {text.length} chars
+              {minLen > 0 && (
+                <span className={text.length >= minLen ? 'text-emerald-400 ml-2' : 'text-amber-300 ml-2'}>
+                  (min {minLen} chars)
+                </span>
+              )}
+            </span>
+            {(q.maxLength > 0 || q.validation?.maxLength > 0) && (
+              <span>{text.length}/{q.maxLength || q.validation?.maxLength}</span>
+            )}
+          </div>
+        </div>
+      );
+    }
+    case 'scale': {
+      const max = Number(q.scaleMax) || 10;
+      const nums = Array.from({ length: max }, (_, i) => i + 1);
+      return (
+        <div className="space-y-2.5">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${nums.length}, minmax(0, 1fr))` }}>
+            {nums.map((n) => {
+              const active = Number(value) === n;
+              return (
+                <button
+                  type="button"
+                  key={n}
+                  onClick={() => onChange(n)}
+                  className={`h-12 rounded-xl border text-sm font-bold transition-all ${
+                    active
+                      ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.2)] scale-[1.03]'
+                      : 'bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.07] hover:border-white/20'
+                  }`}
+                >
+                  {n}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <span>{q.scaleMinLabel || 'Beginner'}</span>
+            <span>{q.scaleMaxLabel || 'Expert'}</span>
+          </div>
+        </div>
+      );
+    }
+    case 'discord':
+      return (
+        <div className="space-y-2">
+          <div className="relative">
+            <MessageSquare className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+            <Input
+              autoFocus={autoFocus}
+              value={value || ''}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={q.placeholder || 'e.g. username or 123456789012345678'}
+              className={`${inputCls} pl-10`}
+            />
+          </div>
+          <p className="text-xs text-slate-500">Enter your Discord username (e.g. @player) or 18-digit Discord User ID.</p>
+        </div>
+      );
+    case 'roblox':
+      return (
+        <div className="space-y-2">
+          <div className="relative">
+            <Gamepad2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-400" />
+            <Input
+              autoFocus={autoFocus}
+              value={value || ''}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={q.placeholder || 'Enter your Roblox username…'}
+              className={`${inputCls} pl-10`}
+            />
+          </div>
+          {linkedRoblox && value !== linkedRoblox && (
+            <button
+              type="button"
+              onClick={() => onChange(linkedRoblox)}
+              className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-lg transition-colors"
+            >
+              <Gamepad2 className="h-3.5 w-3.5" /> Use linked Roblox account: <strong>@{linkedRoblox}</strong>
+            </button>
+          )}
+        </div>
+      );
+    case 'url': {
+      const isValidUrl = typeof value === 'string' && /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value.trim());
+      return (
+        <div className="space-y-2">
+          <Input
+            autoFocus={autoFocus}
+            type="url"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={q.placeholder || 'https://…'}
+            className={inputCls}
+          />
+          {isValidUrl && (
+            <a
+              href={value.trim()}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Preview link in new tab
+            </a>
+          )}
+        </div>
+      );
+    }
     case 'number':
       return <Input autoFocus={autoFocus} type="number" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Enter a number…'} className={inputCls} />;
     case 'email':

@@ -35,6 +35,8 @@ export default function ApplicationsDirectoryPage() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [statusView, setStatusView] = useState('open'); // 'open' | 'closed' | 'all'
+  const [sortBy, setSortBy] = useState('deadline'); // 'deadline' | 'newest' | 'shortest'
   const [selectedResponse, setSelectedResponse] = useState(null);
 
   useEffect(() => { document.title = 'Applications · Escape Tsunami for Developers'; }, []);
@@ -86,22 +88,40 @@ export default function ApplicationsDirectoryPage() {
     return ['All', ...Array.from(set).sort()];
   }, [applications]);
 
+  const openAppsCount = useMemo(
+    () => applications.filter((a) => a.status === 'open' && !isExpired(a)).length,
+    [applications]
+  );
+  const closedAppsCount = useMemo(
+    () => applications.filter((a) => a.status === 'closed' || isExpired(a)).length,
+    [applications]
+  );
+
   const filtered = useMemo(() => {
     return applications
-      .filter((a) => a.status === 'open' && !isExpired(a))
+      .filter((a) => {
+        const openNow = a.status === 'open' && !isExpired(a);
+        if (statusView === 'open') return openNow;
+        if (statusView === 'closed') return !openNow;
+        return true;
+      })
       .filter((a) => {
         const matchCat = activeCategory === 'All' || (a.category || 'General') === activeCategory;
         const q = search.trim().toLowerCase();
-        const matchSearch = !q || (a.title || '').toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q);
+        const matchSearch = !q || (a.title || '').toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q) || (a.category || '').toLowerCase().includes(q);
         return matchCat && matchSearch;
       })
       .sort((a, b) => {
+        if (sortBy === 'newest') return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+        if (sortBy === 'shortest') {
+          return safeParse(a.questions, []).length - safeParse(b.questions, []).length;
+        }
         if (!a.auto_close_at && !b.auto_close_at) return 0;
         if (!a.auto_close_at) return 1;
         if (!b.auto_close_at) return -1;
         return new Date(a.auto_close_at) - new Date(b.auto_close_at);
       });
-  }, [applications, activeCategory, search]);
+  }, [applications, activeCategory, search, statusView, sortBy]);
 
   const dedupedResponses = useMemo(() => {
     const counts = {};
@@ -224,18 +244,50 @@ export default function ApplicationsDirectoryPage() {
           </div>
         )}
 
-        <div className="mb-6">
-          <label htmlFor="app-search" className="sr-only">Search applications</label>
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-            <input
-              id="app-search"
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search applications..."
-              className="w-full h-11 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 pl-10 pr-4 text-sm focus:outline-none focus:border-cyan-500/40 transition-colors"
-            />
+        <div className="mb-6 space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <label htmlFor="app-search" className="sr-only">Search applications</label>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+              <input
+                id="app-search"
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search applications by title, role, or category..."
+                className="w-full h-11 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 pl-10 pr-4 text-sm focus:outline-none focus:border-cyan-500/40 transition-colors"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/10">
+                {[
+                  ['open', `Open (${openAppsCount})`],
+                  ['closed', `Closed (${closedAppsCount})`],
+                  ['all', 'All'],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setStatusView(key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      statusView === key ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/30' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort applications"
+                className="h-11 rounded-xl bg-white/[0.03] border border-white/10 px-3 text-xs text-slate-200 focus:outline-none focus:border-cyan-500/40"
+              >
+                <option value="deadline" className="bg-slate-900">Sort: Closing soon</option>
+                <option value="newest" className="bg-slate-900">Sort: Newest</option>
+                <option value="shortest" className="bg-slate-900">Sort: Quickest</option>
+              </select>
+            </div>
           </div>
           {categories.length > 2 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
@@ -288,40 +340,69 @@ export default function ApplicationsDirectoryPage() {
             <div className="grid sm:grid-cols-2 gap-3">
               {filtered.map((app) => {
                 const rt = retakeFor(app);
-                const qCount = safeParse(app.questions, []).length;
+                const qs = safeParse(app.questions, []).filter((q) => q.type !== 'section');
+                const qCount = qs.length;
+                const appSettings = safeParse(app.settings, {});
                 const dl = deadlineLabel(app);
+                const isClosed = app.status !== 'open' || isExpired(app);
                 const alreadyApplied = rt && !rt.canApply;
                 const myLatest = myResponses.find((r) => r.application_id === app.id);
+                let draftCount = 0;
+                try {
+                  const savedDraft = localStorage.getItem(`apply-draft-${app.slug || app.id}-${user?.id || 'anon'}`) || localStorage.getItem(`apply-draft-${app.id}-${user?.id || 'anon'}`);
+                  if (savedDraft) {
+                    const parsedDraft = JSON.parse(savedDraft);
+                    draftCount = Object.values(parsedDraft || {}).filter((v) => v !== '' && v !== null && v !== undefined).length;
+                  }
+                } catch {}
                 return (
-                  <div key={app.id} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-4 transition-all hover:-translate-y-0.5 flex flex-col">
-                    <div className="flex items-start gap-3 flex-1">
+                  <div key={app.id} className="group rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.05] p-5 transition-all hover:-translate-y-0.5 flex flex-col">
+                    <div className="flex items-start gap-3.5 flex-1">
                       <AppIcon icon={app.icon} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-white truncate">{app.title}</h3>
+                          {isClosed && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/25 shrink-0">Closed</span>
+                          )}
                           {rt && (rt.canApply
-                            ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/25 shrink-0">Retake</span>
+                            ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/25 shrink-0">Retake Available</span>
                             : <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 shrink-0">Already Applied</span>)}
+                          {!alreadyApplied && draftCount > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 shrink-0">
+                              Draft ({draftCount}/{qCount})
+                            </span>
+                          )}
                           {dl && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 shrink-0 inline-flex items-center gap-1"><CalendarClock className="h-2.5 w-2.5" />{dl}</span>}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{app.description || 'No description'}</p>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                          <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">{app.category}</span>
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{app.description || 'No description'}</p>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[11px] text-slate-400">
+                          <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">{app.category || 'General'}</span>
                           <span>·</span>
                           <span>{qCount} question{qCount !== 1 ? 's' : ''}</span>
                           <span>·</span>
-                          <span>~{Math.max(1, Math.ceil(qCount * 0.75))} min</span>
+                          <span>~{appSettings.timeLimitMinutes ? `${appSettings.timeLimitMinutes}m timed` : `${Math.max(1, Math.ceil(qCount * 0.75))} min`}</span>
+                          {appSettings.requireRobloxVerification && (
+                            <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px]">Roblox Verified</span>
+                          )}
+                          {appSettings.aiReviewEnabled && (
+                            <span className="px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px]">AI Assisted</span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-white/5">
+                    <div className="mt-4 pt-3 border-t border-white/5">
                       {alreadyApplied && myLatest ? (
                         <button onClick={() => setSelectedResponse({ ...myLatest, application: app })} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/20 transition-colors">
                           <Eye className="h-4 w-4" /> View submission
                         </button>
+                      ) : isClosed ? (
+                        <span className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-slate-500 text-sm font-medium cursor-not-allowed">
+                          Applications closed
+                        </span>
                       ) : user ? (
                         <Link to={`/apply/${app.slug || app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
-                          Open application <ChevronRight className="h-4 w-4" />
+                          {draftCount > 0 ? 'Continue draft' : 'Open application'} <ChevronRight className="h-4 w-4" />
                         </Link>
                       ) : (
                         <Link to="/login" className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.06] border border-white/15 text-white text-sm font-medium hover:bg-white/[0.1] transition-colors">

@@ -4,14 +4,19 @@ export const QUESTION_TYPES = [
   { value: 'dropdown', label: 'Dropdown', icon: 'ChevronDown' },
   { value: 'radio', label: 'Multiple Choice', icon: 'Circle' },
   { value: 'checkbox', label: 'Checkboxes', icon: 'CheckSquare' },
+  { value: 'scale', label: 'Linear Scale (1–10)', icon: 'Sliders' },
+  { value: 'rating', label: 'Star Rating (1–5)', icon: 'Star' },
+  { value: 'yesno', label: 'Yes / No', icon: 'ToggleLeft' },
+  { value: 'discord', label: 'Discord Username / ID', icon: 'MessageSquare' },
+  { value: 'roblox', label: 'Roblox Username', icon: 'Gamepad2' },
+  { value: 'url', label: 'Website / Portfolio URL', icon: 'Link' },
   { value: 'number', label: 'Number', icon: 'Hash' },
   { value: 'email', label: 'Email', icon: 'Mail' },
   { value: 'date', label: 'Date', icon: 'Calendar' },
-  { value: 'rating', label: 'Rating', icon: 'Star' },
-  { value: 'yesno', label: 'Yes / No', icon: 'ToggleLeft' },
   { value: 'file', label: 'File Upload', icon: 'Paperclip' },
   { value: 'code', label: 'Code Snippet', icon: 'Code' },
   { value: 'youtube', label: 'YouTube Video', icon: 'Youtube' },
+  { value: 'section', label: 'Section Header / Info', icon: 'LayoutList' },
 ];
 
 export function extractYouTubeId(input) {
@@ -38,6 +43,9 @@ export const defaultQuestion = () => ({
   fileTypes: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'txt'],
   maxFileSize: 5,
   youtubeUrl: '',
+  scaleMax: 10,
+  scaleMinLabel: 'Beginner',
+  scaleMaxLabel: 'Expert',
 });
 
 export const defaultSettings = () => ({
@@ -52,6 +60,9 @@ export const defaultSettings = () => ({
   showResultsSummary: false,
   disableAutosave: false,
   showProgressBar: true,
+  singlePageMode: false,
+  timeLimitMinutes: 0,
+  customTermsText: '',
   allowRetake: false,
   retakeCooldownDays: 7,
   maxAttempts: 3,
@@ -80,9 +91,11 @@ export const RESPONSE_STATUS = {
 };
 
 export const formatAnswer = (q, a) => {
+  if (q?.type === 'section') return '';
   if (a === undefined || a === null || a === '' || (Array.isArray(a) && !a.length)) return '';
   if (Array.isArray(a)) return a.join(', ');
   if (q.type === 'rating') return `${a} / 5`;
+  if (q.type === 'scale') return `${a} / ${q.scaleMax || 10}`;
   if (q.type === 'yesno') return a ? 'Yes' : 'No';
   if (q.type === 'file' && typeof a === 'string' && a.startsWith('file:')) {
     const [, filename] = a.split('|');

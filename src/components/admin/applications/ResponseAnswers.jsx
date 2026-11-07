@@ -34,7 +34,17 @@ export default function ResponseAnswers({ questions, answers }) {
     setTimeout(() => setCopied(false), 1800);
   };
 
+  const answerableQuestions = questions.filter((q) => q.type !== 'section');
+  const rubricScore = answerableQuestions.length
+    ? Math.round(
+        ((goodCount * 1 + Math.max(0, answeredCount - goodCount - flagCount) * 0.7 - flagCount * 0.5) /
+          Math.max(1, answerableQuestions.length)) *
+          100
+      )
+    : null;
+
   const visible = questions.filter((q) => {
+    if (q.type === 'section') return false;
     if (filterMode === 'required' && !q.required) return false;
     if (filterMode === 'flagged' && marks[q.id] !== 'flag') return false;
     if (searchQuery.trim()) {
@@ -54,6 +64,11 @@ export default function ResponseAnswers({ questions, answers }) {
             <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-violet-400" /> ~{readMins} min read</span>
             {goodCount > 0 && <span className="text-emerald-300 font-medium">✓ {goodCount} strong</span>}
             {flagCount > 0 && <span className="text-rose-300 font-medium">⚑ {flagCount} flagged</span>}
+            {(goodCount > 0 || flagCount > 0) && rubricScore !== null && (
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-200 font-semibold">
+                Grade: {Math.max(0, Math.min(100, rubricScore))}%
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1.5">
             {[['all', 'All'], ['required', 'Required'], ['flagged', `Flagged (${flagCount})`]].map(([mode, label]) => (

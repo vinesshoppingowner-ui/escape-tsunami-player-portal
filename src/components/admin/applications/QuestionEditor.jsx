@@ -3,7 +3,23 @@ import { QUESTION_TYPES, extractYouTubeId } from '@/lib/applicationTypes';
 import FormToggle from './FormToggle';
 
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
-const PREVIEW = { text: 'Short answer text', textarea: 'Long answer text', number: 'Number', email: 'Email address', date: 'Month, day, year', rating: '★ ★ ★ ★ ★', yesno: 'Yes / No', file: '📎 Click to upload', code: 'const x = "code snippet"', youtube: '▶ YouTube Video (watch or submit link)' };
+const PREVIEW = {
+  text: 'Short answer text',
+  textarea: 'Long answer text',
+  number: 'Number',
+  email: 'Email address',
+  date: 'Month, day, year',
+  rating: '★ ★ ★ ★ ★',
+  scale: '1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10',
+  yesno: 'Yes / No',
+  discord: '@username or Discord User ID',
+  roblox: 'Roblox username (with 1-click auto-fill)',
+  url: 'https://example.com',
+  file: '📎 Click to upload',
+  code: 'const x = "code snippet"',
+  youtube: '▶ YouTube Video (watch or submit link)',
+  section: 'Section header & instructions block (no answer input)',
+};
 
 export default function QuestionEditor({ question, allQuestions = [], index, total, active, onFocus, onUpdate, onRemove, onDuplicate, onMoveUp, onMoveDown }) {
   const update = (field, value) => onUpdate(question.id, { [field]: value });
@@ -74,6 +90,35 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
                 {PREVIEW.youtube}
               </div>
             )}
+          </div>
+        ) : question.type === 'scale' ? (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">Scale range:</span>
+                <select
+                  value={question.scaleMax || 10}
+                  onChange={(e) => update('scaleMax', Number(e.target.value))}
+                  className="h-8 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                >
+                  <option value={5}>1 to 5</option>
+                  <option value={10}>1 to 10</option>
+                </select>
+              </div>
+              <input
+                value={question.scaleMinLabel ?? 'Beginner'}
+                onChange={(e) => update('scaleMinLabel', e.target.value)}
+                placeholder="Low label (e.g. Beginner)"
+                className="h-8 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2.5 flex-1 min-w-[130px]"
+              />
+              <input
+                value={question.scaleMaxLabel ?? 'Expert'}
+                onChange={(e) => update('scaleMaxLabel', e.target.value)}
+                placeholder="High label (e.g. Expert)"
+                className="h-8 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2.5 flex-1 min-w-[130px]"
+              />
+            </div>
+            <div className="text-xs text-slate-500">{PREVIEW.scale}</div>
           </div>
         ) : (
           <div className="text-sm text-slate-500 border-b border-dotted border-white/10 py-2 w-2/3">{PREVIEW[question.type]}</div>

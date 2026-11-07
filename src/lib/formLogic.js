@@ -46,6 +46,7 @@ const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArr
  * Validates a single field. Returns an error string or empty string if valid.
  */
 export function validateField(q, value) {
+  if (q.type === 'section') return '';
   if (q.required && isEmpty(value)) return 'This question is required.';
 
   if (isEmpty(value)) return ''; // optional and empty = valid
@@ -79,6 +80,14 @@ export function validateField(q, value) {
   // Email
   if (q.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
     return 'Please enter a valid email address.';
+
+  // URL
+  if (q.type === 'url' && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(str.trim()))
+    return 'Please enter a valid URL starting with http:// or https://';
+
+  // Discord username or snowflake ID
+  if (q.type === 'discord' && str.trim().length < 2)
+    return 'Please enter a valid Discord username or user ID.';
 
   // YouTube URL validation when the question asks the applicant to provide a YouTube link
   if (q.type === 'youtube' && !q.youtubeUrl) {
