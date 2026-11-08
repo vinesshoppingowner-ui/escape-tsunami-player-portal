@@ -7,6 +7,7 @@ import QuestionEditor from './QuestionEditor';
 import ApplicationAdvancedSettings from './ApplicationAdvancedSettings';
 import ApplicationBasicSettings from './ApplicationBasicSettings';
 import ApplicationFormSettings from './ApplicationFormSettings';
+import RichDescriptionEditor from './RichDescriptionEditor';
 import AiApplicationGenerator from './AiApplicationGenerator';
 import GoogleFormsSyncModal from './GoogleFormsSyncModal';
 import { defaultQuestion, defaultSettings } from '@/lib/applicationTypes';
@@ -173,14 +174,17 @@ export default function ApplicationEditor({ open, onClose, application, initialT
         {tab === 'questions' ? (
           <div className="flex gap-3 items-start">
             <div className="flex-1 min-w-0 space-y-3">
-              <div className="rounded-xl bg-white/[0.03] border border-white/10 overflow-hidden">
-                <div className="h-2 bg-cyan-500" />
-                <div className="p-6 space-y-2">
+              <div className="rounded-xl bg-white/[0.03] border border-white/10">
+                <div className="h-2 bg-cyan-500 rounded-t-xl" />
+                <div className="p-6 space-y-3">
                   <input value={form.title} onChange={(e) => setField('title', e.target.value)} placeholder="Untitled form"
                     className="w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none font-display text-3xl text-white placeholder:text-slate-500 py-2" />
-                  <textarea value={form.description} onChange={(e) => setField('description', e.target.value)} placeholder="Form description" rows={2}
-                    className="w-full resize-none bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-sm text-slate-300 placeholder:text-slate-500 py-2" />
-                  <p className="text-xs text-slate-500 pt-2">Applicants sign in with their portal account. <button onClick={() => setTab('settings')} className="text-cyan-400 hover:underline">Change settings</button></p>
+                  <RichDescriptionEditor
+                    value={form.description}
+                    onChange={(val) => setField('description', val)}
+                    placeholder="Form description — add bullet points, custom colors, highlights, headings, and links..."
+                  />
+                  <p className="text-xs text-slate-500 pt-1">Applicants sign in with their portal account. <button onClick={() => setTab('settings')} className="text-cyan-400 hover:underline">Change settings</button></p>
                 </div>
               </div>
               {questions.map((q, i) => (

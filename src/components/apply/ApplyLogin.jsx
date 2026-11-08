@@ -8,6 +8,7 @@ import { markJustLoggedIn } from '@/lib/userPrefs';
 import ApplyRegister from '@/components/apply/ApplyRegister';
 import ApplyForgot from '@/components/apply/ApplyForgot';
 import AppIcon from '@/components/apply/AppIcon';
+import RichDescriptionView from '@/components/apply/RichDescriptionView';
 
 const inp = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500';
 const SUBTITLE = { login: 'Sign in to start your application.', register: 'Create an account to apply.', forgot: 'Reset your password.' };
@@ -41,7 +42,11 @@ export default function ApplyLogin({ app }) {
         <div className="p-7">
           <AppIcon icon={app.icon} className="h-12 w-12" emojiClass="text-4xl" />
           <h1 className="mt-3 font-display text-2xl font-bold">{app.title}</h1>
-          {app.description && <p className="mt-1 text-sm text-slate-400 line-clamp-3">{app.description}</p>}
+          {app.description && (
+            <div className="mt-2 max-h-40 overflow-y-auto">
+              <RichDescriptionView value={app.description} className="text-xs sm:text-sm" />
+            </div>
+          )}
           <p className="mt-5 mb-4 text-sm text-slate-300">{SUBTITLE[mode]}</p>
 
           {mode !== 'forgot' && (

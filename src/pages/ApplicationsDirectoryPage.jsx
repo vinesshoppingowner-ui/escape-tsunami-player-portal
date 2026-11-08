@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isOwner } from '@/lib/isOwner';
 import { getRetakeState } from '@/lib/applicationRetake';
 import { safeParse } from '@/lib/safeParse';
+import { stripRichText } from '@/lib/richDescription';
 import { useLiveApplicationResponses, isNewSubmission } from '@/hooks/useLiveApplications';
 import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles } from 'lucide-react';
 
@@ -375,7 +376,7 @@ export default function ApplicationsDirectoryPage() {
                           )}
                           {dl && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 shrink-0 inline-flex items-center gap-1"><CalendarClock className="h-2.5 w-2.5" />{dl}</span>}
                         </div>
-                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{app.description || 'No description'}</p>
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{stripRichText(app.description) || 'No description'}</p>
                         <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[11px] text-slate-400">
                           <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">{app.category || 'General'}</span>
                           <span>·</span>

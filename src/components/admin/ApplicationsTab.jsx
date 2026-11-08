@@ -27,6 +27,7 @@ import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import ApplicationSyncModal from './applications/ApplicationSyncModal';
 import GoogleSheetSyncSettings from './applications/GoogleSheetSyncSettings';
 import { safeParse } from '@/lib/safeParse';
+import { stripRichText } from '@/lib/richDescription';
 import { defaultSettings } from '@/lib/applicationTypes';
 import { generateSlug } from '@/lib/applicationSlug';
 import { useLiveApplicationResponses } from '@/hooks/useLiveApplications';
@@ -315,7 +316,7 @@ export default function ApplicationsTab() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">{app.description || 'No description'}</p>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">{stripRichText(app.description) || 'No description'}</p>
                     <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-500">
                       <span className="flex items-center gap-1">
                         <FileText className="h-3 w-3" /> {qCount} question{qCount === 1 ? '' : 's'}

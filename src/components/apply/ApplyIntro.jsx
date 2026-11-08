@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AppIcon from '@/components/apply/AppIcon';
+import RichDescriptionView from '@/components/apply/RichDescriptionView';
 
 export default function ApplyIntro({ 
   app = {}, 
@@ -78,16 +79,17 @@ export default function ApplyIntro({
       </motion.h1>
 
       {/* 4. Description with thoughtful fallback */}
-      <motion.p
+      <motion.div
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.16 }}
-        className="mt-3 text-sm sm:text-base text-slate-300/80 leading-relaxed max-w-md mx-auto"
+        className="mt-3"
       >
-        {app?.description || (
-          'Please take your time to complete each question accurately. Your answers will be reviewed directly by the studio team.'
-        )}
-      </motion.p>
+        <RichDescriptionView
+          value={app?.description}
+          fallback="Please take your time to complete each question accurately. Your answers will be reviewed directly by the studio team."
+        />
+      </motion.div>
 
       {/* 5. Metadata Badges (Questions, Time, Identity) */}
       <motion.div
