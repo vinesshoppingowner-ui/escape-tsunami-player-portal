@@ -49,6 +49,7 @@ function getSettingBadges(app) {
   if (s.restrictToUsers) badges.push(`Invite Only (${(s.allowedUsers || []).length})`);
   if (s.responseLimit > 0) badges.push(`Max ${s.responseLimit}`);
   if (s.minAccountAgeDays > 0) badges.push(`${s.minAccountAgeDays}d Min Age`);
+  if (s.promotePopover) badges.push('Suggested Popover');
   if (s.blockCopyPaste) badges.push('Copy Protected');
   if (s.discordAlert !== false) badges.push('Discord Alert');
   if (app.auto_close_at) badges.push(`Closes ${new Date(app.auto_close_at).toLocaleDateString()}`);

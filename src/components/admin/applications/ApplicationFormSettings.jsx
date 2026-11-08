@@ -36,6 +36,24 @@ export default function ApplicationFormSettings({ settings, update }) {
       </Group>
       <Group title="Presentation" subtitle="Manage how the form and responses are presented">
         <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-2">Form presentation</p>
+        <Row
+          k="promotePopover"
+          label="Suggest applying via Applications tab popover"
+          desc="Shows a dismissible 'Hi! Suggest applying — check it out' popover pointing at the Applications tab for all visitors"
+          {...p}
+        />
+        {settings.promotePopover && (
+          <div className="py-2.5 border-t border-white/5 space-y-1.5">
+            <Label className="text-xs text-slate-300">Custom popover message (optional)</Label>
+            <input
+              type="text"
+              value={settings.promoteMessage || ''}
+              onChange={(e) => update('promoteMessage', e.target.value)}
+              placeholder="We suggest applying for this application — check it out!"
+              className="w-full h-9 rounded-lg bg-slate-950 border border-white/10 px-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40"
+            />
+          </div>
+        )}
         <Row k="showProgressBar" label="Show progress bar" {...p} />
         <Row k="singlePageMode" label="All questions on one page" desc="Show every question on a single scrollable page instead of step-by-step cards" {...p} />
         <Row k="shuffleQuestions" label="Shuffle question order" {...p} />

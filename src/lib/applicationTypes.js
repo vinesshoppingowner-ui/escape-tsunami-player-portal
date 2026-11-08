@@ -72,6 +72,8 @@ export const defaultSettings = () => ({
   allowedUsers: [],
   discordAlert: true,
   blockCopyPaste: true,
+  promotePopover: false,
+  promoteMessage: '',
 });
 
 export const RESPONSE_TAGS = ['Strong', 'Promising', 'Needs interview', 'Low effort', 'Suspicious', 'Duplicate'];

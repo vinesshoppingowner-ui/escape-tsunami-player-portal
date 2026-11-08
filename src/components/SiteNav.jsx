@@ -10,6 +10,7 @@ import { useDesktopApp } from '@/hooks/useDesktopApp';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { useUserPrefs } from '@/lib/userPrefs';
 import { useAutoHideNav } from '@/hooks/useAutoHideNav';
+import ApplicationPromotePopover, { usePromotedApplication } from '@/components/ApplicationPromotePopover';
 
 import { SITE_CONFIG } from '@/site.config';
 const GAME_URL = SITE_CONFIG.links.robloxGame;
@@ -26,6 +27,7 @@ export default function SiteNav() {
   const [topAnnouncement, setTopAnnouncement] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
+  const { promoted: promotedApp, dismiss: dismissPromotedApp } = usePromotedApplication();
 
   useEffect(() => {
     (async () => {
@@ -111,18 +113,23 @@ export default function SiteNav() {
                 </span>
               );
             }
+            const isAppsTab = l.to === '/applications';
             return (
-              <Link
-                key={l.to}
-                to={l.to}
-                className={`relative px-3.5 py-2 text-sm font-medium transition-all duration-150 rounded-lg inline-flex items-center gap-1.5 ${
-                  active ? 'text-white bg-white/[0.08]' : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
-                }`}
-              >
-                {l.icon && <l.icon className="h-3.5 w-3.5" />}
-                {l.label}
-                {active && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
-              </Link>
+              <div key={l.to} className="relative inline-flex items-center">
+                <Link
+                  to={l.to}
+                  className={`relative px-3.5 py-2 text-sm font-medium transition-all duration-150 rounded-lg inline-flex items-center gap-1.5 ${
+                    active ? 'text-white bg-white/[0.08]' : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                >
+                  {l.icon && <l.icon className="h-3.5 w-3.5" />}
+                  {l.label}
+                  {active && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
+                </Link>
+                {isAppsTab && promotedApp && (
+                  <ApplicationPromotePopover app={promotedApp} onDismiss={dismissPromotedApp} align="center" />
+                )}
+              </div>
             );
           })}
 
@@ -145,13 +152,18 @@ export default function SiteNav() {
             </Link>
           )}
           <ProfileMenu />
-          <button
-            className="text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors active:scale-95"
-            onClick={() => setOpen((o) => !o)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="relative">
+            <button
+              className="text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors active:scale-95"
+              onClick={() => setOpen((o) => !o)}
+              aria-label="Toggle menu"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            {!open && promotedApp && (
+              <ApplicationPromotePopover app={promotedApp} onDismiss={dismissPromotedApp} align="right" />
+            )}
+          </div>
         </div>
       </div>
 

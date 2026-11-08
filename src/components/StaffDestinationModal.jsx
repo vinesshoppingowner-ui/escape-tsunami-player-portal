@@ -24,8 +24,9 @@ export default function StaffDestinationModal() {
   const navigate = useNavigate();
   const location = useLocation();
   const [linkedApp, setLinkedApp] = useState(null);
+  const [roleChecked, setRoleChecked] = useState(() => hasRoleChecked());
 
-  const shouldShow = user && isOwner(user) && !hasRoleChecked();
+  const shouldShow = user && isOwner(user) && !roleChecked && !hasRoleChecked();
   const applyMatch = location.pathname.match(/^\/apply\/([^/?#]+)/);
   const applySlugOrId = applyMatch ? decodeURIComponent(applyMatch[1]) : null;
 
@@ -56,22 +57,29 @@ export default function StaffDestinationModal() {
   const chooseApplication = () => {
     setAdminRole('members');
     markRoleChecked();
+    setRoleChecked(true);
+    if (applySlugOrId) {
+      navigate(`/apply/${encodeURIComponent(applySlugOrId)}${location.search || ''}`, { replace: true });
+    }
   };
 
   const chooseMembers = () => {
     setAdminRole('members');
     markRoleChecked();
+    setRoleChecked(true);
     navigate('/portal', { replace: true });
   };
 
   const chooseStaff = () => {
     setAdminRole('admin');
     markRoleChecked();
+    setRoleChecked(true);
     window.location.href = STAFF_URL;
   };
 
   const chooseHome = () => {
     markRoleChecked();
+    setRoleChecked(true);
     navigate('/', { replace: true });
   };
 
