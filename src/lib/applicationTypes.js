@@ -74,6 +74,7 @@ export const defaultSettings = () => ({
   blockCopyPaste: true,
   promotePopover: false,
   promoteMessage: '',
+  promoteFrequency: 'always',
 });
 
 export const RESPONSE_TAGS = ['Strong', 'Promising', 'Needs interview', 'Low effort', 'Suspicious', 'Duplicate'];

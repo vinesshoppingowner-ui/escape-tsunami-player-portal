@@ -5,25 +5,39 @@ import { base44 } from '@/api/base44Client';
 import { safeParse } from '@/lib/safeParse';
 import AppIcon from '@/components/apply/AppIcon';
 
-const DISMISS_PREFIX = 'et_dismissed_app_promo_';
+const DISMISS_PREFIX = 'et_session_app_promo_';
 
-function isDismissed(appId) {
+function getDismissKey(app) {
+  const s = safeParse(app?.settings, {});
+  // Keyed by app ID + promo message so editing the promo or starting a new session shows it again
+  return `${DISMISS_PREFIX}${app?.id}_${s.promoteMessage || ''}`;
+}
+
+function isDismissed(app) {
+  if (!app?.id) return true;
+  const s = safeParse(app.settings, {});
+  if (s.promoteFrequency === 'always') return false;
   try {
-    return localStorage.getItem(`${DISMISS_PREFIX}${appId}`) === '1';
+    const storage = s.promoteFrequency === 'once_ever' ? localStorage : sessionStorage;
+    return storage.getItem(getDismissKey(app)) === '1';
   } catch {
     return false;
   }
 }
 
-function markDismissed(appId) {
+function markDismissed(app) {
+  if (!app?.id) return;
+  const s = safeParse(app.settings, {});
+  if (s.promoteFrequency === 'always') return;
   try {
-    localStorage.setItem(`${DISMISS_PREFIX}${appId}`, '1');
+    const storage = s.promoteFrequency === 'once_ever' ? localStorage : sessionStorage;
+    storage.setItem(getDismissKey(app), '1');
   } catch {}
 }
 
 export function usePromotedApplication() {
   const [apps, setApps] = useState([]);
-  const [, setTick] = useState(0);
+  const [closedInMemory, setClosedInMemory] = useState({});
 
   useEffect(() => {
     let active = true;
@@ -37,6 +51,7 @@ export function usePromotedApplication() {
 
     const unsubscribe = base44.entities.Application.subscribe((event) => {
       if (!event) return;
+      setClosedInMemory({});
       load();
     });
     return () => {
@@ -46,22 +61,29 @@ export function usePromotedApplication() {
   }, []);
 
   const now = Date.now();
-  const promoted = apps.find((a) => {
+  const promotedList = apps.filter((a) => {
     if (a.status !== 'open') return false;
     if (a.auto_close_at && new Date(a.auto_close_at).getTime() < now) return false;
     const s = safeParse(a.settings, {});
     if (!s.promotePopover) return false;
-    if (isDismissed(a.id)) return false;
+    if (closedInMemory[a.id]) return false;
+    if (isDismissed(a)) return false;
     return true;
   });
 
-  const dismiss = (appId) => {
-    if (!appId) return;
-    markDismissed(appId);
-    setTick((t) => t + 1);
+  const promoted = promotedList[0] || null;
+
+  const dismiss = (appOrId, persist = true) => {
+    const target = typeof appOrId === 'object' ? appOrId : apps.find((x) => x.id === appOrId);
+    const id = target?.id || appOrId;
+    if (!id) return;
+    setClosedInMemory((prev) => ({ ...prev, [id]: true }));
+    if (persist && target) {
+      markDismissed(target);
+    }
   };
 
-  return { promoted, dismiss };
+  return { promoted, promotedCount: promotedList.length, dismiss };
 }
 
 export default function ApplicationPromotePopover({ app, onDismiss, align = 'center' }) {
@@ -100,7 +122,7 @@ export default function ApplicationPromotePopover({ app, onDismiss, align = 'cen
       <div className="relative rounded-2xl bg-[#0f172a]/95 backdrop-blur-2xl border border-cyan-400/40 p-3.5 shadow-[0_14px_40px_rgba(6,182,212,0.22)] text-left">
         <button
           type="button"
-          onClick={() => onDismiss(app.id)}
+          onClick={() => onDismiss(app, true)}
           aria-label="Close suggestion"
           className="absolute top-2.5 right-2.5 h-6 w-6 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
         >
@@ -127,14 +149,14 @@ export default function ApplicationPromotePopover({ app, onDismiss, align = 'cen
         <div className="mt-3 flex items-center justify-end gap-2">
           <button
             type="button"
-            onClick={() => onDismiss(app.id)}
+            onClick={() => onDismiss(app, true)}
             className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
           >
             Dismiss
           </button>
           <Link
             to={targetUrl}
-            onClick={() => onDismiss(app.id)}
+            onClick={() => onDismiss(app, false)}
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-semibold hover:opacity-95 transition-opacity"
           >
             <span>Check it out</span>

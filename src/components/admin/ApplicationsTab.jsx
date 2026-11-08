@@ -23,6 +23,7 @@ import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
 import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
+import WebsiteBansPanel from './applications/WebsiteBansPanel';
 import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import ApplicationSyncModal from './applications/ApplicationSyncModal';
 import GoogleSheetSyncSettings from './applications/GoogleSheetSyncSettings';
@@ -69,6 +70,7 @@ export default function ApplicationsTab() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [blacklistOpen, setBlacklistOpen] = useState(false);
+  const [websiteBansOpen, setWebsiteBansOpen] = useState(false);
   const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [sheetSyncOpen, setSheetSyncOpen] = useState(false);
@@ -235,10 +237,18 @@ export default function ApplicationsTab() {
           <Button
             size="sm"
             variant="ghost"
+            onClick={() => setWebsiteBansOpen(true)}
+            className="text-rose-200 hover:text-white hover:bg-rose-500/15 border border-rose-500/30 bg-rose-500/10"
+          >
+            <ShieldBan className="h-4 w-4 mr-1" /> IP & Website Bans
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => setBlacklistOpen(true)}
             className="text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 border border-rose-500/20"
           >
-            <ShieldBan className="h-4 w-4 mr-1" /> Blacklist
+            <ShieldBan className="h-4 w-4 mr-1" /> App Blacklist
           </Button>
           <Button
             size="sm"
@@ -453,6 +463,7 @@ export default function ApplicationsTab() {
       />
 
       {blacklistOpen && <ApplicationBlacklistPanel onClose={() => setBlacklistOpen(false)} />}
+      {websiteBansOpen && <WebsiteBansPanel onClose={() => setWebsiteBansOpen(false)} />}
 
       {confirmDelete && (
         <div

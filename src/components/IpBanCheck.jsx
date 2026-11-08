@@ -18,6 +18,7 @@ import { getPrefs } from '@/lib/userPrefs';
 
 export default function IpBanCheck({ children }) {
   const [status, setStatus] = useState('checking');
+  const [ipBanInfo, setIpBanInfo] = useState(null);
   const { user, isLoadingAuth } = useAuth(); // 'checking' | 'banned' | 'ok'
 
   useEffect(() => {
@@ -40,7 +41,9 @@ export default function IpBanCheck({ children }) {
         ]);
         if (cancelled) return;
         ip = ipRes.ip;
-        serverBanned = bans.some((b) => b.ip_address === ip);
+        const matchedBan = bans.find((b) => b.ip_address === ip) || null;
+        serverBanned = Boolean(matchedBan);
+        if (matchedBan) setIpBanInfo(matchedBan);
         serverChecked = true;
       } catch {
         // Server unreachable — fail open for the initial check
@@ -162,7 +165,16 @@ export default function IpBanCheck({ children }) {
   }, [isBanned]);
 
   if (isBanned) {
-    return <BanOverlay user={user} />;
+    return (
+      <BanOverlay
+        user={user}
+        ipBan={ipBanInfo}
+        onAdminUnbanned={() => {
+          setIpBanInfo(null);
+          setStatus('ok');
+        }}
+      />
+    );
   }
 
   return children;

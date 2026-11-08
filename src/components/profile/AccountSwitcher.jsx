@@ -114,7 +114,7 @@ export default function AccountSwitcher({ user, open, onClose, onOpenSettings, a
               </button>
 
               <div className="flex items-center gap-3">
-                <div className="shrink-0 p-[3px] rounded-full" style={RING_STYLE}>
+                <div className="shrink-0 rounded-full overflow-hidden border border-white/10">
                   <UserAvatar user={user} size={48} />
                 </div>
                 <div className="min-w-0 flex-1">

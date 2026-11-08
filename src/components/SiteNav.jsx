@@ -132,7 +132,7 @@ export default function SiteNav() {
                 {isPortalTab && portalAlert && (
                   <PortalAlertPopover alert={portalAlert} onDismiss={dismissPortalAlert} align="center" />
                 )}
-                {isAppsTab && promotedApp && !portalAlert && (
+                {isAppsTab && promotedApp && (
                   <ApplicationPromotePopover app={promotedApp} onDismiss={dismissPromotedApp} align="center" />
                 )}
               </div>
