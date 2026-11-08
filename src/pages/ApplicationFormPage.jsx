@@ -17,6 +17,7 @@ import { getRetakeState } from '@/lib/applicationRetake';
 import { runAIReview } from '@/lib/applicationAI';
 import { evalShowIf, validateField, readPrefillParams } from '@/lib/formLogic';
 import { isObjectId } from '@/lib/applicationSlug';
+import { sendApplicationUpdateEmail } from '@/lib/userEmails';
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
 export default function ApplicationFormPage() {
@@ -147,7 +148,12 @@ export default function ApplicationFormPage() {
         if (settings.aiReviewEnabled) {
           ai = await runAIReview(app, answersToSave).catch(() => ({}));
         }
-        await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answersToSave), ...ai });
+        const updatedResp = await base44.entities.ApplicationResponse.update(editingId, { answers: JSON.stringify(answersToSave), ...ai });
+        sendApplicationUpdateEmail({
+          response: updatedResp || { id: editingId, submitted_by_email: user?.email, roblox_username: user?.roblox_username || user?.data?.roblox_username, status: 'submitted', application_title: app?.title, application_id: app?.id },
+          application: app,
+          eventType: 'applicant_edited',
+        }).catch(() => {});
       } else {
         const res = await base44.functions.invoke('submitApplication', {
           application_id: app.id,

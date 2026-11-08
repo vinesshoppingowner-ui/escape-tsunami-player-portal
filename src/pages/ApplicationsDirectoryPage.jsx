@@ -401,13 +401,9 @@ export default function ApplicationsDirectoryPage() {
                         <span className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-slate-500 text-sm font-medium cursor-not-allowed">
                           Applications closed
                         </span>
-                      ) : user ? (
+                      ) : (
                         <Link to={`/apply/${app.slug || app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
                           {draftCount > 0 ? 'Continue draft' : 'Open application'} <ChevronRight className="h-4 w-4" />
-                        </Link>
-                      ) : (
-                        <Link to="/login" className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.06] border border-white/15 text-white text-sm font-medium hover:bg-white/[0.1] transition-colors">
-                          Sign in to apply <ChevronRight className="h-4 w-4" />
                         </Link>
                       )}
                     </div>

@@ -14,6 +14,7 @@ export default function WelcomeModal() {
   useEffect(() => {
     if (!user || sessionStorage.getItem(WELCOME_FLAG) !== '1') return;
     sessionStorage.removeItem(WELCOME_FLAG);
+    if (window.location.pathname.startsWith('/apply/')) return;
     if (prefs.welcome_popup) setOpen(true);
   }, [user]);
 

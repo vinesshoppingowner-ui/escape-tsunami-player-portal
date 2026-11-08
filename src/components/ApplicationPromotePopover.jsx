@@ -71,6 +71,12 @@ export function usePromotedApplication() {
     return true;
   });
 
+  const openEligible = apps.filter(
+    (a) => a.status === 'open' && (!a.auto_close_at || new Date(a.auto_close_at).getTime() >= now)
+  );
+  const promotedBySetting = openEligible.find((a) => safeParse(a.settings, {}).promotePopover);
+  const primaryApp = promotedBySetting || openEligible[0] || null;
+
   const promoted = promotedList[0] || null;
 
   const dismiss = (appOrId, persist = true) => {
@@ -83,7 +89,7 @@ export function usePromotedApplication() {
     }
   };
 
-  return { promoted, promotedCount: promotedList.length, dismiss };
+  return { promoted, promotedCount: promotedList.length, primaryApp, dismiss };
 }
 
 export default function ApplicationPromotePopover({ app, onDismiss, align = 'center' }) {

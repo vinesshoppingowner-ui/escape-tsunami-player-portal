@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 import { RESPONSE_STATUS } from '@/lib/applicationTypes';
+import { sendApplicationUpdateEmail } from '@/lib/userEmails';
 
 export default function ResponseBulkBar({ selected, responses, onDone, onClear }) {
   const [busy, setBusy] = useState(false);
@@ -9,7 +10,22 @@ export default function ResponseBulkBar({ selected, responses, onDone, onClear }
     setBusy(true);
     const items = selected.map((id) => ({ id, ...fields }));
     await base44.entities.ApplicationResponse.bulkUpdate(items);
-    onDone(responses.filter((r) => selected.includes(r.id)).map((r) => ({ ...r, ...fields })));
+    const affected = responses.filter((r) => selected.includes(r.id));
+    if (fields.status) {
+      Promise.allSettled(
+        affected
+          .filter((r) => r.status !== fields.status)
+          .map((r) =>
+            sendApplicationUpdateEmail({
+              response: { ...r, ...fields },
+              application: { id: r.application_id, title: r.application_title },
+              eventType: 'status_update',
+              previousStatus: r.status,
+            })
+          )
+      ).catch(() => {});
+    }
+    onDone(affected.map((r) => ({ ...r, ...fields })));
     setBusy(false);
   };
   return (

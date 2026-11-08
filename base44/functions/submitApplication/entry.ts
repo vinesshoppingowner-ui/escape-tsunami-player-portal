@@ -113,10 +113,36 @@ export default async function(req) {
         response_count: (app.response_count || 0) + 1,
       }),
     ];
-    if (settings.sendCopy && user.email) {
+    if (user.email) {
       const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      const body = questions.map((q) => `<p><b>${esc(q.text)}</b><br/>${esc(answersToSave[q.id] ?? '—')}</p>`).join('');
-      postResponse.push(base44.asServiceRole.integrations.Core.SendEmail({ to: user.email, subject: `Your response: ${app.title}`, body }));
+      const directApplyUrl = `https://escapetsunamifordevelopers.com/apply/${app.slug || app.id}`;
+      const answerHtml = settings.sendCopy
+        ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid #1f2937;">${questions
+            .filter((q) => q.type !== 'section')
+            .map((q) => `<p style="margin:0 0 10px;font-size:13px;color:#cbd5e1;"><strong style="color:#f8fafc;">${esc(q.text)}</strong><br/>${esc(answersToSave[q.id] ?? '—')}</p>`)
+            .join('')}</div>`
+        : '';
+      const emailHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#060b16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#060b16;padding:32px 12px;">
+          <tr><td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+              <tr><td style="background:#111827;border:1px solid #1f2937;border-left:5px solid #22d3ee;border-radius:14px;padding:26px 26px 22px;">
+                <div style="font-size:21px;font-weight:700;color:#fff;margin:0 0 12px;">Application Submitted: ${esc(app.title)}</div>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#cbd5e1;">Your application for <strong>${esc(app.title)}</strong> has been received (Status: Submitted). We will email you whenever your application status changes.</p>
+                <a href="${directApplyUrl}" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#2563eb);background-color:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px;">Open Application Directly →</a>
+                ${answerHtml}
+              </td></tr>
+            </table>
+          </td></tr>
+        </table></body></html>`;
+      postResponse.push(
+        base44.asServiceRole.integrations.Core.SendEmail({
+          to: user.email,
+          from_name: 'Escape Tsunami for Developers',
+          subject: `Application Submitted: ${app.title}`,
+          body: emailHtml,
+        })
+      );
     }
     if (settings.discordAlert !== false) {
       postResponse.push(base44.asServiceRole.functions.invoke('discordSend', {

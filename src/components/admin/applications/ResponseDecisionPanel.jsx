@@ -5,6 +5,7 @@ import { Loader2, Save, RotateCcw, Copy, Check, ShieldBan, Trash2, FastForward }
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/AuthContext';
 import { RESPONSE_STATUS, FEEDBACK_TEMPLATES } from '@/lib/applicationTypes';
+import { sendApplicationUpdateEmail } from '@/lib/userEmails';
 import ResponseRatingTags from './ResponseRatingTags';
 
 const fieldCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[70px] text-sm';
@@ -47,15 +48,38 @@ export default function ResponseDecisionPanel({ response, application, onUpdate,
         reviewed_by: user?.email,
         reviewed_at: new Date().toISOString(),
       });
-      const decided = nextStatus !== response.status && (nextStatus === 'accepted' || nextStatus === 'rejected');
-      if ((decided || (retake && !response.retake_allowed)) && response.roblox_username) {
+      const statusChanged = nextStatus !== response.status;
+      const feedbackChanged = (feedback || '') !== (response.applicant_feedback || '');
+      const retakeChanged = retake !== Boolean(response.retake_allowed);
+      const decided = statusChanged && (nextStatus === 'accepted' || nextStatus === 'rejected');
+      if ((statusChanged || feedbackChanged || (retake && !response.retake_allowed)) && response.roblox_username) {
         await base44.entities.Notification.create({
           roblox_username: response.roblox_username,
-          title: decided ? `Application ${nextStatus}` : 'You can retake an application',
-          body: feedback || (decided ? `Your application for "${application.title}" was ${nextStatus}.` : `Staff allowed you to retake "${application.title}".`),
+          title: decided
+            ? `Application ${nextStatus}`
+            : statusChanged
+            ? `Application status: ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}`
+            : retake && !response.retake_allowed
+            ? 'You can retake an application'
+            : 'Application review updated',
+          body:
+            feedback ||
+            (decided
+              ? `Your application for "${application.title}" was ${nextStatus}.`
+              : statusChanged
+              ? `Your application for "${application.title}" is now ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}.`
+              : `Staff updated your application for "${application.title}".`),
           type: 'staff_message',
           read: false,
         });
+      }
+      if (statusChanged || feedbackChanged || retakeChanged) {
+        sendApplicationUpdateEmail({
+          response: updated,
+          application,
+          eventType: 'status_update',
+          previousStatus: response.status,
+        }).catch(() => {});
       }
       toast({ title: `Decision saved (${RESPONSE_STATUS[nextStatus]?.label || nextStatus})` });
       onUpdate(updated);

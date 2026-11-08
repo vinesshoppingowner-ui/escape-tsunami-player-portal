@@ -26,9 +26,10 @@ export default function StaffDestinationModal() {
   const [linkedApp, setLinkedApp] = useState(null);
   const [roleChecked, setRoleChecked] = useState(() => hasRoleChecked());
 
-  const shouldShow = user && isOwner(user) && !roleChecked && !hasRoleChecked();
   const applyMatch = location.pathname.match(/^\/apply\/([^/?#]+)/);
   const applySlugOrId = applyMatch ? decodeURIComponent(applyMatch[1]) : null;
+  const isDirectApplicationRoute = Boolean(applySlugOrId) || location.pathname.startsWith('/applications');
+  const shouldShow = user && isOwner(user) && !roleChecked && !hasRoleChecked() && !isDirectApplicationRoute;
 
   useEffect(() => {
     let active = true;

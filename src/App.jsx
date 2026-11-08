@@ -69,10 +69,10 @@ const AuthenticatedApp = () => {
         <Route path="/portal" element={<MemberPortalPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/apply/:id" element={<ApplicationFormPage />} />
+        <Route path="/applications" element={<ApplicationsDirectoryPage />} />
         <Route path="/support-reply" element={<SupportReplyPage />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/my-appeals" element={<MyAppealsPage />} />
-          <Route path="/applications" element={<ApplicationsDirectoryPage />} />
           <Route path="/manage-applications" element={<ManageApplicationsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
 

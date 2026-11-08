@@ -286,23 +286,91 @@ export default async function(req: Request): Promise<Response> {
 
       const updated = await base44.asServiceRole.entities.ApplicationResponse.update(body.id, updates);
 
-      const decided =
-        updates.status &&
-        updates.status !== existing.status &&
-        (updates.status === 'accepted' || updates.status === 'rejected');
+      const statusChanged = updates.status && updates.status !== existing.status;
+      const feedbackChanged =
+        updates.applicant_feedback !== undefined &&
+        (updates.applicant_feedback || '') !== (existing.applicant_feedback || '');
       const retakeGranted = updates.retake_allowed && !existing.retake_allowed;
-      if ((decided || retakeGranted) && existing.roblox_username) {
+      const decided =
+        statusChanged &&
+        (updates.status === 'accepted' || updates.status === 'rejected');
+
+      if ((statusChanged || feedbackChanged || retakeGranted) && existing.roblox_username) {
         await base44.asServiceRole.entities.Notification.create({
           roblox_username: existing.roblox_username,
-          title: decided ? `Application ${updates.status}` : 'You can retake an application',
+          title: decided
+            ? `Application ${updates.status}`
+            : statusChanged
+            ? `Application status: ${updates.status}`
+            : retakeGranted
+            ? 'You can retake an application'
+            : 'Application review updated',
           body:
             updates.applicant_feedback ||
             (decided
               ? `Your application for "${existing.application_title || 'Application'}" was ${updates.status}.`
-              : `Staff allowed you to retake "${existing.application_title || 'Application'}".`),
+              : `Your application for "${existing.application_title || 'Application'}" was updated by staff.`),
           type: 'staff_message',
           read: false,
         });
+      }
+
+      if (statusChanged || feedbackChanged || retakeGranted) {
+        let recipientEmail = existing.submitted_by_email || '';
+        if (!recipientEmail && existing.created_by_id) {
+          const u = await base44.asServiceRole.entities.User.get(existing.created_by_id).catch(() => null);
+          recipientEmail = u?.email || '';
+        }
+        if (!recipientEmail && existing.roblox_username) {
+          const users = await base44.asServiceRole.entities.User.filter({ roblox_username: existing.roblox_username }, undefined, 1).catch(() => []);
+          recipientEmail = users?.[0]?.email || '';
+        }
+        if (recipientEmail) {
+          const appObj = existing.application_id
+            ? await base44.asServiceRole.entities.Application.get(existing.application_id).catch(() => null)
+            : null;
+          const appTitle = appObj?.title || existing.application_title || 'Application';
+          const directUrl = `https://escapetsunamifordevelopers.com/apply/${appObj?.slug || existing.application_id || ''}`;
+          const nextStatus = updated.status || existing.status || 'submitted';
+          const statusLabels: Record<string, string> = {
+            submitted: 'Submitted',
+            under_review: 'Under Review',
+            accepted: 'Accepted',
+            rejected: 'Rejected',
+          };
+          const accentColors: Record<string, string> = {
+            submitted: '#22d3ee',
+            under_review: '#f59e0b',
+            accepted: '#22c55e',
+            rejected: '#ef4444',
+          };
+          const statusLabel = statusLabels[nextStatus] || nextStatus;
+          const accent = accentColors[nextStatus] || '#22d3ee';
+          const esc = (s: any) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const fb = (updated.applicant_feedback || '').trim();
+          const feedbackBlock = fb
+            ? `<div style="margin:14px 0;padding:12px 14px;background:#0f172a;border-radius:10px;color:#e2e8f0;font-size:14px;"><strong>Staff Feedback:</strong><br/>${esc(fb)}</div>`
+            : '';
+          const emailHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#060b16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#060b16;padding:32px 12px;">
+              <tr><td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+                  <tr><td style="background:#111827;border:1px solid #1f2937;border-left:5px solid ${accent};border-radius:14px;padding:26px 26px 22px;">
+                    <div style="font-size:21px;font-weight:700;color:#fff;margin:0 0 12px;">Application Update: ${esc(appTitle)}</div>
+                    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#cbd5e1;">Your application for <strong>${esc(appTitle)}</strong> has been updated. Current status: <strong>${esc(statusLabel)}</strong>.</p>
+                    ${feedbackBlock}
+                    <a href="${directUrl}" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#2563eb);background-color:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px;">Open Application Directly →</a>
+                  </td></tr>
+                </table>
+              </td></tr>
+            </table></body></html>`;
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: recipientEmail,
+            from_name: 'Escape Tsunami for Developers',
+            subject: `Application Update (${statusLabel}): ${appTitle}`,
+            body: emailHtml,
+          }).catch(() => {});
+        }
       }
 
       return Response.json({ status: 'ok', response: updated });
