@@ -94,7 +94,11 @@ export default function ApplicationEditor({ open, onClose, application, initialT
         description: form.description.trim(),
         success_message: form.success_message.trim(),
         auto_close_at: form.auto_close_at || null,
-        questions: JSON.stringify(questions.filter((q) => q.text.trim())),
+        questions: JSON.stringify(
+          questions
+            .filter((q) => q.text.trim() || (q.type === 'section' && (q.description || '').trim()))
+            .map((q) => (q.type === 'section' && !q.text.trim() ? { ...q, text: 'Section' } : q))
+        ),
         settings: JSON.stringify(settings),
         slug,
       };

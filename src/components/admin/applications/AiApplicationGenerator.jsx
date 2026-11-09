@@ -64,9 +64,10 @@ function sanitizeQuestion(q, index = 0) {
     youtubeUrl: (q.youtubeUrl || '').trim(),
   };
 
-  if (finalType === 'file') {
-    question.fileTypes = ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'txt'];
-    question.maxFileSize = 5;
+  if (finalType === 'file' || finalType === 'screenshot') {
+    question.fileTypes = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf', 'doc', 'docx', 'txt', 'mp4'];
+    question.maxFileSize = 0; // Unlimited size for screenshots
+    question.allowMultipleFiles = true;
   }
 
   return question;
@@ -191,7 +192,12 @@ SUPPORTED QUESTION TYPES (pick the best match for each question):
 - "email": Email address input
 - "url": Website, portfolio, or profile link
 - "date": Date picker
-- "file": File/screenshot upload
+- "screenshot": Screenshot or file upload (supports any screenshot size & multiple screenshots)
+- "file": Document/file upload
+- "age_range": Age bracket selector
+- "timezone": Timezone selector with auto-detect
+- "availability": Weekly schedule / availability selector
+- "slider": Interactive slider (e.g. hours per week)
 - "code": Code snippet input
 - "section": Section header / divider block (non-input header that groups questions; set text to the section title and description to any section instructions)
 

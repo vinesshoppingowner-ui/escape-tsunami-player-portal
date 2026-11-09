@@ -82,15 +82,27 @@ export default function ApplicationFormPage() {
 
   const visibleQuestions = questions.filter((q) => evalShowIf(q, answers));
 
-  const draftKey = `apply-draft-${id}-${user?.id || 'anon'}`;
+  const canonicalAppKey = app?.id || id;
+  const draftKey = `apply-draft-${canonicalAppKey}-${user?.id || 'anon'}`;
+  const slugDraftKey = app?.slug ? `apply-draft-${app.slug}-${user?.id || 'anon'}` : null;
   useEffect(() => {
-    if (settings.disableAutosave) return;
-    const saved = localStorage.getItem(draftKey);
-    if (saved) { try { setAnswers(JSON.parse(saved)); } catch {} }
-  }, [draftKey, settings.disableAutosave]);
+    if (settings.disableAutosave || editingId) return;
+    const saved = localStorage.getItem(draftKey) || (slugDraftKey ? localStorage.getItem(slugDraftKey) : null);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          setAnswers((prev) => ({ ...parsed, ...prev }));
+        }
+      } catch {}
+    }
+  }, [draftKey, slugDraftKey, settings.disableAutosave, editingId]);
   useEffect(() => {
-    if (!settings.disableAutosave && !editingId && Object.keys(answers).length) localStorage.setItem(draftKey, JSON.stringify(answers));
-  }, [answers, draftKey]);
+    if (!settings.disableAutosave && !editingId && Object.keys(answers).length) {
+      localStorage.setItem(draftKey, JSON.stringify(answers));
+      if (slugDraftKey) localStorage.setItem(slugDraftKey, JSON.stringify(answers));
+    }
+  }, [answers, draftKey, slugDraftKey, settings.disableAutosave, editingId]);
 
   const total = visibleQuestions.length;
   const answerableQuestions = visibleQuestions.filter((q) => q.type !== 'section');
@@ -112,8 +124,17 @@ export default function ApplicationFormPage() {
     return () => clearInterval(t);
   }, [remainingSec, submitted]);
 
+  useEffect(() => {
+    if (remainingSec === 0 && !submitted && step >= 0 && step < total) {
+      setStep(total);
+      setError('Time is up! Please accept the terms and submit your current answers.');
+      toast({ title: 'Time limit reached', description: 'Moved to review step to submit your answers.' });
+    }
+  }, [remainingSec, submitted, step, total]);
+
   const clearDraft = () => {
     localStorage.removeItem(draftKey);
+    if (slugDraftKey) localStorage.removeItem(slugDraftKey);
     setAnswers({});
     setError('');
     toast({ title: 'Draft cleared' });
@@ -169,6 +190,7 @@ export default function ApplicationFormPage() {
         }
       }
       localStorage.removeItem(draftKey);
+      if (slugDraftKey) localStorage.removeItem(slugDraftKey);
       setSubmitted(true);
     } catch (e) {
       toast({ title: 'Failed to submit', description: e.message, variant: 'destructive' });

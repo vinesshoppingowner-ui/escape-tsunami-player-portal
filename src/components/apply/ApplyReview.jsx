@@ -8,9 +8,9 @@ export function formatAnswer(q, a) {
   if (q.type === 'checkbox') return a.join(', ');
   if (q.type === 'rating') return `${a} / 5`;
   if (q.type === 'scale') return `${a} / ${q.scaleMax || 10}`;
-  if (q.type === 'file' && typeof a === 'string' && a.startsWith('file:')) {
-    const [, filename] = a.split('|');
-    return filename || 'Uploaded file';
+  if (q.type === 'slider') return `${a} ${q.sliderUnit || ''}`.trim();
+  if ((q.type === 'file' || q.type === 'screenshot') && typeof a === 'string' && a.startsWith('file:')) {
+    return a.split('\n').filter((s) => s.startsWith('file:')).map((s) => s.split('|')[1] || 'Uploaded file').join(', ');
   }
   return String(a);
 }
@@ -30,7 +30,7 @@ export default function ApplyReview({ questions, answers, onEdit }) {
                 <div className={`mt-0.5 text-sm italic ${q.required ? 'text-rose-300' : 'text-slate-500'}`}>{q.required ? 'Required — not answered' : 'Skipped'}</div>
               ) : q.type === 'rating' ? (
                 <div className="mt-1 flex gap-0.5">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={`h-4 w-4 ${answers[q.id] >= n ? 'fill-amber-400 text-amber-400' : 'text-slate-700'}`} />)}</div>
-              ) : q.type === 'file' && typeof answers[q.id] === 'string' && answers[q.id].startsWith('file:') ? (
+              ) : (q.type === 'file' || q.type === 'screenshot') && typeof answers[q.id] === 'string' && answers[q.id].startsWith('file:') ? (
                 <div className="mt-1.5"><UploadedFileAttachment value={answers[q.id]} compact /></div>
               ) : q.type === 'code' ? (
                 <pre className="mt-0.5 text-sm text-emerald-300 bg-slate-950/60 border border-white/5 rounded-lg p-3 overflow-x-auto font-mono whitespace-pre-wrap break-words">{val}</pre>

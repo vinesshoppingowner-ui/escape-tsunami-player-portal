@@ -64,7 +64,7 @@ export default function SubmissionDetailModal({ response, onClose }) {
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Your Answers</div>
           {questions.length === 0 ? (
             <p className="text-sm text-slate-500">Answer data is no longer available.</p>
-          ) : questions.map((q, i) => {
+          ) : questions.filter((q) => q.type !== 'section').map((q, i) => {
             const val = formatAnswer(q, answers[q.id]);
             return (
               <div key={q.id || i} className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
@@ -72,9 +72,9 @@ export default function SubmissionDetailModal({ response, onClose }) {
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-300 text-[11px] font-semibold shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-slate-400">{q.text}{q.required && <span className="text-rose-400 ml-1">*</span>}</div>
-                    {val === null ? (
+                    {!val ? (
                       <div className="mt-0.5 text-sm italic text-slate-600">{q.required ? 'Not answered' : 'Skipped'}</div>
-                    ) : q.type === 'file' && typeof answers[q.id] === 'string' && answers[q.id].startsWith('file:') ? (
+                    ) : (q.type === 'file' || q.type === 'screenshot') && typeof answers[q.id] === 'string' && answers[q.id].startsWith('file:') ? (
                       <div className="mt-2"><UploadedFileAttachment value={answers[q.id]} /></div>
                     ) : q.type === 'rating' ? (
                       <div className="mt-1 flex gap-0.5">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={`h-4 w-4 ${answers[q.id] >= n ? 'fill-amber-400 text-amber-400' : 'text-slate-700'}`} />)}</div>

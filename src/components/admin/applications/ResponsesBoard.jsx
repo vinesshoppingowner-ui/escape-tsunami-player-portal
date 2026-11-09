@@ -7,6 +7,8 @@ import { RESPONSE_STATUS, formatAnswer, RESPONSE_TAGS } from '@/lib/applicationT
 import { runAIReview } from '@/lib/applicationAI';
 import { downloadCsv } from '@/lib/csv';
 import { safeParse } from '@/lib/safeParse';
+import { sendApplicationUpdateEmail } from '@/lib/userEmails';
+import { useAuth } from '@/lib/AuthContext';
 import ResponseListItem from './ResponseListItem';
 import ResponseViewer from './ResponseViewer';
 import ResponseStats from './ResponseStats';
@@ -37,6 +39,7 @@ const safeCell = (v) => {
 
 export default function ResponsesBoard({ app, onBack }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [responses, setResponses] = useState(null);
   const [error, setError] = useState(false);
   const [tab, setTab] = useState('all');
@@ -217,13 +220,35 @@ export default function ResponsesBoard({ app, onBack }) {
           onSelect={() => setSelected((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))}
           onStar={async () => { try { replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred })); } catch {} }}
           onQuickStatus={async (resp, nextStatus) => {
+            if (resp.status === nextStatus) return;
             try {
+              const prevStatus = resp.status;
               const updated = await base44.entities.ApplicationResponse.update(resp.id, {
                 status: nextStatus,
+                reviewed_by: user?.email || '',
                 reviewed_at: new Date().toISOString(),
               });
               replace(updated);
               toast({ title: `Marked ${resp.roblox_username || 'applicant'} as ${nextStatus.replace('_', ' ')}` });
+              if (resp.roblox_username) {
+                const decided = nextStatus === 'accepted' || nextStatus === 'rejected';
+                base44.entities.Notification.create({
+                  roblox_username: resp.roblox_username,
+                  title: decided ? `Application ${nextStatus}` : `Application status: ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}`,
+                  body: decided
+                    ? `Your application for "${app.title}" was ${nextStatus}.`
+                    : `Your application for "${app.title}" is now ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}.`,
+                  type: 'staff_message',
+                  read: false,
+                }).catch(() => {});
+              }
+              sendApplicationUpdateEmail({
+                response: updated,
+                application: app,
+                eventType: 'status_update',
+                previousStatus: prevStatus,
+              }).catch(() => {});
+              base44.functions.invoke('syncApplicationToSheet', { response_id: resp.id }).catch(() => {});
             } catch {
               toast({ title: 'Failed to update status', variant: 'destructive' });
             }
