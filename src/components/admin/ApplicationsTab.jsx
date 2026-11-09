@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplicationEditor from './applications/ApplicationEditor';
+import AiApplicationGenerator from './applications/AiApplicationGenerator';
 import ResponsesBoard from './applications/ResponsesBoard';
 import ApplicationBlacklistPanel from './applications/ApplicationBlacklistPanel';
 import WebsiteBansPanel from './applications/WebsiteBansPanel';
@@ -274,6 +275,25 @@ export default function ApplicationsTab() {
           >
             <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Sheet Sync
           </Button>
+          <AiApplicationGenerator
+            isEditing={false}
+            onGenerate={async (data) => {
+              const baseSlug = generateSlug(data.title || 'application');
+              const created = await base44.entities.Application.create({
+                title: (data.title || 'Untitled Application').trim(),
+                description: (data.description || '').trim(),
+                icon: data.icon || '📋',
+                status: 'draft',
+                category: data.category || 'General',
+                success_message: (data.success_message || '').trim(),
+                questions: JSON.stringify(data.questions || []),
+                settings: JSON.stringify(defaultSettings()),
+                slug: `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`,
+              });
+              await load();
+              if (created) openEditor(created, 'questions');
+            }}
+          />
           <Button
             size="sm"
             onClick={() => openEditor(null, 'questions')}
