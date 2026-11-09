@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, ChevronLeft, Users, Search, Sparkles, Download, AlertCircle, RefreshCw, BarChart3, Shuffle } from 'lucide-react';
+import { Loader2, ChevronLeft, Users, Search, Sparkles, Download, AlertCircle, RefreshCw, BarChart3, Shuffle, Columns } from 'lucide-react';
 import CustomDropdown from '@/components/ui/custom-dropdown';
 import { useToast } from '@/components/ui/use-toast';
 import { RESPONSE_STATUS, formatAnswer, RESPONSE_TAGS } from '@/lib/applicationTypes';
@@ -14,7 +14,9 @@ import ResponseViewer from './ResponseViewer';
 import ResponseStats from './ResponseStats';
 import ResponseBulkBar from './ResponseBulkBar';
 import ApplicationInsightsPanel from './ApplicationInsightsPanel';
+import CompareCandidatesModal from './CompareCandidatesModal';
 import AppIcon from '@/components/apply/AppIcon';
+import NewBadge from '@/components/ui/new-badge';
 
 const SORTS = [
   { value: 'newest', label: 'Newest first' },
@@ -51,9 +53,10 @@ export default function ResponsesBoard({ app, onBack }) {
   const [aiFilter, setAiFilter] = useState('all');
   const [selected, setSelected] = useState([]);
   const [showInsights, setShowInsights] = useState(true);
+  const [comparing, setComparing] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
-  const questions = safeParse(app.questions, []);
+  const questions = safeParse(app.questions, []).filter((q) => q.type !== 'section');
 
   const load = async () => {
     setError(false);
@@ -175,6 +178,24 @@ export default function ResponsesBoard({ app, onBack }) {
           <Shuffle className="h-3.5 w-3.5" /> Next unreviewed
         </button>
         <button
+          onClick={() => {
+            if (selected.length >= 2) {
+              setComparing(true);
+            } else if (shown.length >= 2) {
+              setSelected(shown.slice(0, 3).map((r) => r.id));
+              setComparing(true);
+            } else {
+              toast({ title: 'Need at least 2 responses to compare' });
+            }
+          }}
+          disabled={shown.length < 2}
+          className={`${btn} bg-cyan-500/10 border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20`}
+        >
+          <Columns className="h-3.5 w-3.5" />
+          <span>Compare Top</span>
+          <NewBadge />
+        </button>
+        <button
           onClick={() => setShowInsights((s) => !s)}
           className={`${btn} ${showInsights ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
         >
@@ -207,7 +228,20 @@ export default function ResponsesBoard({ app, onBack }) {
         <CustomDropdown value={sort} onChange={setSort} options={SORTS} className="w-48" />
         {shown.length > 0 && <button onClick={() => setSelected(selected.length === shown.length ? [] : shown.map((r) => r.id))} className="h-9 px-3 rounded-lg border border-white/10 text-xs text-slate-300 hover:text-white">{selected.length === shown.length ? 'Deselect all' : 'Select all'}</button>}
       </div>
-      {selected.length > 0 && <ResponseBulkBar selected={selected} responses={responses} onClear={() => setSelected([])} onDone={(us) => { us.forEach(replace); setSelected([]); toast({ title: `Updated ${us.length} responses` }); }} />}
+      {selected.length > 0 && (
+        <ResponseBulkBar
+          selected={selected}
+          responses={responses}
+          application={app}
+          onClear={() => setSelected([])}
+          onCompare={() => setComparing(true)}
+          onDone={(us) => {
+            us.forEach(replace);
+            setSelected([]);
+            toast({ title: `Updated ${us.length} responses` });
+          }}
+        />
+      )}
 
       {shown.length === 0 ? (
         <div className="rounded-2xl bg-white/[0.02] border border-white/10 py-12 text-center">
@@ -266,6 +300,51 @@ export default function ResponsesBoard({ app, onBack }) {
           onDelete={(id) => {
             setResponses((rs) => rs.filter((r) => r.id !== id));
             setOpenId(null);
+          }}
+        />
+      )}
+
+      {comparing && (
+        <CompareCandidatesModal
+          responses={responses.filter((r) => selected.includes(r.id)).slice(0, 4)}
+          application={app}
+          onClose={() => setComparing(false)}
+          onStar={async (r) => {
+            try {
+              replace(await base44.entities.ApplicationResponse.update(r.id, { starred: !r.starred }));
+            } catch {}
+          }}
+          onQuickStatus={async (resp, nextStatus) => {
+            if (resp.status === nextStatus) return;
+            try {
+              const prevStatus = resp.status;
+              const updated = await base44.entities.ApplicationResponse.update(resp.id, {
+                status: nextStatus,
+                reviewed_by: user?.email || '',
+                reviewed_at: new Date().toISOString(),
+              });
+              replace(updated);
+              toast({ title: `Marked ${resp.roblox_username || 'applicant'} as ${nextStatus.replace('_', ' ')}` });
+              if (resp.roblox_username) {
+                const decided = nextStatus === 'accepted' || nextStatus === 'rejected';
+                base44.entities.Notification.create({
+                  roblox_username: resp.roblox_username,
+                  title: decided ? `Application ${nextStatus}` : `Application status: ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}`,
+                  body: decided
+                    ? `Your application for "${app.title}" was ${nextStatus}.`
+                    : `Your application for "${app.title}" is now ${RESPONSE_STATUS[nextStatus]?.label || nextStatus}.`,
+                  type: 'staff_message',
+                  read: false,
+                }).catch(() => {});
+              }
+              sendApplicationUpdateEmail({
+                response: updated,
+                application: app,
+                eventType: 'status_update',
+                previousStatus: prevStatus,
+              }).catch(() => {});
+              base44.functions.invoke('syncApplicationToSheet', { response_id: resp.id }).catch(() => {});
+            } catch {}
           }}
         />
       )}

@@ -13,6 +13,7 @@ import ResponseAnswers from './ResponseAnswers';
 import ResponseAIPanel from './ResponseAIPanel';
 import ResponseDecisionPanel from './ResponseDecisionPanel';
 import ApplicantContextCard from './ApplicantContextCard';
+import StaffReviewToolkit from './StaffReviewToolkit';
 
 export default function ResponseViewer({ responses, index, application, onIndex, onClose, onUpdate, onDelete }) {
   const { user } = useAuth();
@@ -157,6 +158,7 @@ export default function ResponseViewer({ responses, index, application, onIndex,
           />
           <div className="space-y-4 lg:sticky lg:top-24">
             <ApplicantContextCard username={response.roblox_username} currentResponseId={response.id} />
+            <StaffReviewToolkit response={response} application={application} onUpdate={onUpdate} />
             <ResponseAIPanel
               response={response}
               application={application}

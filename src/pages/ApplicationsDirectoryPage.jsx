@@ -42,24 +42,26 @@ export default function ApplicationsDirectoryPage() {
 
   useEffect(() => { document.title = 'Applications · Escape Tsunami for Developers'; }, []);
 
+  const fetchDirectoryData = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const [appsPage, responsesPage] = await Promise.all([
+        base44.entities.Application.filter({ status: { $in: ['open', 'closed'] } }, { sort: '-created_date', limit: 100 }),
+        user?.id ? base44.entities.ApplicationResponse.filter({ created_by_id: user.id }, { sort: '-created_date', limit: 100 }) : { items: [] },
+      ]);
+      setApplications(appsPage?.items || []);
+      setMyResponses(responsesPage?.items || []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isLoadingAuth) return;
-    (async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        const [appsPage, responsesPage] = await Promise.all([
-          base44.entities.Application.filter({ status: { $in: ['open', 'closed'] } }, { sort: '-created_date', limit: 100 }),
-          user?.id ? base44.entities.ApplicationResponse.filter({ created_by_id: user.id }, { sort: '-created_date', limit: 100 }) : { items: [] },
-        ]);
-        setApplications(appsPage?.items || []);
-        setMyResponses(responsesPage?.items || []);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchDirectoryData();
 
     if (!user?.id) return;
     const unsubscribe = base44.entities.ApplicationResponse.subscribe((event) => {
@@ -115,7 +117,9 @@ export default function ApplicationsDirectoryPage() {
       .sort((a, b) => {
         if (sortBy === 'newest') return new Date(b.created_date || 0) - new Date(a.created_date || 0);
         if (sortBy === 'shortest') {
-          return safeParse(a.questions, []).length - safeParse(b.questions, []).length;
+          const countA = safeParse(a.questions, []).filter((q) => q.type !== 'section').length;
+          const countB = safeParse(b.questions, []).filter((q) => q.type !== 'section').length;
+          return countA - countB;
         }
         if (!a.auto_close_at && !b.auto_close_at) return 0;
         if (!a.auto_close_at) return 1;
@@ -325,7 +329,7 @@ export default function ApplicationsDirectoryPage() {
               <AlertCircle className="h-8 w-8 text-rose-400 mx-auto mb-3" />
               <h2 className="text-lg font-semibold text-white">Couldn't load applications</h2>
               <p className="mt-1 text-sm text-slate-400">Something went wrong. Please try again.</p>
-              <button onClick={() => { setLoading(true); setError(false); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/20 transition-colors">
+              <button onClick={fetchDirectoryData} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/20 transition-colors">
                 <RefreshCw className="h-4 w-4" /> Retry
               </button>
             </div>
@@ -415,7 +419,17 @@ export default function ApplicationsDirectoryPage() {
         </div>
       </main>
 
-      <SubmissionDetailModal response={selectedResponse} onClose={() => setSelectedResponse(null)} />
+      <SubmissionDetailModal
+        response={selectedResponse}
+        allAttempts={
+          selectedResponse
+            ? myResponses
+                .filter((r) => r.application_id === selectedResponse.application_id)
+                .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+            : []
+        }
+        onClose={() => setSelectedResponse(null)}
+      />
     </div>
   );
 }

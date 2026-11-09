@@ -37,10 +37,18 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
       const text = value || '';
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       const minLen = q.validation?.minLength || 0;
+      const depthHint =
+        words === 0
+          ? 'Tip: Detailed answers (20+ words) stand out to reviewers'
+          : words < 8
+          ? 'Consider adding a bit more detail'
+          : words >= 25
+          ? '✓ Strong detail level'
+          : 'Good start — add examples if helpful';
       return (
         <div>
           <Textarea autoFocus={autoFocus} value={text} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || q.validation?.maxLength || undefined} className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[160px] text-base rounded-xl focus-visible:ring-cyan-500/50" />
-          <div className="mt-1.5 flex items-center justify-between text-xs text-slate-500">
+          <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
               {words} word{words === 1 ? '' : 's'} · {text.length} chars
               {minLen > 0 && (
@@ -49,9 +57,10 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
                 </span>
               )}
             </span>
-            {(q.maxLength > 0 || q.validation?.maxLength > 0) && (
-              <span>{text.length}/{q.maxLength || q.validation?.maxLength}</span>
-            )}
+            <span className={words >= 25 ? 'text-emerald-400 font-medium' : 'text-slate-500'}>
+              {depthHint}
+              {(q.maxLength > 0 || q.validation?.maxLength > 0) ? ` · ${text.length}/${q.maxLength || q.validation?.maxLength}` : ''}
+            </span>
           </div>
         </div>
       );
@@ -113,6 +122,24 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
             <span>{min} {unit}</span>
             <span>{Math.round((min + max) / 2)} {unit}</span>
             <span>{max} {unit}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {[min, Math.round(min + (max - min) * 0.25), Math.round((min + max) / 2), Math.round(min + (max - min) * 0.75), max]
+              .filter((v, idx, arr) => arr.indexOf(v) === idx)
+              .map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => onChange(preset)}
+                  className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors ${
+                    Number(value) === preset
+                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                      : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {preset} {unit}
+                </button>
+              ))}
           </div>
         </div>
       );

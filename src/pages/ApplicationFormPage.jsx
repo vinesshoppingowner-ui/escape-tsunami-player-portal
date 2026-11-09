@@ -316,7 +316,7 @@ export default function ApplicationFormPage() {
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
               {step < 0 && (
-                <ApplyIntro app={app} total={visibleQuestions.length} user={user} retake={retake} hasDraft={Object.keys(answers).length > 0} onStart={goNext} />
+                <ApplyIntro app={app} total={answerableQuestions.length} user={user} retake={retake} hasDraft={Object.keys(answers).length > 0} onStart={goNext} />
               )}
 
               {singlePage && step >= 0 && step < total && (
@@ -378,7 +378,7 @@ export default function ApplicationFormPage() {
                     <ClipboardCheck className="h-6 w-6 text-cyan-300" />
                     <h2 className="text-2xl font-semibold text-white">Review your answers</h2>
                   </div>
-                  <p className="text-sm text-slate-400 mb-6">{visibleQuestions.filter((q) => !isEmpty(answers[q.id])).length} of {visibleQuestions.length} answered · tap any answer to change it.</p>
+                  <p className="text-sm text-slate-400 mb-6">{answeredCount} of {answerableQuestions.length} answered · tap any answer to change it.</p>
                   <ApplyReview questions={visibleQuestions} answers={answers} onEdit={(i) => { setError(''); setStep(i); }} />
                   {error && <div className="mt-4 flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
                   <label className="mt-6 flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">

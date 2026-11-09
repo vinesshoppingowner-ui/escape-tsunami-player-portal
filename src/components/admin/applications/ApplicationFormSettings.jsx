@@ -43,29 +43,16 @@ export default function ApplicationFormSettings({ settings, update }) {
           {...p}
         />
         {settings.promotePopover && (
-          <div className="py-2.5 border-t border-white/5 space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Custom popover message (optional)</Label>
-              <input
-                type="text"
-                value={settings.promoteMessage || ''}
-                onChange={(e) => update('promoteMessage', e.target.value)}
-                placeholder="We suggest applying for this application — check it out!"
-                className="w-full h-9 rounded-lg bg-slate-950 border border-white/10 px-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">How often should the popover appear?</Label>
-              <select
-                value={settings.promoteFrequency || 'always'}
-                onChange={(e) => update('promoteFrequency', e.target.value)}
-                className="w-full h-9 rounded-lg bg-slate-950 border border-white/10 px-3 text-xs text-white focus:outline-none focus:border-cyan-500/40"
-              >
-                <option value="always">Every page load (until dismissed on that page)</option>
-                <option value="session">Once per browsing session (until Dismiss is clicked)</option>
-                <option value="once_ever">Once ever per browser</option>
-              </select>
-            </div>
+          <div className="py-2.5 border-t border-white/5 space-y-1.5">
+            <Label className="text-xs text-slate-300">Custom popover message (optional)</Label>
+            <input
+              type="text"
+              value={settings.promoteMessage || ''}
+              onChange={(e) => update('promoteMessage', e.target.value)}
+              placeholder="We suggest applying for this application — check it out!"
+              className="w-full h-9 rounded-lg bg-slate-950 border border-white/10 px-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40"
+            />
+            <p className="text-[11px] text-slate-500">Once a visitor clicks Dismiss, the popover is permanently hidden for them and will never show again.</p>
           </div>
         )}
         <Row k="showProgressBar" label="Show progress bar" {...p} />

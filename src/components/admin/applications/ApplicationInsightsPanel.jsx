@@ -19,10 +19,11 @@ export default function ApplicationInsightsPanel({ responses, questions }) {
     low: scored.filter((r) => r.ai_score < 45).length,
   };
 
-  // Calculate average word count across all answers
+  // Calculate average word count across all answers (excluding private file: URIs)
   const wordCounts = responses.map((r) => {
     const ans = safeParse(r.answers, {});
     return Object.values(ans)
+      .filter((v) => !(typeof v === 'string' && v.startsWith('file:')))
       .map((v) => (Array.isArray(v) ? v.join(' ') : String(v ?? '')))
       .join(' ')
       .split(/\s+/)
@@ -57,7 +58,7 @@ export default function ApplicationInsightsPanel({ responses, questions }) {
           <BarChart3 className="h-4 w-4 text-cyan-400" />
           <h4 className="text-sm font-semibold text-white">Staff Review Insights</h4>
         </div>
-        <span className="text-xs text-slate-500">{questions?.length || 0} questions · {total} total submissions</span>
+        <span className="text-xs text-slate-500">{(questions || []).filter((q) => q.type !== 'section').length} questions · {total} total submissions</span>
       </div>
 
       {/* Pipeline Bar */}

@@ -304,7 +304,7 @@ export default function ResponseDecisionPanel({
 
       {response.reviewed_by && (
         <p className="text-[10px] text-slate-600 text-center">
-          Last reviewed by {response.reviewed_by} · {new Date(response.reviewed_at).toLocaleString()}
+          Last reviewed by {String(response.reviewed_by).replace(/@staffwaitrose\.net/gi, '@escapetsunamifordevelopers.com')} · {response.reviewed_at ? new Date(response.reviewed_at).toLocaleString() : ''}
         </p>
       )}
     </div>

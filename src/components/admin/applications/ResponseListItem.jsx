@@ -2,11 +2,12 @@ import { AlertTriangle, RotateCcw, Star, Sparkles, Check, Clock, X } from 'lucid
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { RESPONSE_STATUS } from '@/lib/applicationTypes';
 import { isNewSubmission } from '@/hooks/useLiveApplications';
+import { safeParse } from '@/lib/safeParse';
 import AIScoreBadge from './AIScoreBadge';
 
 export default function ResponseListItem({ response: r, nowMs, onOpen, selected, onSelect, onStar, onQuickStatus }) {
   const st = RESPONSE_STATUS[r.status] || RESPONSE_STATUS.submitted;
-  const flags = r.ai_review ? JSON.parse(r.ai_review).flags || [] : [];
+  const flags = safeParse(r.ai_review, {})?.flags || [];
   const isNew = isNewSubmission(r.created_date, nowMs);
 
   return (
