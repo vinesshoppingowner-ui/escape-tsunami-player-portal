@@ -201,12 +201,26 @@ CRITICAL RULES:
 3. For "dropdown", "radio", and "checkbox", always include at least 2 options in "options".
 4. If a pasted question has sub-text or examples like "(e.g., EST, GMT)" or "(Minimum 3 sentences)", place that helper text in "description".`;
 
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `${systemPrompt}${existingContext}\n\nUSER INPUT / QUESTIONS TO PROCESS:\n${prompt.trim()}`,
-        response_json_schema: schema,
-      });
+      const fullPrompt = `${systemPrompt}${existingContext}\n\nUSER INPUT / QUESTIONS TO PROCESS:\n${prompt.trim()}`;
+      let res = null;
+      try {
+        const fnRes = await base44.functions.invoke('generateApplicationAI', {
+          prompt: fullPrompt,
+          response_json_schema: schema,
+        });
+        res = fnRes?.data?.data || fnRes?.data || null;
+      } catch (fnErr) {
+        const errMsg = fnErr?.response?.data?.error || fnErr?.message || '';
+        if (/api_key_invalid|api key not valid/i.test(errMsg)) {
+          throw new Error(errMsg);
+        }
+        res = await base44.integrations.Core.InvokeLLM({
+          prompt: fullPrompt,
+          response_json_schema: schema,
+        });
+      }
 
-      const questions = (res.questions || [])
+      const questions = (res?.questions || [])
         .map((q, idx) => sanitizeQuestion(q, idx))
         .filter(Boolean);
 
