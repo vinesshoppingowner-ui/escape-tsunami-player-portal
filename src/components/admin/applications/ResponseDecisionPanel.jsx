@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, RotateCcw, Copy, Check, ShieldBan, Trash2, FastForward } from 'lucide-react';
+import { Loader2, Save, RotateCcw, Copy, Check, ShieldBan, Trash2, FastForward, Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/AuthContext';
 import { RESPONSE_STATUS, FEEDBACK_TEMPLATES } from '@/lib/applicationTypes';
 import { sendApplicationUpdateEmail } from '@/lib/userEmails';
+import { generateAIFeedbackDraft } from '@/lib/applicationAI';
+import { safeParse } from '@/lib/safeParse';
 import ResponseRatingTags from './ResponseRatingTags';
+import NewBadge from '@/components/ui/new-badge';
 
 const fieldCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[70px] text-sm';
 
-export default function ResponseDecisionPanel({ response, application, onUpdate, onDelete, onNextUnreviewed }) {
+export default function ResponseDecisionPanel({
+  response,
+  application,
+  onUpdate,
+  onDelete,
+  onNextUnreviewed,
+  injectedFeedback,
+}) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [status, setStatus] = useState(response.status);
@@ -18,6 +28,7 @@ export default function ResponseDecisionPanel({ response, application, onUpdate,
   const [feedback, setFeedback] = useState(response.applicant_feedback || '');
   const [retake, setRetake] = useState(!!response.retake_allowed);
   const [saving, setSaving] = useState(false);
+  const [draftingFeedback, setDraftingFeedback] = useState(false);
   const [rating, setRating] = useState(response.staff_rating || 0);
   const [tags, setTags] = useState(response.tags || []);
   const [autoAdvance, setAutoAdvance] = useState(false);
@@ -33,6 +44,33 @@ export default function ResponseDecisionPanel({ response, application, onUpdate,
     setFeedback(response.applicant_feedback || '');
     setRetake(!!response.retake_allowed);
   }, [response.id, response.status, response.staff_rating, response.tags]);
+
+  useEffect(() => {
+    if (injectedFeedback?.text) {
+      setFeedback(injectedFeedback.text);
+      if (injectedFeedback.status) setStatus(injectedFeedback.status);
+    }
+  }, [injectedFeedback]);
+
+  const handleAIDraftFeedback = async () => {
+    setDraftingFeedback(true);
+    try {
+      const drafted = await generateAIFeedbackDraft(
+        application,
+        safeParse(response.answers, {}),
+        status,
+        response.roblox_username
+      );
+      if (drafted) {
+        setFeedback(drafted);
+        toast({ title: 'AI drafted personalized feedback' });
+      }
+    } catch (e) {
+      toast({ title: 'Could not draft feedback', description: e.message, variant: 'destructive' });
+    } finally {
+      setDraftingFeedback(false);
+    }
+  };
 
   const save = async (overrideStatus) => {
     const nextStatus = typeof overrideStatus === 'string' ? overrideStatus : status;
@@ -178,7 +216,19 @@ export default function ResponseDecisionPanel({ response, application, onUpdate,
       </div>
 
       <div>
-        <div className="text-[11px] text-slate-400 mb-1">Feedback to applicant (they can see this)</div>
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <span className="text-[11px] text-slate-400">Feedback to applicant</span>
+          <button
+            type="button"
+            onClick={handleAIDraftFeedback}
+            disabled={draftingFeedback}
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/30 text-[11px] font-medium text-violet-200 transition-colors disabled:opacity-50"
+          >
+            {draftingFeedback ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3 text-violet-300" />}
+            <span>{draftingFeedback ? 'Writing…' : 'AI Draft Feedback'}</span>
+            <NewBadge />
+          </button>
+        </div>
         <Textarea value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="e.g. Great answers — welcome aboard! / Try giving more detail next time." className={fieldCls} />
       </div>
 

@@ -1,16 +1,23 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, ExternalLink, RotateCcw, Star, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { RESPONSE_STATUS } from '@/lib/applicationTypes';
 import { isNewSubmission } from '@/hooks/useLiveApplications';
+import { sendApplicationUpdateEmail } from '@/lib/userEmails';
+import { safeParse } from '@/lib/safeParse';
 import ResponseAnswers from './ResponseAnswers';
 import ResponseAIPanel from './ResponseAIPanel';
 import ResponseDecisionPanel from './ResponseDecisionPanel';
 import ApplicantContextCard from './ApplicantContextCard';
 
 export default function ResponseViewer({ responses, index, application, onIndex, onClose, onUpdate, onDelete }) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [injectedFeedback, setInjectedFeedback] = useState(null);
   const response = responses[index];
 
   const toggleStar = async () => {
@@ -21,14 +28,37 @@ export default function ResponseViewer({ responses, index, application, onIndex,
     } catch {}
   };
 
+  // Bug 1 fix: Quick status via keyboard shortcuts now properly sets reviewed_by, creates Notification, emails applicant, and syncs to Google Sheet
   const quickStatus = async (status) => {
-    if (!response) return;
+    if (!response || response.status === status) return;
     try {
+      const prevStatus = response.status;
       const updated = await base44.entities.ApplicationResponse.update(response.id, {
         status,
+        reviewed_by: user?.email || '',
         reviewed_at: new Date().toISOString(),
       });
       onUpdate(updated);
+      toast({ title: `Marked as ${RESPONSE_STATUS[status]?.label || status}` });
+      if (response.roblox_username) {
+        const decided = status === 'accepted' || status === 'rejected';
+        base44.entities.Notification.create({
+          roblox_username: response.roblox_username,
+          title: decided ? `Application ${status}` : `Application status: ${RESPONSE_STATUS[status]?.label || status}`,
+          body: decided
+            ? `Your application for "${application.title}" was ${status}.`
+            : `Your application for "${application.title}" is now ${RESPONSE_STATUS[status]?.label || status}.`,
+          type: 'staff_message',
+          read: false,
+        }).catch(() => {});
+      }
+      sendApplicationUpdateEmail({
+        response: updated,
+        application,
+        eventType: 'status_update',
+        previousStatus: prevStatus,
+      }).catch(() => {});
+      base44.functions.invoke('syncApplicationToSheet', { response_id: response.id }).catch(() => {});
     } catch {}
   };
 
@@ -48,13 +78,15 @@ export default function ResponseViewer({ responses, index, application, onIndex,
   });
 
   if (!response) return null;
-  const questions = JSON.parse(application.questions || '[]');
-  const answers = JSON.parse(response.answers || '{}');
+  const questions = safeParse(application.questions, []);
+  const answers = safeParse(response.answers, {});
   const st = RESPONSE_STATUS[response.status] || RESPONSE_STATUS.submitted;
   const isNew = isNewSubmission(response.created_date);
   const sameUserAttempts = responses.filter(
     (r) => r.roblox_username && r.roblox_username.toLowerCase() === (response.roblox_username || '').toLowerCase()
   );
+  const previousAttempt = sameUserAttempts.find((r) => r.id !== response.id && (r.attempt || 1) < (response.attempt || 1)) || sameUserAttempts.find((r) => r.id !== response.id);
+  const previousAttemptAnswers = previousAttempt ? safeParse(previousAttempt.answers, null) : null;
   const navBtn = 'p-2 rounded-lg border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 disabled:opacity-30';
 
   const handleNextUnreviewed = (currentId) => {
@@ -116,17 +148,31 @@ export default function ResponseViewer({ responses, index, application, onIndex,
           <button className={navBtn} disabled={index === responses.length - 1} onClick={() => onIndex(index + 1)} title="Next (→)"><ChevronRight className="h-4 w-4" /></button>
           <button className={navBtn} onClick={onClose} title="Close (Esc)"><X className="h-4 w-4" /></button>
         </div>
-        <div className="grid lg:grid-cols-[1fr_340px] gap-5 items-start">
-          <ResponseAnswers questions={questions} answers={answers} />
+        <div className="grid lg:grid-cols-[1fr_360px] gap-5 items-start">
+          <ResponseAnswers
+            questions={questions}
+            answers={answers}
+            responseId={response.id}
+            previousAttemptAnswers={previousAttemptAnswers}
+          />
           <div className="space-y-4 lg:sticky lg:top-24">
             <ApplicantContextCard username={response.roblox_username} currentResponseId={response.id} />
-            <ResponseAIPanel response={response} application={application} onUpdate={onUpdate} />
+            <ResponseAIPanel
+              response={response}
+              application={application}
+              onUpdate={onUpdate}
+              onApplySuggestedFeedback={(text, rec) => {
+                const mapRec = rec === 'accept' ? 'accepted' : rec === 'reject' ? 'rejected' : 'under_review';
+                setInjectedFeedback({ text, status: mapRec, ts: Date.now() });
+              }}
+            />
             <ResponseDecisionPanel
               response={response}
               application={application}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onNextUnreviewed={handleNextUnreviewed}
+              injectedFeedback={injectedFeedback}
             />
           </div>
         </div>
