@@ -3,7 +3,7 @@ import { FileText, Image as ImageIcon, Eye, Download, Loader2, Copy, Check } fro
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'heic', 'svg'];
+const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'heic', 'svg', 'avif'];
 const TEXT_EXTS = ['txt', 'md', 'log', 'csv', 'json'];
 
 export function parseFileAnswer(value) {
@@ -33,7 +33,12 @@ export function parseFileAnswer(value) {
   };
 }
 
-export default function UploadedFileAttachment({ value, compact = false }) {
+export function splitFileAnswers(value) {
+  if (!value || typeof value !== 'string' || !value.startsWith('file:')) return [];
+  return value.split('\n').map((s) => s.trim()).filter((s) => s.startsWith('file:'));
+}
+
+function SingleUploadedFileAttachment({ value, compact = false }) {
   const parsed = parseFileAnswer(value);
   const [signedUrl, setSignedUrl] = useState('');
   const [loadingUrl, setLoadingUrl] = useState(false);
@@ -47,7 +52,6 @@ export default function UploadedFileAttachment({ value, compact = false }) {
     setTextContent(parsed?.inlineText || '');
   }, [value]);
 
-  // Preload signed URL for images so screenshots show a live thumbnail immediately
   useEffect(() => {
     if (!parsed?.fileUri || !parsed.isImage) return;
     let cancelled = false;
@@ -93,7 +97,6 @@ export default function UploadedFileAttachment({ value, compact = false }) {
           setTextContent(txt);
         }
       } catch {
-        // Fallback handled in viewer
       } finally {
         setLoadingText(false);
       }
@@ -159,7 +162,7 @@ export default function UploadedFileAttachment({ value, compact = false }) {
       </div>
 
       <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
-        <DialogContent className="max-w-2xl bg-slate-950 border-white/10 text-white max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl bg-slate-950 border-white/10 text-white max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-semibold text-white pr-8">
               {parsed.isImage ? <ImageIcon className="h-4 w-4 text-cyan-400 shrink-0" /> : <FileText className="h-4 w-4 text-cyan-400 shrink-0" />}
@@ -170,7 +173,7 @@ export default function UploadedFileAttachment({ value, compact = false }) {
           {parsed.isImage ? (
             <div className="mt-2 flex flex-col items-center gap-3">
               {signedUrl ? (
-                <img src={signedUrl} alt={parsed.filename} className="max-h-[65vh] w-auto rounded-xl border border-white/10 object-contain" />
+                <img src={signedUrl} alt={parsed.filename} className="max-h-[70vh] w-auto rounded-xl border border-white/10 object-contain" />
               ) : (
                 <div className="py-12 flex items-center gap-2 text-sm text-slate-400">
                   <Loader2 className="h-4 w-4 animate-spin text-cyan-400" /> Loading screenshot…
@@ -183,7 +186,7 @@ export default function UploadedFileAttachment({ value, compact = false }) {
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:underline"
                 >
-                  <Download className="h-3.5 w-3.5" /> Open original in new tab
+                  <Download className="h-3.5 w-3.5" /> Open full resolution in new tab
                 </a>
               )}
             </div>
@@ -239,5 +242,18 @@ export default function UploadedFileAttachment({ value, compact = false }) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export default function UploadedFileAttachment({ value, compact = false }) {
+  const items = splitFileAnswers(value);
+  if (!items.length) return null;
+  if (items.length === 1) return <SingleUploadedFileAttachment value={items[0]} compact={compact} />;
+  return (
+    <div className="flex flex-wrap gap-3">
+      {items.map((item, idx) => (
+        <SingleUploadedFileAttachment key={`${item}-${idx}`} value={item} compact={compact} />
+      ))}
+    </div>
   );
 }

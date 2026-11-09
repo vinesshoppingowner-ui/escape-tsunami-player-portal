@@ -28,8 +28,7 @@ export default function StaffDestinationModal() {
 
   const applyMatch = location.pathname.match(/^\/apply\/([^/?#]+)/);
   const applySlugOrId = applyMatch ? decodeURIComponent(applyMatch[1]) : null;
-  const isDirectApplicationRoute = Boolean(applySlugOrId) || location.pathname.startsWith('/applications');
-  const shouldShow = user && isOwner(user) && !roleChecked && !hasRoleChecked() && !isDirectApplicationRoute;
+  const shouldShow = user && isOwner(user) && !roleChecked && !hasRoleChecked();
 
   useEffect(() => {
     let active = true;

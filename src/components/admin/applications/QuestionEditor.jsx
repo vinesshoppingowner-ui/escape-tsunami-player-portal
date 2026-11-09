@@ -1,21 +1,28 @@
-import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown, GitBranch, ShieldCheck, Play } from 'lucide-react';
-import { QUESTION_TYPES, extractYouTubeId } from '@/lib/applicationTypes';
+import { Circle, Square, Copy, Trash2, X, ChevronUp, ChevronDown, GitBranch, ShieldCheck, Play, ImagePlus } from 'lucide-react';
+import { extractYouTubeId } from '@/lib/applicationTypes';
 import FormToggle from './FormToggle';
+import QuestionTypeDropdown from './QuestionTypeDropdown';
+import NewBadge from '@/components/ui/new-badge';
 
 const lineInput = 'w-full bg-transparent border-0 border-b border-white/10 focus:border-cyan-400 outline-none text-white placeholder:text-slate-500 py-2 transition-colors';
 const PREVIEW = {
   text: 'Short answer text',
   textarea: 'Long answer text',
+  screenshot: '🖼️ Upload or paste screenshots & files (Any screenshot size supported)',
+  file: '📎 Click to upload document or screenshot',
   number: 'Number',
   email: 'Email address',
   date: 'Month, day, year',
   rating: '★ ★ ★ ★ ★',
   scale: '1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10',
+  slider: 'Interactive slider (0 – 40 hrs/wk)',
   yesno: 'Yes / No',
+  age_range: 'Under 13 · 13–15 · 16–17 · 18–20 · 21+',
+  timezone: 'Timezone selector + 1-click Auto-Detect',
+  availability: 'Mon – Sun weekly availability & hours',
   discord: '@username or Discord User ID',
   roblox: 'Roblox username (with 1-click auto-fill)',
   url: 'https://example.com',
-  file: '📎 Click to upload',
   code: 'const x = "code snippet"',
   youtube: '▶ YouTube Video (watch or submit link)',
   section: 'Section header & instructions block (no answer input)',
@@ -28,6 +35,18 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
   const OptIcon = question.type === 'checkbox' ? Square : Circle;
   const setOpt = (i, v) => update('options', opts.map((o, idx) => (idx === i ? v : o)));
 
+  const handleTypeChange = (nextType) => {
+    const patches = { type: nextType };
+    if (['dropdown', 'radio', 'checkbox'].includes(nextType) && (!question.options || question.options.length === 0)) {
+      patches.options = ['Option 1', 'Option 2'];
+    }
+    if (nextType === 'screenshot') {
+      patches.maxFileSize = 0; // Unlimited size
+      patches.allowMultipleFiles = true;
+    }
+    onUpdate(question.id, patches);
+  };
+
   return (
     <div onClick={onFocus} className={`relative rounded-xl bg-white/[0.03] border border-white/10 p-5 transition-shadow ${active ? 'shadow-lg shadow-black/30' : ''}`}>
       {active && <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500" />}
@@ -35,10 +54,7 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
         <input value={question.text} onChange={(e) => update('text', e.target.value)} placeholder={`Question ${index + 1}`}
           className={`flex-1 rounded-t-md px-3 ${active ? 'bg-white/5' : ''} ${lineInput} text-base`} />
         {active && (
-          <select value={question.type} onChange={(e) => update('type', e.target.value)}
-            className="sm:w-52 h-11 rounded-md bg-slate-950 border border-white/10 text-sm text-slate-200 px-3">
-            {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
+          <QuestionTypeDropdown value={question.type} onChange={handleTypeChange} />
         )}
       </div>
       {(active || question.description) && (
@@ -120,6 +136,47 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
             </div>
             <div className="text-xs text-slate-500">{PREVIEW.scale}</div>
           </div>
+        ) : question.type === 'slider' ? (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-400">Min:</span>
+                <input
+                  type="number"
+                  value={question.sliderMin ?? 0}
+                  onChange={(e) => update('sliderMin', Number(e.target.value) || 0)}
+                  className="h-8 w-16 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-400">Max:</span>
+                <input
+                  type="number"
+                  value={question.sliderMax ?? 40}
+                  onChange={(e) => update('sliderMax', Number(e.target.value) || 40)}
+                  className="h-8 w-16 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-400">Unit:</span>
+                <input
+                  value={question.sliderUnit ?? 'hrs/wk'}
+                  onChange={(e) => update('sliderUnit', e.target.value)}
+                  placeholder="e.g. hrs/wk"
+                  className="h-8 w-28 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-slate-500">{PREVIEW.slider}</div>
+          </div>
+        ) : question.type === 'screenshot' ? (
+          <div className="rounded-xl bg-cyan-500/[0.05] border border-cyan-500/20 p-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-cyan-200">
+              <ImagePlus className="h-4 w-4 text-cyan-400 shrink-0" />
+              <span>Applicants can upload or paste (Ctrl+V) screenshots & files of <strong>any resolution or size</strong>.</span>
+            </div>
+            <NewBadge />
+          </div>
         ) : (
           <div className="text-sm text-slate-500 border-b border-dotted border-white/10 py-2 w-2/3">{PREVIEW[question.type]}</div>
         )}
@@ -127,13 +184,15 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
 
       {active && (
         <>
-        {(question.type === 'file' || question.showIf || question.validation) && (
+        {(question.type === 'file' || question.type === 'screenshot' || question.showIf || question.validation) && (
           <div className="mt-4 space-y-2">
-            {question.type === 'file' && (
+            {(question.type === 'file' || question.type === 'screenshot') && (
               <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span>Allowed: {(question.fileTypes || []).join(', ')}</span>
+                <span>Allowed: All screenshots & {(question.fileTypes || []).join(', ')}</span>
                 <span>·</span>
-                <span>Max: {question.maxFileSize || 5}MB</span>
+                <span className="text-emerald-300 font-medium">
+                  {question.type === 'screenshot' || !question.maxFileSize ? 'Unlimited screenshot size' : `Max: ${question.maxFileSize}MB`}
+                </span>
               </div>
             )}
             {question.showIf && (
@@ -232,23 +291,24 @@ export default function QuestionEditor({ question, allQuestions = [], index, tot
               </div>
             )}
             {/* File settings */}
-            {question.type === 'file' && (
+            {(question.type === 'file' || question.type === 'screenshot') && (
               <div>
-                <label className="text-xs font-medium text-slate-400">File settings</label>
+                <label className="text-xs font-medium text-slate-400">File & Screenshot settings (0 = unlimited size)</label>
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   <input
                     value={(question.fileTypes || []).join(', ')}
                     onChange={(e) => update('fileTypes', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
-                    placeholder="pdf, docx, png"
+                    placeholder="png, jpg, webp, pdf, docx, txt"
                     className="h-9 flex-1 min-w-[140px] rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
                   />
                   <input
                     type="number"
-                    value={question.maxFileSize || 5}
-                    onChange={(e) => update('maxFileSize', Number(e.target.value) || 5)}
-                    className="h-9 w-20 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
+                    min="0"
+                    value={question.maxFileSize ?? 0}
+                    onChange={(e) => update('maxFileSize', Math.max(0, Number(e.target.value) || 0))}
+                    className="h-9 w-24 rounded-md bg-slate-950 border border-white/10 text-xs text-slate-200 px-2"
                   />
-                  <span className="text-xs text-slate-500 self-center">MB max</span>
+                  <span className="text-xs text-slate-500 self-center">MB max (0 = any size)</span>
                 </div>
               </div>
             )}

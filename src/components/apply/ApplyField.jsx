@@ -1,9 +1,9 @@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Star, Check, Play, ExternalLink, Gamepad2, MessageSquare, Info } from 'lucide-react';
+import { Star, Check, Play, ExternalLink, Gamepad2, MessageSquare, Info, Globe, CalendarClock } from 'lucide-react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import FileUploadField from '@/components/apply/FileUploadField';
-import { extractYouTubeId } from '@/lib/applicationTypes';
+import { extractYouTubeId, AGE_BRACKETS, COMMON_TIMEZONES, WEEKDAYS } from '@/lib/applicationTypes';
 import { useAuth } from '@/lib/AuthContext';
 
 const inputCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 text-base rounded-xl focus-visible:ring-cyan-500/50';
@@ -87,6 +87,153 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
         </div>
       );
     }
+    case 'slider': {
+      const min = Number(q.sliderMin ?? 0);
+      const max = Number(q.sliderMax ?? 40);
+      const unit = q.sliderUnit ?? 'hrs/wk';
+      const cur = value !== undefined && value !== '' ? Number(value) : min;
+      return (
+        <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400">Drag slider to select value</span>
+            <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/35 text-sm font-bold text-cyan-200">
+              {cur} {unit}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={q.sliderStep || 1}
+            value={cur}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="w-full accent-cyan-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
+          />
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>{min} {unit}</span>
+            <span>{Math.round((min + max) / 2)} {unit}</span>
+            <span>{max} {unit}</span>
+          </div>
+        </div>
+      );
+    }
+    case 'age_range': {
+      const brackets = q.options && q.options.length ? q.options : AGE_BRACKETS;
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          {brackets.map((b) => {
+            const active = value === b;
+            return (
+              <button
+                key={b}
+                type="button"
+                onClick={() => onChange(b)}
+                className={`h-12 rounded-xl border text-sm font-semibold transition-all ${
+                  active
+                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.15)]'
+                    : 'bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.06]'
+                }`}
+              >
+                {b}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+    case 'timezone': {
+      const detectTz = () => {
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const offsetMin = -new Date().getTimezoneOffset();
+          const sign = offsetMin >= 0 ? '+' : '-';
+          const hrs = Math.floor(Math.abs(offsetMin) / 60);
+          onChange(`${tz} (UTC${sign}${hrs})`);
+        } catch {}
+      };
+      return (
+        <div className="space-y-2.5">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Select value={COMMON_TIMEZONES.includes(value) ? value : ''} onValueChange={onChange}>
+              <SelectTrigger className={`${inputCls} flex-1`}>
+                <SelectValue placeholder={value || 'Select your timezone…'} />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10 text-white">
+                {COMMON_TIMEZONES.map((tz) => (
+                  <SelectItem key={tz} value={tz} className="focus:bg-cyan-500/15 focus:text-white">
+                    {tz}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              onClick={detectTz}
+              className="h-12 px-4 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-xs font-semibold text-cyan-200 inline-flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+            >
+              <Globe className="h-4 w-4 text-cyan-400" /> Auto-detect my timezone
+            </button>
+          </div>
+          <Input
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Or type your timezone manually (e.g. EST / UTC-5)…"
+            className={inputCls}
+          />
+        </div>
+      );
+    }
+    case 'availability': {
+      const currentStr = typeof value === 'string' ? value : '';
+      const selectedDays = WEEKDAYS.filter((d) => currentStr.includes(d));
+      const toggleDay = (day) => {
+        const nextDays = selectedDays.includes(day)
+          ? selectedDays.filter((d) => d !== day)
+          : [...selectedDays, day];
+        const notesPart = currentStr.includes(' — ') ? currentStr.split(' — ')[1] : '';
+        const base = nextDays.join(', ');
+        onChange(notesPart ? `${base} — ${notesPart}` : base);
+      };
+      const notesVal = currentStr.includes(' — ') ? currentStr.split(' — ')[1] : '';
+      const setNotes = (txt) => {
+        const base = selectedDays.join(', ') || 'Flexible';
+        onChange(txt ? `${base} — ${txt}` : base);
+      };
+      return (
+        <div className="space-y-3">
+          <div>
+            <div className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
+              <CalendarClock className="h-3.5 w-3.5 text-cyan-400" /> Select the days you are typically available:
+            </div>
+            <div className="grid grid-cols-7 gap-1.5">
+              {WEEKDAYS.map((day) => {
+                const active = selectedDays.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleDay(day)}
+                    className={`h-11 rounded-xl border text-xs font-semibold transition-all ${
+                      active
+                        ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200'
+                        : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <Input
+            value={notesVal}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Typical hours / schedule notes (e.g. 4pm–9pm EST on weekdays, all day weekends)"
+            className={inputCls}
+          />
+        </div>
+      );
+    }
     case 'discord':
       return (
         <div className="space-y-2">
@@ -163,7 +310,7 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
         <Select value={value || ''} onValueChange={onChange}>
           <SelectTrigger className={inputCls}><SelectValue placeholder="Select an option…" /></SelectTrigger>
           <SelectContent className="bg-slate-900 border-white/10 text-white">
-            {(q.options || []).map((opt, i) => <SelectItem key={i} value={opt} className="focus:bg-cyan-500/15 focus:text-white">{opt}</SelectItem>)}
+            {(q.options || []).filter(Boolean).map((opt, i) => <SelectItem key={i} value={opt} className="focus:bg-cyan-500/15 focus:text-white">{opt}</SelectItem>)}
           </SelectContent>
         </Select>
       );
@@ -191,6 +338,7 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
         </div>
       );
     case 'file':
+    case 'screenshot':
       return <FileUploadField q={q} value={value} onChange={onChange} />;
     case 'code':
       return (

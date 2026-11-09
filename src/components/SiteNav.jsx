@@ -28,8 +28,7 @@ export default function SiteNav() {
   const [topAnnouncement, setTopAnnouncement] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
-  const { promoted: promotedApp, primaryApp, dismiss: dismissPromotedApp } = usePromotedApplication();
-  const directApplicationPath = primaryApp ? `/apply/${primaryApp.slug || primaryApp.id}` : '/applications';
+  const { promoted: promotedApp, dismiss: dismissPromotedApp } = usePromotedApplication();
   const { alert: portalAlert, dismiss: dismissPortalAlert } = usePortalTabAlert();
 
   useEffect(() => {
@@ -118,19 +117,17 @@ export default function SiteNav() {
             }
             const isAppsTab = l.to === '/applications';
             const isPortalTab = l.to === '/portal';
-            const targetTo = isAppsTab ? directApplicationPath : l.to;
-            const isTabActive = active || (isAppsTab && location.pathname.startsWith('/apply/'));
             return (
               <div key={l.to} className="relative inline-flex items-center">
                 <Link
-                  to={targetTo}
+                  to={l.to}
                   className={`relative px-3.5 py-2 text-sm font-medium transition-all duration-150 rounded-lg inline-flex items-center gap-1.5 ${
-                    isTabActive ? 'text-white bg-white/[0.08]' : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
+                    active ? 'text-white bg-white/[0.08]' : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
                   }`}
                 >
                   {l.icon && <l.icon className="h-3.5 w-3.5" />}
                   {l.label}
-                  {isTabActive && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
+                  {active && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
                 </Link>
                 {isPortalTab && portalAlert && (
                   <PortalAlertPopover alert={portalAlert} onDismiss={dismissPortalAlert} align="center" />
@@ -187,9 +184,7 @@ export default function SiteNav() {
       >
         <div className="px-5 py-4 space-y-1">
           {mobileLinks.map((l) => {
-            const isAppsTab = l.to === '/applications';
-            const targetTo = isAppsTab ? directApplicationPath : l.to;
-            const active = location.pathname === l.to || (isAppsTab && location.pathname.startsWith('/apply/'));
+            const active = location.pathname === l.to;
             if (l.comingSoon) {
               return (
                 <span
@@ -205,7 +200,7 @@ export default function SiteNav() {
             return (
               <Link
                 key={l.to}
-                to={targetTo}
+                to={l.to}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors ${
                   active ? 'text-white bg-white/[0.08]' : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
