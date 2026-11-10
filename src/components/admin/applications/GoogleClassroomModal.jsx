@@ -15,12 +15,13 @@ import {
   BookOpen,
   Megaphone,
   Lock,
+  Unlink,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { stripRichText } from '@/lib/richDescription';
 
 export const ALLOWED_CLASSROOM_EMAIL = 'max@escapetsunamifordevelopers.com';
-export const GOOGLE_CLASSROOM_CONNECTOR_ID = '';
+export const GOOGLE_CLASSROOM_CONNECTOR_ID = '6af264d13971ec27785c6009';
 
 export function canUseGoogleClassroom(user) {
   return (
@@ -225,6 +226,13 @@ export default function GoogleClassroomModal({ open, onClose, application, user 
                 title="Refresh classes"
               >
                 <RefreshCw className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDisconnectGoogle}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
+              >
+                <Unlink className="h-3.5 w-3.5" /> Disconnect
               </button>
             </div>
           )}

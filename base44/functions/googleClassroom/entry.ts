@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const ALLOWED_EMAIL = 'max@escapetsunamifordevelopers.com';
+const DEFAULT_CONNECTOR_ID = '6af264d13971ec27785c6009';
 
 export default async function (req) {
   try {
@@ -16,14 +17,11 @@ export default async function (req) {
 
     const body = await req.json().catch(() => ({}));
     const { action, connectorId, courseId, postType, title, description, applicationUrl, maxPoints } = body;
-
-    if (!connectorId) {
-      return Response.json({ connected: false, error: 'Google Classroom connector is not configured yet.' }, { status: 400 });
-    }
+    const resolvedConnectorId = connectorId || DEFAULT_CONNECTOR_ID;
 
     let accessToken = '';
     try {
-      const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+      const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(resolvedConnectorId);
       accessToken = conn?.accessToken || '';
     } catch {
       return Response.json({ connected: false, error: 'Not connected to Google Classroom' }, { status: 401 });
