@@ -1,8 +1,31 @@
-import { useState, useEffect } from 'react';
-import { Copy, Check, Clock, FileText, Search, ThumbsUp, Flag, Sparkles, GitCompare } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Copy, Check, Clock, FileText, Search, ThumbsUp, Flag, Sparkles, GitCompare, MessageSquarePlus, ShieldAlert, Save } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { formatAnswer, extractYouTubeId } from '@/lib/applicationTypes';
+import { safeParse } from '@/lib/safeParse';
+import { useToast } from '@/components/ui/use-toast';
 import UploadedFileAttachment from '@/components/apply/UploadedFileAttachment';
 import NewBadge from '@/components/ui/new-badge';
+
+function computeWordSimilarity(a, b) {
+  if (!a || !b) return 0;
+  const clean = (s) =>
+    String(s)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2);
+  const wordsA = clean(a);
+  const wordsB = clean(b);
+  if (wordsA.length < 6 || wordsB.length < 6) return 0;
+  const setA = new Set(wordsA);
+  const setB = new Set(wordsB);
+  let overlap = 0;
+  setA.forEach((w) => {
+    if (setB.has(w)) overlap += 1;
+  });
+  return Math.round((overlap / Math.min(setA.size, setB.size)) * 100);
+}
 
 function getAnswerQualitySignal(q, text) {
   if (!text || !['textarea', 'text'].includes(q.type)) return null;
@@ -17,18 +40,84 @@ function getAnswerQualitySignal(q, text) {
   return null;
 }
 
-export default function ResponseAnswers({ questions, answers, responseId, previousAttemptAnswers = null }) {
+export default function ResponseAnswers({
+  questions,
+  answers,
+  responseId,
+  response = null,
+  allResponses = [],
+  onUpdate = null,
+  previousAttemptAnswers = null,
+}) {
+  const { toast } = useToast();
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'required' | 'flagged' | 'low_effort'
   const [searchQuery, setSearchQuery] = useState('');
   const [marks, setMarks] = useState({}); // { [questionId]: 'good' | 'flag' }
   const [copied, setCopied] = useState(false);
   const [showSignals, setShowSignals] = useState(true);
   const [comparePrev, setComparePrev] = useState(false);
+  const [showSimilarityScan, setShowSimilarityScan] = useState(true);
+  const [openNoteQId, setOpenNoteQId] = useState(null);
+  const [questionNotes, setQuestionNotes] = useState({});
+  const [savingNoteQId, setSavingNoteQId] = useState(null);
 
-  // Reset marks when switching to a different applicant response (Bug 4 fix)
+  const reviewObj = useMemo(() => safeParse(response?.ai_review, {}), [response?.ai_review]);
+
+  // Reset marks and load per-question staff notes when switching applicant response
   useEffect(() => {
     setMarks({});
-  }, [responseId]);
+    setOpenNoteQId(null);
+    const parsed = safeParse(response?.ai_review, {});
+    setQuestionNotes(parsed.question_notes || {});
+  }, [responseId, response?.ai_review]);
+
+  const saveQuestionNote = async (qId) => {
+    if (!response?.id) return;
+    setSavingNoteQId(qId);
+    try {
+      const nextReview = { ...reviewObj, question_notes: questionNotes };
+      const updated = await base44.entities.ApplicationResponse.update(response.id, {
+        ai_review: JSON.stringify(nextReview),
+      });
+      onUpdate?.(updated);
+      toast({ title: 'Question note saved' });
+      setOpenNoteQId(null);
+    } catch {
+      toast({ title: 'Could not save note', variant: 'destructive' });
+    } finally {
+      setSavingNoteQId(null);
+    }
+  };
+
+  // Cross-applicant similarity / copy scanner across other applicants' responses
+  const similarityMap = useMemo(() => {
+    if (!showSimilarityScan || !allResponses?.length) return {};
+    const currentUser = (response?.roblox_username || '').toLowerCase();
+    const others = allResponses.filter(
+      (r) => r.id !== responseId && (r.roblox_username || '').toLowerCase() !== currentUser
+    );
+    const result = {};
+    questions.forEach((q) => {
+      if (!['textarea', 'text', 'code'].includes(q.type)) return;
+      const myText = formatAnswer(q, answers[q.id]);
+      if (!myText || myText.trim().split(/\s+/).length < 6) return;
+      let bestPct = 0;
+      let bestUser = '';
+      others.forEach((other) => {
+        const otherAns = safeParse(other.answers, {});
+        const otherText = formatAnswer(q, otherAns[q.id]);
+        const pct = computeWordSimilarity(myText, otherText);
+        if (pct > bestPct) {
+          bestPct = pct;
+          bestUser = other.roblox_username || other.submitted_by_email || 'another applicant';
+        }
+      });
+      if (bestPct >= 65) {
+        result[q.id] = { pct: bestPct, matchedUser: bestUser };
+      }
+    });
+    return result;
+  }, [showSimilarityScan, allResponses, responseId, response?.roblox_username, questions, answers]);
 
   const answerableQuestions = questions.filter((q) => q.type !== 'section');
   const totalWords = answerableQuestions.reduce((sum, q) => {
@@ -144,6 +233,19 @@ export default function ResponseAnswers({ questions, answers, responseId, previo
             <NewBadge />
           </button>
 
+          <button
+            type="button"
+            onClick={() => setShowSimilarityScan((s) => !s)}
+            className={`h-8 px-2.5 rounded-lg border text-xs inline-flex items-center gap-1.5 transition-colors ${
+              showSimilarityScan ? 'bg-rose-500/15 border-rose-500/30 text-rose-200' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+            }`}
+            title="Scan open-ended answers against other applicants to spot copied responses"
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            <span>Copy / Plagiarism Scan</span>
+            <NewBadge />
+          </button>
+
           {previousAttemptAnswers && (
             <button
               type="button"
@@ -192,8 +294,28 @@ export default function ResponseAnswers({ questions, answers, responseId, previo
                     {signal.label}
                   </span>
                 )}
+                {similarityMap[q.id] && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-500/20 border-rose-500/40 text-rose-200">
+                    <ShieldAlert className="h-3 w-3 text-rose-300" />
+                    {similarityMap[q.id].pct}% match w/ {similarityMap[q.id].matchedUser}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOpenNoteQId(openNoteQId === q.id ? null : q.id)}
+                  title="Add per-question staff comment"
+                  className={`px-2 py-1 rounded-lg border text-[11px] inline-flex items-center gap-1 transition-colors ${
+                    questionNotes[q.id] || openNoteQId === q.id
+                      ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200'
+                      : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-cyan-200'
+                  }`}
+                >
+                  <MessageSquarePlus className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{questionNotes[q.id] ? 'Note' : 'Comment'}</span>
+                  <NewBadge />
+                </button>
                 <button
                   type="button"
                   onClick={() => toggleMark(q.id, 'good')}
@@ -260,6 +382,55 @@ export default function ResponseAnswers({ questions, answers, responseId, previo
             {a && !isFileUpload && ['textarea', 'text', 'code'].includes(q.type) && (
               <div className="pl-8 mt-1.5 text-[10px] text-slate-500">
                 {a.split(/\s+/).filter(Boolean).length} words · {a.length} chars
+              </div>
+            )}
+
+            {questionNotes[q.id] && openNoteQId !== q.id && (
+              <div
+                onClick={() => setOpenNoteQId(q.id)}
+                className="ml-8 mt-2.5 cursor-pointer rounded-lg bg-cyan-500/[0.06] border border-cyan-500/25 p-2.5 text-xs text-cyan-100 flex items-start justify-between gap-2"
+              >
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-cyan-300 block mb-0.5">
+                    Staff Question Note
+                  </span>
+                  <span className="whitespace-pre-wrap">{questionNotes[q.id]}</span>
+                </div>
+                <span className="text-[10px] text-cyan-300/70 hover:underline shrink-0">Edit</span>
+              </div>
+            )}
+
+            {openNoteQId === q.id && (
+              <div className="ml-8 mt-2.5 rounded-xl bg-slate-950/80 border border-cyan-500/30 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5">
+                    Staff Note on Q{origIdx + 1} <NewBadge />
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setOpenNoteQId(null)}
+                    className="text-[11px] text-slate-400 hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+                <textarea
+                  value={questionNotes[q.id] || ''}
+                  onChange={(e) => setQuestionNotes((prev) => ({ ...prev, [q.id]: e.target.value }))}
+                  placeholder="Write a private reviewer comment specifically about this answer…"
+                  className="w-full min-h-[64px] rounded-lg bg-white/5 border border-white/10 p-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/40"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    disabled={savingNoteQId === q.id}
+                    onClick={() => saveQuestionNote(q.id)}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-xs font-semibold text-cyan-200"
+                  >
+                    <Save className="h-3 w-3" />
+                    {savingNoteQId === q.id ? 'Saving…' : 'Save Note'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

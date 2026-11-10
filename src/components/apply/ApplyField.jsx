@@ -45,8 +45,40 @@ export default function ApplyField({ q, value, onChange, autoFocus }) {
           : words >= 25
           ? '✓ Strong detail level'
           : 'Good start — add examples if helpful';
+      const insertSnippet = (snippet) => {
+        const prefix = text && !text.endsWith('\n') ? `${text}\n` : text;
+        onChange(`${prefix}${snippet}`);
+      };
       return (
         <div>
+          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+            <span className="text-[11px] text-slate-500 mr-1">Quick structure:</span>
+            <button
+              type="button"
+              onClick={() => insertSnippet('• ')}
+              className="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] text-slate-300 hover:text-white transition-colors"
+            >
+              + Bullet point
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                insertSnippet('Situation: \nAction I took: \nResult: ')
+              }
+              className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/25 text-[11px] text-cyan-200 transition-colors"
+            >
+              + Situation / Action / Result
+            </button>
+            {text.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onChange(text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim())}
+                className="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] text-slate-400 hover:text-white transition-colors"
+              >
+                Clean spacing
+              </button>
+            )}
+          </div>
           <Textarea autoFocus={autoFocus} value={text} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder || 'Type your answer…'} maxLength={q.maxLength || q.validation?.maxLength || undefined} className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[160px] text-base rounded-xl focus-visible:ring-cyan-500/50" />
           <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>

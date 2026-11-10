@@ -18,10 +18,8 @@ import {
   Copy,
   RefreshCw,
   ExternalLink,
-  GraduationCap,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/lib/AuthContext';
 import ApplicationEditor from './applications/ApplicationEditor';
 import AiApplicationGenerator from './applications/AiApplicationGenerator';
 import ResponsesBoard from './applications/ResponsesBoard';
@@ -30,7 +28,6 @@ import WebsiteBansPanel from './applications/WebsiteBansPanel';
 import GoogleFormsSyncModal from './applications/GoogleFormsSyncModal';
 import ApplicationSyncModal from './applications/ApplicationSyncModal';
 import GoogleSheetSyncSettings from './applications/GoogleSheetSyncSettings';
-import GoogleClassroomModal, { canUseGoogleClassroom } from './applications/GoogleClassroomModal';
 import { safeParse } from '@/lib/safeParse';
 import { stripRichText } from '@/lib/richDescription';
 import { defaultSettings } from '@/lib/applicationTypes';
@@ -63,8 +60,6 @@ function getSettingBadges(app) {
 
 export default function ApplicationsTab() {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const showClassroomBtn = canUseGoogleClassroom(user);
   const { responses: allLiveResponses, countsByApp, newCountsByApp, totalCount, unreviewedCount } = useLiveApplicationResponses(true);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +75,6 @@ export default function ApplicationsTab() {
   const [googleSyncOpen, setGoogleSyncOpen] = useState(false);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [sheetSyncOpen, setSheetSyncOpen] = useState(false);
-  const [classroomApp, setClassroomApp] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -448,16 +442,6 @@ export default function ApplicationsTab() {
                     <Settings className="h-3.5 w-3.5 text-cyan-300" />
                     <span>Settings</span>
                   </button>
-                  {showClassroomBtn && (
-                    <button
-                      onClick={() => setClassroomApp(app)}
-                      className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs text-emerald-200 hover:text-white inline-flex items-center gap-1.5 font-medium"
-                      title="Add this application to a Google Classroom class"
-                    >
-                      <GraduationCap className="h-3.5 w-3.5 text-emerald-300" />
-                      <span>Add to Google Classroom</span>
-                    </button>
-                  )}
                   <button
                     onClick={() => handleDuplicate(app)}
                     className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
@@ -496,13 +480,6 @@ export default function ApplicationsTab() {
         onClose={() => setSyncModalOpen(false)}
         applications={applications}
         onSynced={load}
-      />
-
-      <GoogleClassroomModal
-        open={!!classroomApp}
-        onClose={() => setClassroomApp(null)}
-        application={classroomApp}
-        user={user}
       />
 
       {blacklistOpen && <ApplicationBlacklistPanel onClose={() => setBlacklistOpen(false)} />}

@@ -154,6 +154,9 @@ export default function ResponseViewer({ responses, index, application, onIndex,
             questions={questions}
             answers={answers}
             responseId={response.id}
+            response={response}
+            allResponses={responses}
+            onUpdate={onUpdate}
             previousAttemptAnswers={previousAttemptAnswers}
           />
           <div className="space-y-4 lg:sticky lg:top-24">

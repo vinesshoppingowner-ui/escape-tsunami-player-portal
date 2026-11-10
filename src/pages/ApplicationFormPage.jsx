@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle, Ban, LayoutList, Layers, RotateCcw, Timer } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Send, CheckCircle2, FileQuestion, Lock, ClipboardCheck, Clock, AlertCircle, Ban, LayoutList, Layers, RotateCcw, Timer, Bookmark, Download } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ApplyField from '@/components/apply/ApplyField';
-import ApplyReview from '@/components/apply/ApplyReview';
+import ApplyReview, { formatAnswer } from '@/components/apply/ApplyReview';
 import ApplyStepper from '@/components/apply/ApplyStepper';
 import ApplyStatusScreen from '@/components/apply/ApplyStatusScreen';
 import ApplyLogin from '@/components/apply/ApplyLogin';
@@ -41,7 +41,33 @@ export default function ApplicationFormPage() {
   const [blacklisted, setBlacklisted] = useState(false);
   const [forceSinglePage, setForceSinglePage] = useState(null);
   const [remainingSec, setRemainingSec] = useState(null);
+  const [bookmarks, setBookmarks] = useState({});
   const retake = getRetakeState(settings, myResponses);
+
+  const toggleBookmark = (qId) => {
+    setBookmarks((prev) => ({ ...prev, [qId]: !prev[qId] }));
+  };
+
+  const downloadMyAnswers = () => {
+    const lines = [
+      `${app?.title || 'Application'} — Personal Copy`,
+      `Applicant: ${user?.roblox_username || user?.data?.roblox_username || user?.email || 'Member'}`,
+      `Date: ${new Date().toLocaleString()}`,
+      '----------------------------------------',
+      '',
+      ...visibleQuestions
+        .filter((q) => q.type !== 'section')
+        .map((q, i) => `Q${i + 1}: ${q.text}\nAnswer: ${formatAnswer(q, answers[q.id]) || '(Not answered)'}\n`),
+    ].join('\n');
+    const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(app?.slug || 'application').replace(/[^a-z0-9-_]/gi, '-')}-answers.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: 'Downloaded a copy of your answers' });
+  };
 
   const loadApp = async () => {
     setLoading(true);
@@ -309,7 +335,7 @@ export default function ApplicationFormPage() {
             <div className="h-full bg-cyan-500 rounded-full transition-all duration-300" style={{ width: `${answerableQuestions.length ? Math.min((answeredCount / answerableQuestions.length) * 100, 100) : 0}%` }} />
           </div>
         ) : (
-          <ApplyStepper questions={visibleQuestions} answers={answers} step={step} onJump={(i) => { setError(''); setStep(i); }} />
+          <ApplyStepper questions={visibleQuestions} answers={answers} bookmarks={bookmarks} step={step} onJump={(i) => { setError(''); setStep(i); }} />
         )}
 
         <div ref={formRef} className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 sm:p-10 overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
@@ -350,12 +376,29 @@ export default function ApplicationFormPage() {
 
               {!singlePage && current && (
                 <div>
-                  <div className="flex items-start gap-3 mb-5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 text-sm font-bold shrink-0">{step + 1}</span>
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-semibold text-white leading-snug">{current.text}{current.required && <span className="text-rose-400 ml-1">*</span>}</h2>
-                      {current.description && <p className="mt-1.5 text-sm text-slate-400">{current.description}</p>}
+                  <div className="flex items-start justify-between gap-3 mb-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 text-sm font-bold shrink-0">{step + 1}</span>
+                      <div>
+                        <h2 className="text-xl sm:text-2xl font-semibold text-white leading-snug">{current.text}{current.required && <span className="text-rose-400 ml-1">*</span>}</h2>
+                        {current.description && <p className="mt-1.5 text-sm text-slate-400">{current.description}</p>}
+                      </div>
                     </div>
+                    {current.type !== 'section' && (
+                      <button
+                        type="button"
+                        onClick={() => toggleBookmark(current.id)}
+                        title="Bookmark this question to review before submitting"
+                        className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shrink-0 transition-colors ${
+                          bookmarks[current.id]
+                            ? 'bg-amber-500/15 border-amber-500/40 text-amber-200'
+                            : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Bookmark className={`h-3.5 w-3.5 ${bookmarks[current.id] ? 'fill-amber-400 text-amber-400' : ''}`} />
+                        <span className="hidden sm:inline">{bookmarks[current.id] ? 'Bookmarked' : 'Review later'}</span>
+                      </button>
+                    )}
                   </div>
                   <ApplyField q={current} value={answers[current.id]} autoFocus onChange={(v) => { setError(''); setAnswers({ ...answers, [current.id]: v }); }} />
                   {error && <div className="mt-3 flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
@@ -374,12 +417,21 @@ export default function ApplicationFormPage() {
 
               {step >= total && total > 0 && (
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <ClipboardCheck className="h-6 w-6 text-cyan-300" />
-                    <h2 className="text-2xl font-semibold text-white">Review your answers</h2>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-3">
+                      <ClipboardCheck className="h-6 w-6 text-cyan-300" />
+                      <h2 className="text-2xl font-semibold text-white">Review your answers</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={downloadMyAnswers}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+                    >
+                      <Download className="h-3.5 w-3.5 text-cyan-400" /> Download copy (.txt)
+                    </button>
                   </div>
                   <p className="text-sm text-slate-400 mb-6">{answeredCount} of {answerableQuestions.length} answered · tap any answer to change it.</p>
-                  <ApplyReview questions={visibleQuestions} answers={answers} onEdit={(i) => { setError(''); setStep(i); }} />
+                  <ApplyReview questions={visibleQuestions} answers={answers} bookmarks={bookmarks} onEdit={(i) => { setError(''); setStep(i); }} />
                   {error && <div className="mt-4 flex items-center gap-2 text-sm text-rose-300"><AlertCircle className="h-4 w-4" /> {error}</div>}
                   <label className="mt-6 flex items-start gap-3 cursor-pointer rounded-xl bg-white/[0.03] border border-white/10 p-4">
                     <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 shrink-0" />

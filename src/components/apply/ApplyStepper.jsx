@@ -1,8 +1,8 @@
-import { Check } from 'lucide-react';
+import { Check, Bookmark } from 'lucide-react';
 
 const isEmpty = (a) => a === undefined || a === null || a === '' || (Array.isArray(a) && a.length === 0);
 
-export default function ApplyStepper({ questions, answers, step, onJump }) {
+export default function ApplyStepper({ questions, answers, bookmarks = {}, step, onJump }) {
   const total = questions.length;
   return (
     <div className="mb-6 space-y-2.5">
@@ -56,6 +56,7 @@ export default function ApplyStepper({ questions, answers, step, onJump }) {
             >
               {done && !active ? <Check className="h-3 w-3 text-emerald-400" /> : null}
               <span>{q.type === 'section' ? `Sec` : `Q${i + 1}`}</span>
+              {bookmarks[q.id] && <Bookmark className="h-3 w-3 fill-amber-400 text-amber-400" />}
               {!done && q.required && <span className="h-1.5 w-1.5 rounded-full bg-rose-400/80" />}
             </button>
           );

@@ -10,8 +10,7 @@ import { getRetakeState } from '@/lib/applicationRetake';
 import { safeParse } from '@/lib/safeParse';
 import { stripRichText } from '@/lib/richDescription';
 import { useLiveApplicationResponses, isNewSubmission } from '@/hooks/useLiveApplications';
-import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles, GraduationCap } from 'lucide-react';
-import GoogleClassroomModal, { canUseGoogleClassroom } from '@/components/admin/applications/GoogleClassroomModal';
+import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles } from 'lucide-react';
 
 const STATUS_ICONS = {
   submitted: { icon: Clock, color: 'text-slate-400' },
@@ -40,8 +39,6 @@ export default function ApplicationsDirectoryPage() {
   const [statusView, setStatusView] = useState('open'); // 'open' | 'closed' | 'all'
   const [sortBy, setSortBy] = useState('deadline'); // 'deadline' | 'newest' | 'shortest'
   const [selectedResponse, setSelectedResponse] = useState(null);
-  const [classroomApp, setClassroomApp] = useState(null);
-  const showClassroomBtn = canUseGoogleClassroom(user);
 
   useEffect(() => { document.title = 'Applications · Escape Tsunami for Developers'; }, []);
 
@@ -413,16 +410,6 @@ export default function ApplicationsDirectoryPage() {
                           {draftCount > 0 ? 'Continue draft' : 'Open application'} <ChevronRight className="h-4 w-4" />
                         </Link>
                       )}
-                      {showClassroomBtn && (
-                        <button
-                          type="button"
-                          onClick={() => setClassroomApp(app)}
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 text-xs font-semibold transition-colors"
-                        >
-                          <GraduationCap className="h-4 w-4 text-emerald-300" />
-                          <span>Add to Google Classroom</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 );
@@ -442,13 +429,6 @@ export default function ApplicationsDirectoryPage() {
             : []
         }
         onClose={() => setSelectedResponse(null)}
-      />
-
-      <GoogleClassroomModal
-        open={!!classroomApp}
-        onClose={() => setClassroomApp(null)}
-        application={classroomApp}
-        user={user}
       />
     </div>
   );

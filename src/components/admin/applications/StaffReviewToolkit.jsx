@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { CheckSquare, Square, MessageSquare, Copy, Check, ShieldCheck } from 'lucide-react';
+import { CheckSquare, Square, MessageSquare, Copy, Check, ShieldCheck, HelpCircle } from 'lucide-react';
 import { safeParse } from '@/lib/safeParse';
+import { formatAnswer } from '@/lib/applicationTypes';
 import { useToast } from '@/components/ui/use-toast';
 import NewBadge from '@/components/ui/new-badge';
 
@@ -56,10 +57,32 @@ export default function StaffReviewToolkit({ response, application, onUpdate }) 
 
   const applicantName = response.roblox_username || 'Applicant';
 
+  const followUpPrompts = useMemo(() => {
+    const questions = safeParse(application.questions, []).filter((q) => q.type !== 'section');
+    const answers = safeParse(response.answers, {});
+    const openQs = questions.filter((q) => ['textarea', 'text'].includes(q.type));
+    const sorted = [...openQs].sort((a, b) => {
+      const lenA = (formatAnswer(a, answers[a.id]) || '').length;
+      const lenB = (formatAnswer(b, answers[b.id]) || '').length;
+      return lenA - lenB;
+    });
+    const targets = sorted.slice(0, 2);
+    if (!targets.length) {
+      return [
+        `Could you share a specific example of how you would handle a difficult situation in ${application.title}?`,
+        `What does your typical weekly schedule look like for active moderation/team duties?`,
+      ];
+    }
+    return targets.map(
+      (q) => `Regarding "${q.text}" — could you expand on your answer with a concrete example or how you'd handle an edge case?`
+    );
+  }, [application.questions, application.title, response.answers]);
+
   const dmTemplates = {
     accept: `Hey **${applicantName}**! 🎉 Congratulations — your application for **${application.title}** in **Escape Tsunami for Developers** has been **ACCEPTED**!${response.applicant_feedback ? `\n\n> **Reviewer Note:** ${response.applicant_feedback}` : ''}\n\nPlease reply to this DM when you are ready for your onboarding and role setup!`,
     interview: `Hey **${applicantName}**! 👋 Your application for **${application.title}** in **Escape Tsunami for Developers** stood out to our review team and is currently **Shortlisted / Under Review**.\n\nWe'd love to ask you a couple quick follow-up questions here on Discord whenever you're free!`,
     reject: `Hello **${applicantName}**, thank you for applying for **${application.title}** in **Escape Tsunami for Developers**. After reviewing your submission, we aren't able to move forward at this time.${response.applicant_feedback ? `\n\n> **Feedback:** ${response.applicant_feedback}` : ''}\n\nWe appreciate your interest and encourage you to apply again in the future!`,
+    followup: `Hey **${applicantName}**! 👋 Thanks for applying for **${application.title}**. Before we finalize our decision, could you answer these quick follow-up questions?\n\n${followUpPrompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}`,
   };
 
   return (
@@ -145,6 +168,32 @@ export default function StaffReviewToolkit({ response, application, onUpdate }) 
               <span>{copiedKey === key ? 'Copied!' : label}</span>
             </button>
           ))}
+        </div>
+
+        {/* Auto Follow-up Interview Question Generator */}
+        <div className="pt-2 border-t border-white/10 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-slate-300 inline-flex items-center gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+              <span>Smart Interview Follow-Ups</span>
+              <NewBadge />
+            </span>
+            <button
+              type="button"
+              onClick={() => copyText('followup', dmTemplates.followup, 'Follow-up interview questions copied!')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[11px] font-medium text-amber-200 hover:bg-amber-500/25"
+            >
+              {copiedKey === 'followup' ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+              <span>{copiedKey === 'followup' ? 'Copied' : 'Copy Follow-Up DM'}</span>
+            </button>
+          </div>
+          <div className="space-y-1">
+            {followUpPrompts.map((prompt, idx) => (
+              <div key={idx} className="text-[11px] text-slate-400 bg-slate-950/60 border border-white/5 rounded-lg px-2.5 py-1.5 leading-snug">
+                {idx + 1}. {prompt}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
