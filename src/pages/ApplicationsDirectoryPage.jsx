@@ -10,7 +10,8 @@ import { getRetakeState } from '@/lib/applicationRetake';
 import { safeParse } from '@/lib/safeParse';
 import { stripRichText } from '@/lib/richDescription';
 import { useLiveApplicationResponses, isNewSubmission } from '@/hooks/useLiveApplications';
-import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles } from 'lucide-react';
+import { Loader2, FileText, ChevronRight, CheckCircle2, Clock, XCircle, Search, FileQuestion, CalendarClock, Eye, AlertCircle, RefreshCw, Shield, Sparkles, GraduationCap } from 'lucide-react';
+import GoogleClassroomModal, { canUseGoogleClassroom } from '@/components/admin/applications/GoogleClassroomModal';
 
 const STATUS_ICONS = {
   submitted: { icon: Clock, color: 'text-slate-400' },
@@ -39,6 +40,8 @@ export default function ApplicationsDirectoryPage() {
   const [statusView, setStatusView] = useState('open'); // 'open' | 'closed' | 'all'
   const [sortBy, setSortBy] = useState('deadline'); // 'deadline' | 'newest' | 'shortest'
   const [selectedResponse, setSelectedResponse] = useState(null);
+  const [classroomApp, setClassroomApp] = useState(null);
+  const showClassroomBtn = canUseGoogleClassroom(user);
 
   useEffect(() => { document.title = 'Applications · Escape Tsunami for Developers'; }, []);
 
@@ -396,7 +399,7 @@ export default function ApplicationsDirectoryPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-white/5">
+                    <div className="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2">
                       {alreadyApplied && myLatest ? (
                         <button onClick={() => setSelectedResponse({ ...myLatest, application: app })} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/20 transition-colors">
                           <Eye className="h-4 w-4" /> View submission
@@ -409,6 +412,16 @@ export default function ApplicationsDirectoryPage() {
                         <Link to={`/apply/${app.slug || app.id}`} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
                           {draftCount > 0 ? 'Continue draft' : 'Open application'} <ChevronRight className="h-4 w-4" />
                         </Link>
+                      )}
+                      {showClassroomBtn && (
+                        <button
+                          type="button"
+                          onClick={() => setClassroomApp(app)}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 text-xs font-semibold transition-colors"
+                        >
+                          <GraduationCap className="h-4 w-4 text-emerald-300" />
+                          <span>Add to Google Classroom</span>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -429,6 +442,13 @@ export default function ApplicationsDirectoryPage() {
             : []
         }
         onClose={() => setSelectedResponse(null)}
+      />
+
+      <GoogleClassroomModal
+        open={!!classroomApp}
+        onClose={() => setClassroomApp(null)}
+        application={classroomApp}
+        user={user}
       />
     </div>
   );
