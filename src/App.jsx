@@ -46,13 +46,16 @@ const AuthenticatedApp = () => {
   const season = useSeasonalTheme();
   const prefs = useUserPrefs();
 
-  const isLoading = isLoadingPublicSettings || isLoadingAuth;
-  const showSplash = isDesktopApp || new URLSearchParams(window.location.search).has('splash');
+  const searchParams = new URLSearchParams(window.location.search);
+  const isLoading = isLoadingPublicSettings || isLoadingAuth || searchParams.has('loading');
+  const showSplash = isDesktopApp || searchParams.has('splash');
+
+  if (isLoading) {
+    return <AppLoadingScreen />;
+  }
 
   let content;
-  if (isLoading) {
-    content = <AppLoadingScreen />;
-  } else if (authError?.type === 'user_not_registered') {
+  if (authError?.type === 'user_not_registered') {
     content = <UserNotRegisteredError />;
   } else if (authError?.type === 'auth_required') {
     navigateToLogin();
