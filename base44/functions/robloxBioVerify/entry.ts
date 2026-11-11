@@ -1,14 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
-const ADJECTIVES = ['blue', 'calm', 'cool', 'gold', 'fast', 'kind', 'pure', 'safe', 'warm', 'wild'];
-const NOUNS = ['wave', 'tide', 'surf', 'reef', 'star', 'moon', 'palm', 'cove', 'boat', 'fish'];
+const ADJECTIVES = ['blue', 'calm', 'cool', 'gold', 'fast', 'kind', 'pure', 'safe', 'warm', 'wild', 'bright', 'clear', 'lucky', 'sunny', 'swift'];
+const NOUNS = ['wave', 'tide', 'surf', 'reef', 'star', 'moon', 'palm', 'cove', 'boat', 'fish', 'cloud', 'coast', 'pearl', 'shell', 'wind'];
 const makeCode = () => {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
   const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-  const num = Math.floor(10 + Math.random() * 89);
-  return `${adj} ${noun} ${num}`;
+  return `${adj} ${noun}`;
 };
-const isLegacyWeirdCode = (c) => !c || String(c).startsWith('ET-') || String(c).includes('-') || String(c).length > 16;
+const isLegacyWeirdCode = (c) => !c || String(c).startsWith('ET-') || String(c).includes('-') || /\d/.test(String(c)) || String(c).length > 14;
 
 const ROBLOX_ENDPOINTS = [
   'https://users.roblox.com',
