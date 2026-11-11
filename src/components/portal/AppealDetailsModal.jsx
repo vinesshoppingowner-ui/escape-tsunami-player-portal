@@ -1,6 +1,7 @@
 import AppealChat from '@/components/appeals/AppealChat';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollText, Calendar, Clock, UserCog, MessageSquare, CheckCircle2, XCircle, Eye, FileSearch, CheckCircle } from 'lucide-react';
+import { unlistedModeration } from '@/lib/unlistedAppeal';
 
 const STATUS_STYLES = {
   Pending: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -41,7 +42,7 @@ export default function AppealDetailsModal({ open, onClose, appeals = [], modera
         ) : (
           <div className="space-y-4 min-w-0">
             {appeals.map((a) => {
-              const mod = modMap[a.moderation_id];
+              const mod = modMap[a.moderation_id] || unlistedModeration(a);
               const StatusIcon = STATUS_ICON[a.status] || Clock;
               return (
                 <div key={a.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 min-w-0 overflow-hidden">

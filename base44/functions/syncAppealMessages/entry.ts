@@ -79,7 +79,7 @@ export default async function(req: Request): Promise<Response> {
 
       if (body.since_id) {
         const idx = items.findIndex((m) => m.id === body.since_id);
-        if (idx !== -1) items = items.slice(0, idx);
+        if (idx !== -1) items = items.slice(idx + 1);
       }
 
       return Response.json({ status: 'ok', count: items.length, messages: items });
@@ -130,6 +130,17 @@ export default async function(req: Request): Promise<Response> {
         video_url: body.video_url || undefined,
         internal: body.internal || false,
       });
+      if (!body.internal && body.roblox_username && body.sender_is_staff !== false) {
+        waitUntil(
+          base44.asServiceRole.entities.Notification.create({
+            roblox_username: body.roblox_username,
+            title: 'New reply on your appeal',
+            body: body.message ? String(body.message).slice(0, 140) : 'Staff sent a screenshot in your appeal chat.',
+            type: 'staff_message',
+            read: false,
+          }).catch(() => {})
+        );
+      }
       return Response.json({ status: 'ok', message: { id: created.id } });
     }
 

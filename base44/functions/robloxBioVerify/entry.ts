@@ -1,7 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
-const WORDS = ['wave', 'tide', 'surf', 'coral', 'reef', 'shell', 'storm', 'ocean', 'pearl', 'drift', 'shore', 'foam'];
-const makeCode = () => 'ET-' + Array.from({ length: 4 }, () => WORDS[Math.floor(Math.random() * WORDS.length)]).join('-');
+const ADJECTIVES = ['blue', 'calm', 'cool', 'gold', 'fast', 'kind', 'pure', 'safe', 'warm', 'wild'];
+const NOUNS = ['wave', 'tide', 'surf', 'reef', 'star', 'moon', 'palm', 'cove', 'boat', 'fish'];
+const makeCode = () => {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num = Math.floor(10 + Math.random() * 89);
+  return `${adj} ${noun} ${num}`;
+};
+const isLegacyWeirdCode = (c) => !c || String(c).startsWith('ET-') || String(c).includes('-') || String(c).length > 16;
 
 const ROBLOX_ENDPOINTS = [
   'https://users.roblox.com',
@@ -64,10 +71,15 @@ export default async function(req) {
       const pending = await getPendingForUser();
       const latest = pending[0];
       if (!latest) return Response.json({ pending: null });
+      let activeCode = latest.code;
+      if (isLegacyWeirdCode(activeCode)) {
+        activeCode = makeCode();
+        await adminDb.update(latest.id, { code: activeCode }).catch(() => {});
+      }
       return Response.json({
         pending: {
           username: latest.roblox_username,
-          code: latest.code,
+          code: activeCode,
         },
       });
     }
@@ -79,17 +91,19 @@ export default async function(req) {
       }
 
       const existingPending = await getPendingForUser();
-      if (!forceNew) {
-        const sameUserPending = existingPending.find(
-          (r) => String(r.roblox_username || '').toLowerCase() === name.toLowerCase() && r.code
-        );
-        if (sameUserPending) {
-          return Response.json({ code: sameUserPending.code, username: sameUserPending.roblox_username });
-        }
+      const sameUserPending = existingPending.find(
+        (r) => String(r.roblox_username || '').toLowerCase() === name.toLowerCase() && r.code
+      );
+      if (sameUserPending && !forceNew && !isLegacyWeirdCode(sameUserPending.code)) {
+        return Response.json({ code: sameUserPending.code, username: sameUserPending.roblox_username });
       }
 
       const code = makeCode();
-      await userDb.create({ roblox_username: name, code, status: 'pending' });
+      if (sameUserPending) {
+        await adminDb.update(sameUserPending.id, { code, roblox_username: name }).catch(() => {});
+      } else {
+        await userDb.create({ roblox_username: name, code, status: 'pending' });
+      }
       return Response.json({ code, username: name });
     }
 

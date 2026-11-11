@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { startRobloxLogin } from '@/lib/robloxOAuth';
 import BioCodeVerify from '@/components/moderations/BioCodeVerify';
 
-export default function VerifyAccount() {
+export default function VerifyAccount({ onVerified }) {
   const { user } = useAuth();
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +57,7 @@ export default function VerifyAccount() {
         </a>
       )}
 
-      {user && <BioCodeVerify />}
+      {user && <BioCodeVerify onVerified={onVerified} />}
 
       {error && (
         <div className="mt-4 rounded-lg flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 p-3">

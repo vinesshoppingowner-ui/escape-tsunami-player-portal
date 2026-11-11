@@ -9,6 +9,7 @@ import { sendApplicationUpdateEmail } from '@/lib/userEmails';
 import { generateAIFeedbackDraft } from '@/lib/applicationAI';
 import { safeParse } from '@/lib/safeParse';
 import ResponseRatingTags from './ResponseRatingTags';
+import { isStrictAdmin } from './AdminExecutiveActions';
 import NewBadge from '@/components/ui/new-badge';
 
 const fieldCls = 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[70px] text-sm';
@@ -72,7 +73,14 @@ export default function ResponseDecisionPanel({
     }
   };
 
+  const reviewMeta = safeParse(response.ai_review, {});
+  const lockedForStaff = Boolean(reviewMeta.admin_decision_locked) && !isStrictAdmin(user);
+
   const save = async (overrideStatus) => {
+    if (lockedForStaff) {
+      toast({ title: 'This verdict is locked by an Administrator', variant: 'destructive' });
+      return;
+    }
     const nextStatus = typeof overrideStatus === 'string' ? overrideStatus : status;
     setSaving(true);
     try {
@@ -262,11 +270,11 @@ export default function ResponseDecisionPanel({
 
       <button
         onClick={() => save()}
-        disabled={saving}
+        disabled={saving || lockedForStaff}
         className="w-full inline-flex items-center justify-center gap-1.5 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium disabled:opacity-60"
       >
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-        {saving ? 'Saving…' : 'Save decision'}
+        {lockedForStaff ? 'Locked by Administrator' : saving ? 'Saving…' : 'Save decision'}
       </button>
 
       {/* Admin quick tools */}

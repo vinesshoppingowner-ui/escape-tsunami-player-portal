@@ -14,6 +14,7 @@ import ResponseAIPanel from './ResponseAIPanel';
 import ResponseDecisionPanel from './ResponseDecisionPanel';
 import ApplicantContextCard from './ApplicantContextCard';
 import StaffReviewToolkit from './StaffReviewToolkit';
+import AdminExecutiveActions, { isStrictAdmin } from './AdminExecutiveActions';
 
 export default function ResponseViewer({ responses, index, application, onIndex, onClose, onUpdate, onDelete }) {
   const { user } = useAuth();
@@ -32,6 +33,11 @@ export default function ResponseViewer({ responses, index, application, onIndex,
   // Bug 1 fix: Quick status via keyboard shortcuts now properly sets reviewed_by, creates Notification, emails applicant, and syncs to Google Sheet
   const quickStatus = async (status) => {
     if (!response || response.status === status) return;
+    const revObj = safeParse(response.ai_review, {});
+    if (revObj.admin_decision_locked && !isStrictAdmin(user)) {
+      toast({ title: 'Decision locked by an Administrator', variant: 'destructive' });
+      return;
+    }
     try {
       const prevStatus = response.status;
       const updated = await base44.entities.ApplicationResponse.update(response.id, {
@@ -160,6 +166,7 @@ export default function ResponseViewer({ responses, index, application, onIndex,
             previousAttemptAnswers={previousAttemptAnswers}
           />
           <div className="space-y-4 lg:sticky lg:top-24">
+            <AdminExecutiveActions response={response} application={application} onUpdate={onUpdate} />
             <ApplicantContextCard username={response.roblox_username} currentResponseId={response.id} />
             <StaffReviewToolkit response={response} application={application} onUpdate={onUpdate} />
             <ResponseAIPanel

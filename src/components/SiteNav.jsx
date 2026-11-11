@@ -10,9 +10,6 @@ import { useDesktopApp } from '@/hooks/useDesktopApp';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { useUserPrefs } from '@/lib/userPrefs';
 import { useAutoHideNav } from '@/hooks/useAutoHideNav';
-import ApplicationPromotePopover, { usePromotedApplication } from '@/components/ApplicationPromotePopover';
-import PortalAlertPopover, { usePortalTabAlert } from '@/components/PortalAlertPopover';
-
 import { SITE_CONFIG } from '@/site.config';
 const GAME_URL = SITE_CONFIG.links.robloxGame;
 
@@ -28,8 +25,6 @@ export default function SiteNav() {
   const [topAnnouncement, setTopAnnouncement] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
-  const { promoted: promotedApp, dismiss: dismissPromotedApp } = usePromotedApplication();
-  const { alert: portalAlert, dismiss: dismissPortalAlert } = usePortalTabAlert();
 
   useEffect(() => {
     (async () => {
@@ -115,8 +110,6 @@ export default function SiteNav() {
                 </span>
               );
             }
-            const isAppsTab = l.to === '/applications';
-            const isPortalTab = l.to === '/portal';
             return (
               <div key={l.to} className="relative inline-flex items-center">
                 <Link
@@ -129,12 +122,6 @@ export default function SiteNav() {
                   {l.label}
                   {active && <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 bg-cyan-400 rounded-full" />}
                 </Link>
-                {isPortalTab && portalAlert && (
-                  <PortalAlertPopover alert={portalAlert} onDismiss={dismissPortalAlert} align="center" />
-                )}
-                {isAppsTab && promotedApp && (
-                  <ApplicationPromotePopover app={promotedApp} onDismiss={dismissPromotedApp} align="center" />
-                )}
               </div>
             );
           })}
@@ -166,12 +153,6 @@ export default function SiteNav() {
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            {!open && portalAlert && (
-              <PortalAlertPopover alert={portalAlert} onDismiss={dismissPortalAlert} align="right" />
-            )}
-            {!open && !portalAlert && promotedApp && (
-              <ApplicationPromotePopover app={promotedApp} onDismiss={dismissPromotedApp} align="right" />
-            )}
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, RefreshCw } from 'lucide-react';
 
-export default function BioCodeVerify() {
+export default function BioCodeVerify({ onVerified }) {
   const [username, setUsername] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -54,9 +54,18 @@ export default function BioCodeVerify() {
     }
   };
 
+  const regenerate = async () => {
+    if (!username.trim()) return;
+    const d = await call({ action: 'start', username: username.trim().replace(/^@/, ''), forceNew: true });
+    if (d?.code) setCode(d.code);
+  };
+
   const check = async () => {
     const d = await call({ action: 'check', username, code });
-    if (d?.username) window.location.reload();
+    if (d?.username) {
+      if (onVerified) await onVerified(d.username);
+      window.location.reload();
+    }
   };
 
   const copy = () => {
@@ -103,13 +112,28 @@ export default function BioCodeVerify() {
           <p className="text-sm text-slate-400">
             Paste this code anywhere in <strong className="text-white">@{username}</strong>'s Roblox profile "About" section, save it, then press Verify.
           </p>
-          <button
-            type="button"
-            onClick={copy}
-            className="w-full flex items-center justify-between gap-2 rounded-md bg-slate-950/60 border border-cyan-500/30 px-3 py-2.5 font-mono text-sm text-cyan-200 break-all text-left"
-          >
-            {code} {copied ? <Check className="h-4 w-4 shrink-0" /> : <Copy className="h-4 w-4 shrink-0" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copy}
+              className="flex-1 flex items-center justify-between gap-2 rounded-md bg-slate-950/60 border border-cyan-500/30 px-3.5 py-2.5 font-mono text-base font-semibold tracking-wide text-cyan-200 text-left hover:bg-slate-900/80 transition-colors"
+            >
+              <span>{code}</span>
+              <span className="inline-flex items-center gap-1 text-xs font-sans font-normal text-cyan-300/80">
+                {copied ? <Check className="h-4 w-4 shrink-0 text-emerald-400" /> : <Copy className="h-4 w-4 shrink-0" />}
+                {copied ? 'Copied' : 'Copy'}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={regenerate}
+              disabled={busy}
+              title="Get a different short code"
+              className="h-11 px-3 rounded-md border border-white/15 text-slate-300 hover:text-white hover:bg-white/5 disabled:opacity-50 inline-flex items-center justify-center"
+            >
+              <RefreshCw className={`h-4 w-4 ${busy ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <button type="button" onClick={check} disabled={busy} className={btn}>
               {busy && <Loader2 className="h-4 w-4 animate-spin" />} Verify

@@ -30,7 +30,8 @@ export default function MyAppealsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user?.roblox_username) setSavedUsername(user.roblox_username);
+    const linked = user?.roblox_username || user?.data?.roblox_username;
+    if (linked) setSavedUsername(linked);
   }, [user]);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function MyAppealsPage() {
           base44.entities.Appeal.filter({ roblox_username: savedUsername }, { sort: '-created_date', limit: 100 }),
           base44.entities.Moderation.filter({ roblox_username: savedUsername }, { sort: '-moderation_date', limit: 100 }),
         ]);
-        setAppeals(apps?.items || []);
+        setAppeals((apps?.items || []).filter((a) => !a.removed));
         setModerations(mods?.items || []);
       } finally {
         setLoading(false);

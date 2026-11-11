@@ -1,32 +1,67 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
-import { secrets } from 'base44:runtime';
-import { waitUntil } from 'base44:runtime';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { secrets, waitUntil } from 'base44:runtime';
 
-// Called by the Roblox game server (not a logged-in user) to push moderation
-// records into the portal's Moderation entity. Auth is the shared game API key
-// — same as checkPlayerBan, getPlayerWarnings, and submit-game-logs.
-//
-// Also creates a Notification for the moderated player so they see it in the
-// portal on their next visit.
-
+// Called by the Roblox game server or the Staff Website to pull, push, or update
+// moderation records in the portal's Moderation entity.
 export default async function (req: Request): Promise<Response> {
   try {
     const apiKey = req.headers.get('x-api-key');
-    if (!apiKey || apiKey !== secrets.get('GAME_LOG_API_KEY')) {
+    const base44 = createClientFromRequest(req);
+
+    let authorized = Boolean(apiKey && apiKey === secrets.get('GAME_LOG_API_KEY'));
+    if (!authorized) {
+      const user = await base44.auth.me().catch(() => null);
+      if (user && (user.role === 'admin' || user.role === 'staff' || user.data?.is_owner === true)) {
+        authorized = true;
+      }
+    }
+    if (!authorized) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const { moderations } = body;
-
-    if (!Array.isArray(moderations) || moderations.length === 0) {
-      return Response.json({ error: 'moderations array is required' }, { status: 400 });
+    if (req.method === 'GET') {
+      const page = await base44.asServiceRole.entities.Moderation.filter({}, { sort: '-moderation_date', limit: 250 });
+      const items = Array.isArray(page) ? page : page?.items || [];
+      return Response.json({ status: 'ok', count: items.length, moderations: items });
     }
 
-    const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
+
+    if (body.action === 'pull') {
+      const query = body.roblox_username ? { roblox_username: body.roblox_username } : {};
+      const page = await base44.asServiceRole.entities.Moderation.filter(query, { sort: '-moderation_date', limit: 250 });
+      const items = Array.isArray(page) ? page : page?.items || [];
+      return Response.json({ status: 'ok', count: items.length, moderations: items });
+    }
+
+    if (body.action === 'update' && body.id) {
+      const patch: Record<string, unknown> = {};
+      for (const k of ['moderation_type', 'reason', 'details', 'duration', 'status', 'staff_member', 'evidence_type', 'evidence_text', 'evidence_image_url']) {
+        if (body[k] !== undefined) patch[k] = body[k];
+      }
+      const updated = await base44.asServiceRole.entities.Moderation.update(body.id, patch);
+      return Response.json({ status: 'ok', moderation: updated });
+    }
+
+    if (body.action === 'delete' && body.id) {
+      await base44.asServiceRole.entities.Moderation.delete(body.id);
+      return Response.json({ status: 'ok' });
+    }
+
+    const rawList = Array.isArray(body.moderations)
+      ? body.moderations
+      : body.moderation
+      ? [body.moderation]
+      : body.roblox_username
+      ? [body]
+      : [];
+
+    if (rawList.length === 0) {
+      return Response.json({ error: 'moderations array or moderation object is required' }, { status: 400 });
+    }
 
     const records = await base44.asServiceRole.entities.Moderation.bulkCreate(
-      moderations.map((m: any) => ({
+      rawList.map((m: any) => ({
         roblox_username: m.roblox_username,
         moderation_type: m.moderation_type || 'Warning',
         reason: m.reason || 'In-game moderation',
@@ -42,7 +77,6 @@ export default async function (req: Request): Promise<Response> {
       }))
     );
 
-    // Fire off notifications in the background (one per moderated player)
     waitUntil(
       Promise.allSettled(
         (records || []).map((rec: any) =>
