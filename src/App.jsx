@@ -47,8 +47,12 @@ const AuthenticatedApp = () => {
   const prefs = useUserPrefs();
 
   const searchParams = new URLSearchParams(window.location.search);
+  const isMobileViewport = typeof window !== 'undefined' && (
+    window.matchMedia?.('(max-width: 768px)')?.matches ||
+    /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator?.userAgent || '')
+  );
   const isLoading = isLoadingPublicSettings || isLoadingAuth || searchParams.has('loading');
-  const showSplash = isDesktopApp || searchParams.has('splash');
+  const showDesktopSplash = !isMobileViewport && (isDesktopApp || searchParams.has('splash'));
 
   if (isLoading) {
     return <AppLoadingScreen />;
@@ -96,7 +100,8 @@ const AuthenticatedApp = () => {
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         {!isLoading && <StaffDestinationModal />}
-        {showSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
+        {showDesktopSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
+        {isMobileViewport && <AppLoadingScreen ready={!isLoading && !authError} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />
         {content}
       </MaintenanceGuard>

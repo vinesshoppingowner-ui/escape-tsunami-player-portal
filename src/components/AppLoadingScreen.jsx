@@ -1,12 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Image } from '@/components/ui/image';
 
 const ICON = 'https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/b60ae6e74_generated_image.png';
 
-export default function AppLoadingScreen() {
+export default function AppLoadingScreen({ ready = false }) {
+  const [minElapsed, setMinElapsed] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMinElapsed(true), 1100);
+    return () => clearTimeout(t);
+  }, []);
+
+  const fadingOut = ready && minElapsed;
+
+  useEffect(() => {
+    if (!fadingOut) return;
+    const t = setTimeout(() => setDismissed(true), 450);
+    return () => clearTimeout(t);
+  }, [fadingOut]);
+
+  if (dismissed) return null;
+
   return (
     <>
       <style>{`
-        .ls-pg{position:fixed;inset:0;z-index:200;overflow:hidden;background:linear-gradient(180deg,#081B33 0%,#0a2a4d 55%,#0b3a66 100%);font-family:"Nunito","Quicksand","Varela Round","Trebuchet MS",ui-rounded,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;box-sizing:border-box}
+        .ls-pg{position:fixed;inset:0;z-index:9999;overflow:hidden;background:linear-gradient(180deg,#081B33 0%,#0a2a4d 55%,#0b3a66 100%);font-family:"Nunito","Quicksand","Varela Round","Trebuchet MS",ui-rounded,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;transition:opacity .45s ease}
+        .ls-pg.ls-fade{opacity:0;pointer-events:none}
         .ls-glow{position:absolute;top:-120px;left:50%;margin-left:-160px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.35),rgba(56,189,248,0) 70%);animation:ls-breathe 5s ease-in-out infinite}
         .ls-ray{position:absolute;top:0;width:90px;height:420px;background:linear-gradient(180deg,rgba(240,249,255,.10),rgba(240,249,255,0));transform-origin:top center}
         .ls-r1{left:calc(50% - 141px);transform:rotate(12deg);animation:ls-sway 7s ease-in-out infinite}
@@ -39,7 +59,7 @@ export default function AppLoadingScreen() {
         @keyframes ls-enter{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
         @media (max-height: 650px) { .ls-main { margin-top: 140px; } }
       `}</style>
-      <div className="ls-pg">
+      <div className={`ls-pg${fadingOut ? ' ls-fade' : ''}`}>
         <div className="ls-glow"></div>
         <div className="ls-ray ls-r1"></div>
         <div className="ls-ray ls-r2"></div>
