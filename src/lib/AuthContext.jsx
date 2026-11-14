@@ -95,28 +95,35 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
 
-      // Track IP, last seen, and @escapetsunamifordevelopers.com staff domain flag
-      const updateData = {};
+      // Track IP, last seen, and @escapetsunamifordevelopers.com staff domain flag without blocking page load
       const isStaffDomain = typeof currentUser?.email === 'string' && currentUser.email.trim().toLowerCase().endsWith('@escapetsunamifordevelopers.com');
       if (isStaffDomain && currentUser?.data?.is_owner !== true) {
-        updateData.is_owner = true;
+        currentUser.data = { ...(currentUser.data || {}), is_owner: true };
       }
-      try {
-        const ipRes = await fetch('https://api.ipify.org?format=json');
-        const { ip } = await ipRes.json();
-        if (ip) {
-          updateData.last_ip = ip;
-          updateData.last_seen = new Date().toISOString();
+      (async () => {
+        const updateData = {};
+        if (isStaffDomain && currentUser?.data?.is_owner !== true) {
+          updateData.is_owner = true;
         }
-      } catch {}
-      if (Object.keys(updateData).length > 0) {
-        currentUser.data = { ...(currentUser.data || {}), ...updateData };
         try {
-          await base44.auth.updateMe({ ...(currentUser.data || {}), ...updateData });
-        } catch (e) {
-          console.error('Failed to update user data:', e);
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 3500);
+          const ipRes = await fetch('https://api.ipify.org?format=json', { signal: ctrl.signal });
+          clearTimeout(timer);
+          const { ip } = await ipRes.json();
+          if (ip) {
+            updateData.last_ip = ip;
+            updateData.last_seen = new Date().toISOString();
+          }
+        } catch {}
+        if (Object.keys(updateData).length > 0) {
+          try {
+            await base44.auth.updateMe({ ...(currentUser.data || {}), ...updateData });
+          } catch (e) {
+            console.error('Failed to update user data:', e);
+          }
         }
-      }
+      })();
       // Enforce portal-level account flags
       const ud = currentUser.data || {};
       const urlParams = new URLSearchParams(window.location.search);
@@ -156,17 +163,14 @@ export const AuthProvider = ({ children }) => {
       setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
+      // Clear expired/invalid token so public pages still load normally as guest
+      if (error?.status === 401 || error?.status === 403) {
+        try { base44.auth.logout(); } catch {}
+      }
+      setUser(null);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
     }
   };
 

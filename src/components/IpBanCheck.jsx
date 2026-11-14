@@ -24,32 +24,28 @@ export default function IpBanCheck({ children }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 1. User-Agent / client validation — block scripts & headless browsers
-      if (!validateClient()) {
-        if (!cancelled) setStatus('banned');
-        return;
-      }
-
-      // 2. Check server-side IP ban first (authoritative source of truth)
+      // Check server-side IP ban (authoritative source of truth)
       let ip = null;
       let serverBanned = false;
       let serverChecked = false;
       try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 4000);
         const [ipRes, bans] = await Promise.all([
-          fetch('https://api.ipify.org?format=json').then((r) => r.json()),
+          fetch('https://api.ipify.org?format=json', { signal: ctrl.signal }).then((r) => r.json()),
           base44.entities.IpBan.list(),
         ]);
+        clearTimeout(timer);
         if (cancelled) return;
-        ip = ipRes.ip;
-        const matchedBan = bans.find((b) => b.ip_address === ip) || null;
+        ip = ipRes?.ip;
+        const matchedBan = (bans || []).find((b) => b.ip_address === ip) || null;
         serverBanned = Boolean(matchedBan);
         if (matchedBan) setIpBanInfo(matchedBan);
         serverChecked = true;
       } catch {
-        // Server unreachable — fail open for the initial check
+        // Server or ipify unreachable (e.g. ad-blocker) — clear stale client tokens & allow through
       }
 
-      // 3. Server confirms ban — persist tokens and block
       if (serverBanned) {
         const fp = await generateFingerprint();
         setBanToken(fp);
@@ -58,43 +54,8 @@ export default function IpBanCheck({ children }) {
         return;
       }
 
-      // 4. Server says NOT banned — clear any stale client-side ban tokens/fingerprints
-      if (serverChecked) {
-        const hasToken = hasBanToken() || await hasBanTokenIDB();
-        const fp = await generateFingerprint();
-        if (hasToken || isFingerprintBanned(fp)) {
-          clearBanToken();
-        }
-      } else if (hasBanToken() || await hasBanTokenIDB()) {
-        // Server unreachable but stale token exists — keep blocked (fail closed)
-        if (!cancelled) setStatus('banned');
-        return;
-      } else {
-        // Server unreachable, no token — check fingerprint as fallback
-        const fp = await generateFingerprint();
-        if (isFingerprintBanned(fp)) {
-          if (!cancelled) setStatus('banned');
-          return;
-        }
-      }
-
-      // 5. IP intelligence — VPN / proxy / hosting / known ASN / Tor / WebRTC leak
-      if (serverChecked && ip) {
-        try {
-          const intel = await checkIpIntelligence(ip);
-          if (intel.threat) {
-            // Block VPN/proxy/Tor connections entirely
-            const fp = await generateFingerprint();
-            setBanToken(fp);
-            addBannedFingerprint(fp);
-            if (!cancelled) setStatus('banned');
-            return;
-          }
-        } catch {
-          // Fail open
-        }
-      }
-
+      // Not banned in database — clear any stale false-positive client ban tokens
+      clearBanToken();
       if (!cancelled) setStatus('ok');
     })();
     return () => { cancelled = true; };
