@@ -1,15 +1,14 @@
 {
-  "name": "Auto Assign Appeals",
-  "description": "When a new appeal is submitted, assign it to the staff member with the fewest open appeals (only if auto-assign is switched on)",
+  "description": "When a new appeal is submitted, ensure it starts as Pending with cleared staff decision fields, and assign it to the staff member with the fewest open appeals (when auto-assign is switched on)",
   "trigger": {
+    "condition": null,
     "config": {
       "trigger_type": "entity",
-      "entity_name": "Appeal",
       "events": [
         "create"
-      ]
-    },
-    "condition": "${ (.trigger.data.assigned_to_email // \"\") == \"\" }"
+      ],
+      "entity_name": "Appeal"
+    }
   },
   "definition": {
     "document": {
@@ -30,11 +29,12 @@
           },
           "then": "end",
           "x-base44": {
-            "title": "Assign to staff",
-            "description": "Lightest open queue"
+            "title": "Sanitize & assign appeal",
+            "description": "Enforce Pending & assign"
           }
         }
       }
     ]
-  }
+  },
+  "name": "Auto Assign Appeals"
 }

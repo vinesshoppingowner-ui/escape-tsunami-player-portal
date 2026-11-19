@@ -18,45 +18,210 @@
     "is_owner": {
       "type": "boolean",
       "description": "Whether this user is an owner",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "banned": {
       "type": "boolean",
       "description": "Whether this user account has been banned from the portal",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "banned_reason": {
       "type": "string",
-      "description": "Reason for the portal ban"
+      "description": "Reason for the portal ban",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "banned_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When the portal ban was issued"
+      "description": "When the portal ban was issued",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "banned_by": {
       "type": "string",
-      "description": "Email of the staff member who banned this account"
+      "description": "Email of the staff member who banned this account",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "banned_until": {
       "type": "string",
       "format": "date-time",
-      "description": "When a temporary ban expires (null for permanent bans)"
+      "description": "When a temporary ban expires (null for permanent bans)",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "google_locked": {
       "type": "boolean",
       "description": "When true, the user cannot log in via Google OAuth",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "force_password_reset": {
       "type": "boolean",
       "description": "When true, the user must reset their password on next login",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "appeals_locked": {
       "type": "boolean",
       "description": "When true, the user cannot submit new appeals",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "has_password": {
       "type": "boolean",
@@ -66,25 +231,130 @@
     "suspended": {
       "type": "boolean",
       "description": "When true, the user is suspended from all portal activity but can still log in to view their status",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "suspended_reason": {
       "type": "string",
-      "description": "Reason for the suspension"
+      "description": "Reason for the suspension",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "suspended_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When the suspension was issued"
+      "description": "When the suspension was issued",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "suspended_by": {
       "type": "string",
-      "description": "Email of the staff member who suspended this account"
+      "description": "Email of the staff member who suspended this account",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "muted_until": {
       "type": "string",
       "format": "date-time",
-      "description": "When the user's mute expires (prevents appeal chat messages)"
+      "description": "When the user's mute expires (prevents appeal chat messages)",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "roblox_verified": {
       "type": "boolean",
@@ -93,7 +363,23 @@
     },
     "staff_notes_private": {
       "type": "string",
-      "description": "Private admin-only notes about this user account"
+      "description": "Private admin-only notes about this user account",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "last_ip": {
       "type": "string",
@@ -109,7 +395,23 @@
       "items": {
         "type": "string"
       },
-      "description": "Staff powers an admin has switched off for this user"
+      "description": "Staff powers an admin has switched off for this user",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "login_attempts": {
       "type": "number",
