@@ -18,6 +18,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RobloxOAuthCallbackPage from './pages/RobloxOAuthCallbackPage';
 import SupportReplyPage from './pages/SupportReplyPage';
+import DestinationPage from './pages/DestinationPage';
 
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<HomePage />} />
+        <Route path="/destination" element={<DestinationPage />} />
         <Route path="/portal" element={<MemberPortalPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/apply/:id" element={<ApplicationFormPage />} />
