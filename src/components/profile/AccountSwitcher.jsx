@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell, RefreshCw } from 'lucide-react';
+import { X, Settings, LogOut, Scale, FileText, LayoutDashboard, Crown, Shield, User, Pencil, Bell, RefreshCw, Compass } from 'lucide-react';
 import { isOwner } from '@/lib/isOwner';
 import { base44 } from '@/api/base44Client';
 import UserAvatar from '@/components/profile/UserAvatar';
@@ -17,6 +17,7 @@ const tierConfig = (user) => {
 
 const navItems = [
   { to: '/portal', label: 'Member Portal', icon: LayoutDashboard },
+  { to: '/destination', label: 'Portal Hub', icon: Compass },
   { to: '/my-appeals', label: 'My Appeals', icon: Scale },
   { to: '/notifications', label: 'Notifications', icon: Bell },
 ];

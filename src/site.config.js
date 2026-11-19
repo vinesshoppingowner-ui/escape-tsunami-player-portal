@@ -10,7 +10,7 @@
 // ============================================================
 
 import {
-  Home, LogIn, Scale, FileText,
+  Home, LogIn, Scale, FileText, Compass,
   MessageCircle, BookOpen, Bug, Mail,
   Waves,
 } from 'lucide-react';
@@ -34,12 +34,14 @@ export const SITE_CONFIG = {
       { label: 'Portal',       to: '/portal',        icon: LogIn },
       { label: 'My Appeals',   to: '/my-appeals',    icon: Scale },
       { label: 'Applications', to: '/applications',  icon: FileText },
+      { label: 'Navigate',     to: '/destination',   icon: Compass },
     ],
     mobileLinks: [
       { label: 'Home',          to: '/',             icon: Home },
       { label: 'Member Portal', to: '/portal',        icon: LogIn },
       { label: 'My Appeals',    to: '/my-appeals',    icon: Scale },
       { label: 'Applications',  to: '/applications',  icon: FileText },
+      { label: 'Navigate',      to: '/destination',   icon: Compass },
     ],
   },
 
