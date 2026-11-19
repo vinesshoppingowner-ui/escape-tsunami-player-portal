@@ -18,8 +18,7 @@ export default function BanAppealStatus({ appeal }) {
   const reactivate = async () => {
     setBusy(true);
     setError('');
-    const ip = await fetch('https://api.ipify.org?format=json').then((r) => r.json()).then((d) => d.ip).catch(() => null);
-    const res = await base44.functions.invoke('reactivateAccount', { ip }).catch((e) => ({ data: { error: e.response?.data?.error || e.message } }));
+    const res = await base44.functions.invoke('reactivateAccount', {}).catch((e) => ({ data: { error: e.response?.data?.error || e.message } }));
     if (res.data?.error) { setError(res.data.error); setBusy(false); return; }
     clearBanToken();
     window.location.reload();
@@ -31,7 +30,7 @@ export default function BanAppealStatus({ appeal }) {
         {appeal.decided_by && <> by <span className="text-white">{appeal.decided_by}</span></>}
       </p>
       {appeal.staff_response && <p className="mt-2 text-slate-300">"{appeal.staff_response}"</p>}
-      {appeal.status === 'Approved' && (
+      {appeal.status === 'Approved' && Boolean(appeal.decided_by) && (
         <button onClick={reactivate} disabled={busy} className="mt-4 inline-flex items-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 py-2 font-semibold text-white disabled:opacity-60">
           {busy && <Loader2 className="h-4 w-4 animate-spin" />} Reactivate account
         </button>

@@ -30,7 +30,7 @@ export default function BanAppealForm({ user, reason, onCancel }) {
     if (problem) { setError(problem); setBusy(false); return; }
     await base44.entities.Appeal.create({
       moderation_id: UNLISTED_ID, roblox_username: username, unlisted_type: WEBSITE_BAN_TYPE,
-      unlisted_reason: reason, appeal_reason: text.trim(), status: 'Pending',
+      unlisted_reason: reason, appeal_reason: text.trim(),
     });
     setBusy(false);
     setDone(true);

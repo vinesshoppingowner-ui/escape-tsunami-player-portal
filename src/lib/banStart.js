@@ -8,6 +8,8 @@ export async function getBanStart(user) {
   return dates.length ? Math.max(...dates) : 0;
 }
 
-// An approved appeal only counts if it was decided after the current ban started.
+// An approved appeal only counts if a staff member decided it after the current ban started.
 export const appealCoversBan = (appeal, banStart) =>
-  appeal?.status === 'Approved' && new Date(appeal.decided_at || appeal.updated_date).getTime() > banStart;
+  appeal?.status === 'Approved' &&
+  Boolean(appeal?.decided_by && String(appeal.decided_by).trim()) &&
+  new Date(appeal.decided_at || appeal.updated_date).getTime() > banStart;

@@ -60,7 +60,7 @@ export default function MyAppealsPage() {
   const locked = appeals.some((a) => a.admin_locked);
 
   const submitUnlisted = async (data) => {
-    const created = await base44.entities.Appeal.create({ ...data, moderation_id: UNLISTED_ID, roblox_username: savedUsername, status: 'Pending' });
+    const created = await base44.entities.Appeal.create({ ...data, moderation_id: UNLISTED_ID, roblox_username: savedUsername });
     setAppeals((prev) => [created, ...prev]);
     toast({ title: 'Appeal submitted', description: 'Staff will review it soon.' });
   };

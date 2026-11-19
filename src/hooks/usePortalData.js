@@ -94,7 +94,6 @@ export function usePortalData() {
       appeal_reason,
       why_accepted,
       deserved_infraction,
-      status: 'Pending',
     });
     if (user?.email) {
       emailPlayer({

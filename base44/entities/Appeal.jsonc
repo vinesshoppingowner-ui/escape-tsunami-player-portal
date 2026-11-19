@@ -44,7 +44,28 @@
         "Approved",
         "Denied"
       ],
-      "default": "Pending"
+      "default": "Pending",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "thread_status": {
       "type": "string",
@@ -55,79 +76,436 @@
         "Awaiting Evidence",
         "Resolved"
       ],
-      "default": "Awaiting Review"
+      "default": "Awaiting Review",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "staff_response": {
       "type": "string",
-      "description": "Optional response from the staff team reviewing the appeal, shown to the player"
+      "description": "Optional response from the staff team reviewing the appeal, shown to the player",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "internal_notes": {
       "type": "string",
-      "description": "Private notes shared between staff only, never shown to the player"
+      "description": "Private notes shared between staff only, never shown to the player",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "decided_by": {
       "type": "string",
-      "description": "Name of the staff member who approved or denied the appeal"
+      "description": "Name of the staff member who approved or denied the appeal",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "decided_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When the appeal was approved or denied"
+      "description": "When the appeal was approved or denied",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "can_reappeal": {
       "type": "boolean",
       "description": "Whether the player may submit a new appeal after this one is denied",
-      "default": true
+      "default": true,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "reappeal_after": {
       "type": "string",
       "format": "date-time",
-      "description": "Earliest time the player may submit a new appeal after denial"
+      "description": "Earliest time the player may submit a new appeal after denial",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "reappeal_guidance": {
       "type": "string",
-      "description": "Staff tips shown to the player about what to include in their next appeal"
+      "description": "Staff tips shown to the player about what to include in their next appeal",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "admin_locked": {
       "type": "boolean",
       "description": "When true, an admin has locked this player from submitting any appeals",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "locked_by": {
       "type": "string",
-      "description": "Name of the admin who locked the player's appeals"
+      "description": "Name of the admin who locked the player's appeals",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "removed": {
       "type": "boolean",
       "description": "When true, staff removed this appeal; it is hidden from the queue and the player",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "removed_by": {
       "type": "string",
-      "description": "Name of the staff member who removed the appeal"
+      "description": "Name of the staff member who removed the appeal",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "removed_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When the appeal was removed"
+      "description": "When the appeal was removed",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_to": {
       "type": "string",
-      "description": "Name of the staff member handling this appeal"
+      "description": "Name of the staff member handling this appeal",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_to_email": {
       "type": "string",
-      "description": "Email of the staff member handling this appeal"
+      "description": "Email of the staff member handling this appeal",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When the appeal was assigned"
+      "description": "When the appeal was assigned",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     },
     "chat_locked": {
       "type": "boolean",
       "description": "When true, the player can no longer send messages in the appeal chat",
-      "default": false
+      "default": false,
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "staff"
+              }
+            },
+            {
+              "user_condition": {
+                "data.is_owner": true
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [

@@ -149,7 +149,15 @@ export default async function(req: Request): Promise<Response> {
       const updateData: any = {};
       if (body.thread_status) updateData.thread_status = body.thread_status;
       if (body.chat_locked !== undefined) updateData.chat_locked = body.chat_locked;
-      if (body.status) updateData.status = body.status;
+      if (body.status) {
+        updateData.status = body.status;
+        if (body.status === 'Approved' || body.status === 'Denied') {
+          updateData.decided_by = body.decided_by || body.assigned_to || 'Staff';
+          updateData.decided_at = body.decided_at || new Date().toISOString();
+        }
+      }
+      if (body.decided_by !== undefined) updateData.decided_by = body.decided_by;
+      if (body.decided_at !== undefined) updateData.decided_at = body.decided_at;
       if (body.staff_response !== undefined) updateData.staff_response = body.staff_response;
       if (body.assigned_to !== undefined) updateData.assigned_to = body.assigned_to;
       if (body.assigned_to_email !== undefined) updateData.assigned_to_email = body.assigned_to_email;
