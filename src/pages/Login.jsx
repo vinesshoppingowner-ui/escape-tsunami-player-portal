@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   loadCredentials,
@@ -136,21 +135,24 @@ export default function Login() {
   const handleGoogle = () => {
     const destination = getProviderReturnTo("google");
 
-    localStorage.setItem("login_method", "google");
+    try { localStorage.setItem("login_method", "google"); } catch {}
+    markJustLoggedIn();
     base44.auth.loginWithProvider("google", destination);
   };
 
   const handleMicrosoft = () => {
     const destination = getProviderReturnTo("microsoft");
 
-    localStorage.setItem("login_method", "microsoft");
+    try { localStorage.setItem("login_method", "microsoft"); } catch {}
+    markJustLoggedIn();
     base44.auth.loginWithProvider("microsoft", destination);
   };
 
   const handleApple = () => {
     const destination = getProviderReturnTo("apple");
 
-    localStorage.setItem("login_method", "apple");
+    try { localStorage.setItem("login_method", "apple"); } catch {}
+    markJustLoggedIn();
     base44.auth.loginWithProvider("apple", destination);
   };
 
@@ -514,6 +516,14 @@ export default function Login() {
 
           </div>
         )}
+
+        {/* Privacy assurance */}
+        <div className="rounded-xl bg-emerald-500/[0.06] border border-emerald-400/20 px-3.5 py-3 flex items-start gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-slate-300 leading-relaxed">
+            <span className="font-semibold text-emerald-300">Privacy promise:</span> We don't look up or steal your private info. The only things we collect are your <strong className="text-white">Roblox username</strong> and <strong className="text-white">email</strong>.
+          </p>
+        </div>
 
         {/* Bottom decoration */}
         <div className="flex items-center justify-center gap-2 pt-1 text-[10px] text-slate-600">

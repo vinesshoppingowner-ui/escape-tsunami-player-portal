@@ -76,6 +76,10 @@ export default function ApplyLogin({ app }) {
               </div>
             </>
           )}
+
+          <div className="mt-5 rounded-xl bg-emerald-500/[0.06] border border-emerald-400/20 px-3.5 py-2.5 text-[11px] text-slate-300 leading-relaxed">
+            We don't look up or steal your private info. The only things we collect are your <strong className="text-white">Roblox username</strong> and <strong className="text-white">email</strong>.
+          </div>
         </div>
       </div>
     </div>

@@ -88,4 +88,5 @@ export function useUserPrefs() {
 
 export const markJustLoggedIn = () => {
   try { sessionStorage.setItem(WELCOME_FLAG, '1'); } catch {}
+  try { localStorage.setItem(WELCOME_FLAG, '1'); } catch {}
 };
