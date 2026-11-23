@@ -102,8 +102,8 @@ const AuthenticatedApp = () => {
         {prefs.seasonal_effects && !prefs.reduce_motion && <SeasonalEffects season={season} />}
         {!isLoading && <WelcomeModal />}
         {!isLoading && <StaffDestinationModal />}
-        {showDesktopSplash && <DesktopSplashScreen ready={!isLoading && !authError} />}
-        {isMobileViewport && <AppLoadingScreen ready={!isLoading && !authError} />}
+        {showDesktopSplash && <DesktopSplashScreen ready={!isLoading} />}
+        {isMobileViewport && <AppLoadingScreen ready={!isLoading} />}
         <DesktopNotifications isDesktopApp={isDesktopApp} />
         {content}
       </MaintenanceGuard>

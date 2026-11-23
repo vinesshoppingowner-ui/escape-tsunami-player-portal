@@ -9,17 +9,17 @@ export function isPasscodeLoginAvailable() {
 }
 
 export function savePasscodeLogin(passcode, token, email, userId) {
-  localStorage.setItem(KEY, JSON.stringify({ passcode, token, email, userId, setAt: Date.now() }));
+  try { localStorage.setItem(KEY, JSON.stringify({ passcode, token, email, userId, setAt: Date.now() })); } catch {}
 }
 
 export function clearPasscodeLogin() {
-  localStorage.removeItem(KEY);
+  try { localStorage.removeItem(KEY); } catch {}
 }
 
 export function tryPasscodeLogin(passcode) {
   const stored = getPasscodeLogin();
   if (!stored || stored.passcode !== passcode) return false;
-  localStorage.setItem('base44_access_token', stored.token);
+  try { localStorage.setItem('base44_access_token', stored.token); } catch {}
   return true;
 }
 
@@ -27,11 +27,13 @@ export function tryPasscodeLogin(passcode) {
 export function refreshPasscodeToken() {
   const stored = getPasscodeLogin();
   if (!stored) return;
-  const currentToken = localStorage.getItem('base44_access_token');
-  if (currentToken && currentToken !== stored.token) {
-    stored.token = currentToken;
-    localStorage.setItem(KEY, JSON.stringify(stored));
-  }
+  try {
+    const currentToken = localStorage.getItem('base44_access_token');
+    if (currentToken && currentToken !== stored.token) {
+      stored.token = currentToken;
+      localStorage.setItem(KEY, JSON.stringify(stored));
+    }
+  } catch {}
 }
 
 // Sync the passcode to the user's server-side data so staff can view/manage it

@@ -12,7 +12,7 @@ export function getAdminRole() {
 }
 
 export function setAdminRole(role) {
-  localStorage.setItem(ROLE_KEY, role);
+  try { localStorage.setItem(ROLE_KEY, role); } catch {}
   // Also persist to user profile so it's shared across devices
   try {
     base44.auth.updateMe({ data: { admin_role: role } }).catch(() => {});

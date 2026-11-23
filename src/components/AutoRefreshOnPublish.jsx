@@ -5,12 +5,18 @@ function extractBundleSignature(doc) {
   const urls = [];
   doc.querySelectorAll('script[src], link[rel="stylesheet"][href]').forEach((el) => {
     const raw = el.getAttribute('src') || el.getAttribute('href') || '';
+    // Ignore ChromeOS / browser extension injected scripts (e.g. chrome-extension://.../assets/...)
+    if (raw.startsWith('chrome-extension:') || raw.startsWith('moz-extension:')) return;
     if (raw.includes('/assets/')) {
       try {
         const u = new URL(raw, window.location.origin);
-        urls.push(u.pathname);
+        if (u.origin === window.location.origin && u.pathname.startsWith('/assets/')) {
+          urls.push(u.pathname);
+        }
       } catch {
-        urls.push(raw.split('?')[0]);
+        if (raw.startsWith('/assets/')) {
+          urls.push(raw.split('?')[0]);
+        }
       }
     }
   });
@@ -37,12 +43,15 @@ export default function AutoRefreshOnPublish() {
         return;
       }
       if (token !== baselineTokenRef.current) {
-        const lastHandled = sessionStorage.getItem('et_force_reload_token');
-        if (lastHandled !== token) {
-          sessionStorage.setItem('et_force_reload_token', token);
-          window.location.reload();
-        } else {
-          baselineTokenRef.current = token;
+        baselineTokenRef.current = token;
+        try {
+          const lastHandled = sessionStorage.getItem('et_force_reload_token');
+          if (lastHandled !== token) {
+            sessionStorage.setItem('et_force_reload_token', token);
+            window.location.reload();
+          }
+        } catch {
+          // Storage blocked (e.g. restricted Chromebook); skip reload to avoid loop
         }
       }
     };
@@ -98,10 +107,15 @@ export default function AutoRefreshOnPublish() {
         const remoteSig = extractBundleSignature(remoteDoc);
 
         if (remoteSig && remoteSig !== initialSigRef.current) {
-          const lastReloaded = sessionStorage.getItem('et_reloaded_build_sig');
-          if (lastReloaded !== remoteSig) {
-            sessionStorage.setItem('et_reloaded_build_sig', remoteSig);
-            window.location.reload();
+          initialSigRef.current = remoteSig;
+          try {
+            const lastReloaded = sessionStorage.getItem('et_reloaded_build_sig');
+            if (lastReloaded !== remoteSig) {
+              sessionStorage.setItem('et_reloaded_build_sig', remoteSig);
+              window.location.reload();
+            }
+          } catch {
+            // Storage blocked; skip reload to avoid loop
           }
         }
       } catch {

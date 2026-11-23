@@ -11,10 +11,14 @@ export default function DesktopSplashScreen({ ready = true }) {
   const [visible, setVisible] = useState(true);
   const [minElapsed, setMinElapsed] = useState(false);
 
-  // Minimum display time for branding
+  // Minimum display time for branding (plus hard safety cap)
   useEffect(() => {
     const t = setTimeout(() => setMinElapsed(true), 1200);
-    return () => clearTimeout(t);
+    const maxTimer = setTimeout(() => setVisible(false), 4500);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(maxTimer);
+    };
   }, []);
 
   // Hide when app is ready AND minimum time has passed

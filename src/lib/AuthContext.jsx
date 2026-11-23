@@ -16,6 +16,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAppState();
+    // Safety fallback so restricted networks/Chromebooks never stay stuck on the loading screen
+    const fallbackTimer = setTimeout(() => {
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
+    }, 6000);
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   const checkAppState = async () => {
@@ -35,7 +42,24 @@ export const AuthProvider = ({ children }) => {
       });
       
       try {
-        const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+        let publicSettings;
+        try {
+          publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+        } catch (firstErr) {
+          // If a stale token caused a 401/403 on public-settings, clear it and retry without token
+          if (appParams.token && (firstErr?.status === 401 || firstErr?.status === 403)) {
+            try { base44.auth.logout(); } catch {}
+            appParams.token = null;
+            const anonClient = createAxiosClient({
+              baseURL: `/api/apps/public`,
+              headers: { 'X-App-Id': appParams.appId },
+              interceptResponses: true
+            });
+            publicSettings = await anonClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+          } else {
+            throw firstErr;
+          }
+        }
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
@@ -69,23 +93,17 @@ export const AuthProvider = ({ children }) => {
               message: appError.message
             });
           }
-        } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
         }
+        // For transient/network errors on a public app, fail open as guest so the website still loads
         setIsLoadingPublicSettings(false);
         setIsLoadingAuth(false);
+        setAuthChecked(true);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred'
-      });
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
+      setAuthChecked(true);
     }
   };
 
@@ -127,16 +145,21 @@ export const AuthProvider = ({ children }) => {
       // Enforce portal-level account flags
       const ud = currentUser.data || {};
       const urlParams = new URLSearchParams(window.location.search);
-      const loginMethod = urlParams.get('login_method') || localStorage.getItem('login_method') || 'unknown';
+      let storedLoginMethod = null;
+      try { storedLoginMethod = localStorage.getItem('login_method'); } catch {}
+      const clearLoginMethod = () => {
+        try { localStorage.removeItem('login_method'); } catch {}
+      };
+      const loginMethod = urlParams.get('login_method') || storedLoginMethod || 'unknown';
 
       if (ud.banned === true) {
         await base44.auth.logout();
-        localStorage.removeItem('login_method');
+        clearLoginMethod();
         window.location.href = '/login?banned=1';
         return;
       }
       if (ud.suspended === true) {
-        localStorage.removeItem('login_method');
+        clearLoginMethod();
         setUser({ ...currentUser, _suspended: true });
         setIsAuthenticated(true);
         setIsLoadingAuth(false);
@@ -146,17 +169,17 @@ export const AuthProvider = ({ children }) => {
       // Google lock: block Google OAuth logins (URL param or localStorage) OR Google-only users (no password set)
       if (ud.google_locked === true && (loginMethod === 'google' || ud.has_password !== true)) {
         await base44.auth.logout();
-        localStorage.removeItem('login_method');
+        clearLoginMethod();
         window.location.href = '/login?google_locked=1';
         return;
       }
       if (ud.force_password_reset === true && loginMethod !== 'google') {
-        localStorage.removeItem('login_method');
+        clearLoginMethod();
         window.location.href = '/reset-password?force=1&token=';
         return;
       }
 
-      localStorage.removeItem('login_method');
+      clearLoginMethod();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

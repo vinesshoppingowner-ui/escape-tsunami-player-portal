@@ -69,7 +69,7 @@ export function getPrefs(user) {
 
 export async function savePrefs(user, patch) {
   const next = { ...getPrefs(user), ...patch };
-  localStorage.setItem(localKey(user), JSON.stringify(next));
+  try { localStorage.setItem(localKey(user), JSON.stringify(next)); } catch {}
   window.dispatchEvent(new Event(EVT));
   if (user) await base44.auth.updateMe({ prefs: next });
   return next;
@@ -86,4 +86,6 @@ export function useUserPrefs() {
   return getPrefs(user);
 }
 
-export const markJustLoggedIn = () => sessionStorage.setItem(WELCOME_FLAG, '1');
+export const markJustLoggedIn = () => {
+  try { sessionStorage.setItem(WELCOME_FLAG, '1'); } catch {}
+};

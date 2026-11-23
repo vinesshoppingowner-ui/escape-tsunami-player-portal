@@ -3,15 +3,25 @@ import { useState, useEffect, useRef } from 'react';
 const PLACE_ID = '103398581793479';
 const POLL_INTERVAL = 30000;
 
+async function fetchWithTimeout(url, timeoutMs = 4500) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchUniverseId(placeId) {
-  const res = await fetch(`https://apis.roproxy.com/universes/v1/places/${placeId}/universe`);
+  const res = await fetchWithTimeout(`https://apis.roproxy.com/universes/v1/places/${placeId}/universe`);
   if (!res.ok) throw new Error('Failed to resolve universe');
   const data = await res.json();
   return data.universeId;
 }
 
 async function fetchGameStats(universeId) {
-  const res = await fetch(`https://games.roproxy.com/v1/games?universeIds=${universeId}`);
+  const res = await fetchWithTimeout(`https://games.roproxy.com/v1/games?universeIds=${universeId}`);
   if (!res.ok) throw new Error('Failed to fetch game stats');
   const data = await res.json();
   return data?.data?.[0] || null;
@@ -19,7 +29,7 @@ async function fetchGameStats(universeId) {
 
 async function fetchVotes(universeId) {
   try {
-    const res = await fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${universeId}`);
+    const res = await fetchWithTimeout(`https://games.roproxy.com/v1/games/votes?universeIds=${universeId}`);
     if (!res.ok) return null;
     const data = await res.json();
     return data?.data?.[0] || null;
@@ -28,7 +38,7 @@ async function fetchVotes(universeId) {
 
 async function fetchThumbnail(placeId) {
   try {
-    const res = await fetch(`https://thumbnails.roproxy.com/v1/places/icons?placeIds=${placeId}&size=256x256&format=Png&isCircular=false`);
+    const res = await fetchWithTimeout(`https://thumbnails.roproxy.com/v1/places/icons?placeIds=${placeId}&size=256x256&format=Png&isCircular=false`);
     if (!res.ok) return null;
     const data = await res.json();
     return data?.data?.[0]?.imageUrl || null;

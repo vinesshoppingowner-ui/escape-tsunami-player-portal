@@ -9,7 +9,12 @@ export default function AppLoadingScreen({ ready = false }) {
 
   useEffect(() => {
     const t = setTimeout(() => setMinElapsed(true), 1100);
-    return () => clearTimeout(t);
+    // Hard safety cap so the loading overlay never blocks the page indefinitely
+    const maxTimer = setTimeout(() => setDismissed(true), 5000);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(maxTimer);
+    };
   }, []);
 
   const fadingOut = ready && minElapsed;

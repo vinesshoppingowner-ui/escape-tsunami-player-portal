@@ -2,14 +2,20 @@
 // to the browser's own secure password manager (never stored by the site itself).
 const KEY = 'et_saved_login';
 
-export const getSavedLogin = () => JSON.parse(localStorage.getItem(KEY) || 'null');
+export const getSavedLogin = () => {
+  try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; }
+};
 export const isRememberEnabled = () => !!getSavedLogin();
-export const setRememberEnabled = (on, email = '') =>
-  on ? localStorage.setItem(KEY, JSON.stringify({ email })) : localStorage.removeItem(KEY);
+export const setRememberEnabled = (on, email = '') => {
+  try {
+    if (on) localStorage.setItem(KEY, JSON.stringify({ email }));
+    else localStorage.removeItem(KEY);
+  } catch {}
+};
 
 export async function saveCredentials(email, password) {
   if (!isRememberEnabled()) return;
-  localStorage.setItem(KEY, JSON.stringify({ email }));
+  try { localStorage.setItem(KEY, JSON.stringify({ email })); } catch {}
   if (window.PasswordCredential) {
     await navigator.credentials.store(new window.PasswordCredential({ id: email, password })).catch(() => {});
   }
