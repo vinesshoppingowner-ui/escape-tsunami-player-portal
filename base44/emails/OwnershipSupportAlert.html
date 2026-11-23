@@ -1,45 +1,73 @@
 <mjml>
   <mj-head>
     <mj-title>[Ownership Support] {{subject_line}} ({{ticket_id}})</mj-title>
-    <mj-preview>New Ownership Support request from {{sender_email}}</mj-preview>
+    <mj-preview>New Ownership Support request from {{sender_email}} and waiting on a reply.</mj-preview>
     <mj-attributes>
       <mj-all font-family="Inter, Helvetica, Arial, sans-serif" />
-      <mj-section background-color="#ffffff" padding="0 36px" />
-      <mj-column padding="0" />
-      <mj-text color="#000000" font-size="15px" line-height="1.6" padding="0" />
-      <mj-button background-color="#6366f1" color="#000000" border-radius="6px" font-size="15px" font-weight="700" inner-padding="14px 28px" padding="0" align="left" />
+      <mj-text color="#ffffff" font-size="15px" line-height="1.65" padding="0" />
+      <mj-button background-color="#6366f1" color="#000000" border-radius="6px" font-size="15px" font-weight="700" inner-padding="15px 30px" padding="0" align="left" />
       <mj-image padding="0" />
-      <mj-divider border-color="#e5e7eb" border-width="1px" padding="0" />
-      <mj-class name="h" font-family="Outfit, Helvetica, Arial, sans-serif" font-weight="700" />
-      <mj-class name="muted" color="#6b7280" />
+      <mj-divider border-color="#1e2740" border-width="1px" padding="0" />
+      <mj-class name="h" font-family="Outfit, Helvetica, Arial, sans-serif" font-weight="800" />
+      <mj-class name="muted" color="#94a3b8" />
+      <mj-class name="label" font-size="10px" letter-spacing="2px" text-transform="uppercase" font-weight="700" color="#94a3b8" />
     </mj-attributes>
   </mj-head>
-  <mj-body background-color="#ffffff" width="600px">
-    <mj-wrapper padding="28px 12px" background-color="#ffffff">
-      <mj-section background-color="#6366f1" padding="24px 36px" border-radius="6px 6px 0 0">
+  <mj-body background-color="#090c18" width="600px">
+    <mj-wrapper background-color="#0d1322" border="1px solid #1e2740" border-radius="12px" padding="0">
+      <mj-section background-color="#6366f1" padding="24px 36px 20px" border-radius="12px 12px 0 0">
         <mj-column>
-          <mj-image src="https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/1d74ff900_logo.png" alt="Escape Tsunami Player Portal" width="40px" align="center" padding="0 0 12px" />
-          <mj-text align="center" font-size="12px" letter-spacing="4px" font-weight="700" text-transform="uppercase" color="#000000">Escape Tsunami Player Portal</mj-text>
+          <mj-image src="https://media.base44.com/images/public/6a94d0a4d41cd1f012a10c06/1d74ff900_logo.png" alt="Escape Tsunami Player Portal" width="46px" align="center" padding="0 0 10px" />
+          <mj-text align="center" font-size="12px" letter-spacing="4px" font-weight="800" text-transform="uppercase" color="#000000">Escape Tsunami</mj-text>
         </mj-column>
       </mj-section>
-      <mj-section padding="40px 36px 8px">
+
+      <mj-section background-color="#f59e0b" padding="10px 36px">
         <mj-column>
-          <mj-text mj-class="h" font-size="24px" line-height="1.25" padding="0 0 8px">New Ownership Support Request</mj-text>
-          <mj-text mj-class="muted" font-size="14px" line-height="1.6" padding="0 0 20px">Ticket {{ticket_id}} submitted by {{first_name}} ({{sender_email}}).</mj-text>
-          <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Player Email:</strong> {{sender_email}}</mj-text>
-          <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Roblox Username:</strong> {{roblox_username}}</mj-text>
-          <mj-text font-size="15px" line-height="1.7" padding="0 0 12px"><strong>Subject:</strong> {{subject_line}}</mj-text>
-          <mj-text font-size="15px" line-height="1.7" padding="0 0 24px"><strong>Message:</strong> {{message_body}}</mj-text>
-          <mj-button href="{{gmail_reply_url}}" padding="0 0 12px">Reply in Gmail to {{sender_email}}</mj-button>
-          <mj-text font-size="13px" line-height="1.6" padding="0 0 24px">
-            Or <a href="{{reply_url}}" style="color:#6366f1;font-weight:700;text-decoration:underline;">reply directly from the Ownership Support portal</a>.
+          <mj-text align="center" font-size="11px" letter-spacing="2.5px" font-weight="800" text-transform="uppercase" color="#2a1600">Action needed, waiting on a reply</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="36px 36px 0">
+        <mj-column>
+          <mj-text mj-class="h" font-size="27px" line-height="1.2" padding="0 0 10px">New Ownership Support request</mj-text>
+          <mj-text mj-class="muted" font-size="15px" padding="0 0 24px">{{first_name}} submitted ticket {{ticket_id}}. Reply from the portal or straight from Gmail.</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="0 36px">
+        <mj-column background-color="#111a2e" border="1px solid #1e2740" border-radius="8px" padding="18px 20px">
+          <mj-text mj-class="label" padding="0 0 4px">Ticket</mj-text>
+          <mj-text font-size="15px" font-weight="700" padding="0 0 16px">{{ticket_id}}</mj-text>
+          <mj-text mj-class="label" padding="0 0 4px">Player email</mj-text>
+          <mj-text font-size="15px" padding="0 0 16px">{{sender_email}}</mj-text>
+          <mj-text mj-class="label" padding="0 0 4px">Roblox username</mj-text>
+          <mj-text font-size="15px" padding="0 0 16px">{{roblox_username}}</mj-text>
+          <mj-text mj-class="label" padding="0 0 4px">Subject</mj-text>
+          <mj-text font-size="15px" padding="0">{{subject_line}}</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="20px 36px 0">
+        <mj-column background-color="#111a2e" border-left="3px solid #f59e0b" border-radius="0 8px 8px 0" padding="18px 20px">
+          <mj-text mj-class="label" padding="0 0 6px">Message</mj-text>
+          <mj-text font-size="15px" line-height="1.7" padding="0">{{message_body}}</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="24px 36px 0">
+        <mj-column>
+          <mj-button href="{{gmail_reply_url}}">Reply in Gmail to {{sender_email}}</mj-button>
+          <mj-text font-size="13px" line-height="1.6" padding="16px 0 0">
+            <a href="{{reply_url}}" style="color:#818cf8;font-weight:700;text-decoration:underline;">Or reply directly from the Ownership Support portal</a>
           </mj-text>
         </mj-column>
       </mj-section>
-      <mj-section background-color="#6366f1" padding="26px 36px 30px" border-radius="0 0 6px 6px">
+
+      <mj-section padding="26px 36px 30px">
         <mj-column>
-          <mj-text mj-class="h" align="center" font-size="17px" color="#000000" padding="0 0 8px">Escape Tsunami Player Portal</mj-text>
-          <mj-text align="center" font-size="12px" line-height="1.7" color="#000000" padding="0 0 6px">Click the button above to reply straight to the player in Gmail.</mj-text>
+          <mj-divider padding="0 0 16px" />
+          <mj-text align="center" mj-class="muted" font-size="12px" line-height="1.7">Sent automatically to Ownership and Managers when a player contacts Ownership Support. Ticket {{ticket_id}}.</mj-text>
         </mj-column>
       </mj-section>
     </mj-wrapper>
