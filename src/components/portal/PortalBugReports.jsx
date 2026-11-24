@@ -56,8 +56,6 @@ export default function PortalBugReports() {
     return unsubscribe;
   }, [user]);
 
-  if (!user) return null;
-
   return (
     <div>
       <div className="flex items-center justify-between mb-3">

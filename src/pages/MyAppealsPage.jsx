@@ -65,16 +65,7 @@ export default function MyAppealsPage() {
     toast({ title: 'Appeal submitted', description: 'Staff will review it soon.' });
   };
 
-  if (!savedUsername) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <SiteNav />
-        <main className="max-w-2xl mx-auto px-5 pt-28 pb-20">
-          <VerifyAccount onVerified={handleVerified} />
-        </main>
-      </div>
-    );
-  }
+  const displayUsername = savedUsername || user?.full_name || user?.email?.split('@')[0] || 'your account';
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -89,7 +80,7 @@ export default function MyAppealsPage() {
             <Gavel className="h-3.5 w-3.5 text-cyan-400" /> My Appeals
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Manage your appeals</h1>
-          <p className="mt-2 text-slate-400">Track the status of every appeal you've submitted for <span className="text-cyan-300 font-medium">{savedUsername}</span>.</p>
+          <p className="mt-2 text-slate-400">Track the status of every appeal you've submitted for <span className="text-cyan-300 font-medium">{displayUsername}</span>.</p>
         </motion.div>
 
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden border border-white/[0.06]">

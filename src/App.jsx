@@ -59,38 +59,27 @@ const AuthenticatedApp = () => {
     return <AppLoadingScreen />;
   }
 
-  let content;
-  if (authError?.type === 'user_not_registered') {
-    content = <UserNotRegisteredError />;
-  } else if (authError?.type === 'auth_required') {
-    navigateToLogin();
-    content = null;
-  } else {
-    content = (
-      <Routes>
-        {/* Add your page Route elements here */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/destination" element={<DestinationPage />} />
-        <Route path="/portal" element={<MemberPortalPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/apply/:id" element={<ApplicationFormPage />} />
-        <Route path="/applications" element={<ApplicationsDirectoryPage />} />
-        <Route path="/support-reply" element={<SupportReplyPage />} />
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/my-appeals" element={<MyAppealsPage />} />
-          <Route path="/manage-applications" element={<ManageApplicationsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-
-          <Route path="/roblox-callback" element={<RobloxOAuthCallbackPage />} />
-        </Route>
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    );
-  }
+  const content = (
+    <Routes>
+      {/* Add your page Route elements here */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/destination" element={<DestinationPage />} />
+      <Route path="/portal" element={<MemberPortalPage />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/apply/:id" element={<ApplicationFormPage />} />
+      <Route path="/applications" element={<ApplicationsDirectoryPage />} />
+      <Route path="/support-reply" element={<SupportReplyPage />} />
+      <Route path="/my-appeals" element={<MyAppealsPage />} />
+      <Route path="/manage-applications" element={<ManageApplicationsPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/roblox-callback" element={<RobloxOAuthCallbackPage />} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  );
 
   return (
     <IpBanCheck>

@@ -4,8 +4,6 @@ import { Mail, User, Calendar, Check, Copy, ExternalLink, CheckCircle2, Fingerpr
 export default function SecurityCard({ user, robloxUsername }) {
   const [copiedField, setCopiedField] = useState(null);
 
-  if (!user) return null;
-
   const copyValue = (key, text) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -13,22 +11,22 @@ export default function SecurityCard({ user, robloxUsername }) {
     setTimeout(() => setCopiedField(null), 1800);
   };
 
-  const memberSince = user.created_date
+  const memberSince = user?.created_date
     ? new Date(user.created_date).toLocaleDateString(undefined, {
         month: 'numeric',
         day: 'numeric',
         year: 'numeric',
       })
-    : '—';
+    : 'Today';
 
   const rows = [
     {
       key: 'email',
       icon: Mail,
       label: 'Linked email',
-      value: user.email || 'Not linked',
-      copyable: Boolean(user.email),
-      badge: user.email ? { text: 'Verified', color: '#37d49b', bg: 'rgba(16,185,129,.1)', border: 'rgba(16,185,129,.28)' } : null,
+      value: user?.email || 'Not signed in',
+      copyable: Boolean(user?.email),
+      badge: user?.email ? { text: 'Verified', color: '#37d49b', bg: 'rgba(16,185,129,.1)', border: 'rgba(16,185,129,.28)' } : { text: 'Guest', color: '#38bdf8', bg: 'rgba(56,189,248,.1)', border: 'rgba(56,189,248,.28)' },
     },
     {
       key: 'roblox',
@@ -55,9 +53,9 @@ export default function SecurityCard({ user, robloxUsername }) {
       key: 'id',
       icon: Fingerprint,
       label: 'Portal Account ID',
-      value: user.id || '—',
+      value: user?.id || 'Sign in to view ID',
       hint: 'Save this ID — admins use it to look up & verify your account.',
-      copyable: Boolean(user.id),
+      copyable: Boolean(user?.id),
       badge: { text: 'Save ID', color: '#38bdf8', bg: 'rgba(56,189,248,.1)', border: 'rgba(56,189,248,.28)' },
     },
   ];

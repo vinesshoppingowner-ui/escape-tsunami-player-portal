@@ -14,8 +14,6 @@ export default function ManageApplicationsPage() {
     document.title = 'Manage Applications · Escape Tsunami';
   }, []);
 
-  if (!allowed) return <Navigate to="/portal" replace />;
-
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteNav />

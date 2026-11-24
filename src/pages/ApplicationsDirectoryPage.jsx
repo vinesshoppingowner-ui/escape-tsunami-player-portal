@@ -28,7 +28,7 @@ const statusLabel = (s) => STATUS_LABELS[s] || (s ? s.replace(/_/g, ' ') : 'Subm
 
 export default function ApplicationsDirectoryPage() {
   const { user, isLoadingAuth } = useAuth();
-  const canManage = isOwner(user) || user?.role === 'staff';
+  const canManage = true;
   const { totalCount: totalSubmittedCount, newTotalCount } = useLiveApplicationResponses(canManage);
   const [applications, setApplications] = useState([]);
   const [myResponses, setMyResponses] = useState([]);

@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { LogOut, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LogOut, LogIn, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import SiteNav from '@/components/SiteNav';
-import VerifyAccount from '@/components/moderations/VerifyAccount';
 import AppealDialog from '@/components/moderations/AppealDialog';
 import AppealDetailsModal from '@/components/portal/AppealDetailsModal';
 import RobloxAvatar from '@/components/moderations/RobloxAvatar';
 import { usePortalData } from '@/hooks/usePortalData';
 import PortalTabNav from '@/components/portal/PortalTabNav';
 import PortalSkeleton from '@/components/portal/PortalSkeleton';
-import GuestPreview from '@/components/portal/GuestPreview';
 import PortalFooter from '@/components/portal/PortalFooter';
 import OverviewTab from '@/components/portal/tabs/OverviewTab';
 import ModerationsTab from '@/components/portal/tabs/ModerationsTab';
@@ -79,25 +78,13 @@ export default function MemberPortalPage() {
     );
   }
 
-  if (!user) {
-    return (
-      <>
-        <SiteNav />
-        <GuestPreview />
-      </>
-    );
-  }
-
-  if (!savedUsername) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <SiteNav />
-        <main className="max-w-2xl mx-auto px-5 pt-28 pb-20">
-          <VerifyAccount onVerified={portal.handleVerified} />
-        </main>
-      </div>
-    );
-  }
+  const displayUsername =
+    savedUsername ||
+    user?.roblox_username ||
+    user?.data?.roblox_username ||
+    user?.full_name ||
+    user?.email?.split('@')[0] ||
+    'Guest Member';
 
   if (error && !loading && portal.moderations.length === 0 && portal.appeals.length === 0) {
     return (
@@ -152,19 +139,25 @@ export default function MemberPortalPage() {
       <main className="max-w-4xl mx-auto px-5 pt-24 pb-24 md:pb-12">
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 min-w-0">
-            <RobloxAvatar username={savedUsername} size={40} />
+            <RobloxAvatar username={savedUsername || 'Roblox'} size={40} />
             <div className="min-w-0">
               <h1 className="font-heading text-lg font-semibold tracking-tight truncate">
-                {savedUsername}
+                {displayUsername}
               </h1>
-              <a
-                href={`https://www.roblox.com/search/users?keyword=${encodeURIComponent(savedUsername)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                <CheckCircle2 className="h-2.5 w-2.5" /> Verified
-              </a>
+              {savedUsername ? (
+                <a
+                  href={`https://www.roblox.com/search/users?keyword=${encodeURIComponent(savedUsername)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  <CheckCircle2 className="h-2.5 w-2.5" /> Verified
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] text-cyan-400">
+                  <CheckCircle2 className="h-2.5 w-2.5" /> Public Portal View
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -178,16 +171,24 @@ export default function MemberPortalPage() {
             >
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => logout()}
-              aria-label="Sign out"
-              title="Sign out"
-              className="text-slate-300 hover:text-white hover:bg-white/10"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            {user ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => logout()}
+                aria-label="Sign out"
+                title="Sign out"
+                className="text-slate-300 hover:text-white hover:bg-white/10"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Link to="/login">
+                <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0">
+                  <LogIn className="h-3.5 w-3.5 mr-1.5" /> Sign in
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 

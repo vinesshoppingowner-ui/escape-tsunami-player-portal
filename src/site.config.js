@@ -12,7 +12,7 @@
 import {
   Home, LogIn, Scale, FileText, Compass,
   MessageCircle, BookOpen, Bug, Mail,
-  Waves,
+  Waves, Bell, Shield,
 } from 'lucide-react';
 
 export const SITE_CONFIG = {
@@ -30,18 +30,22 @@ export const SITE_CONFIG = {
   // icon = any lucide-react icon component.
   nav: {
     directLinks: [
-      { label: 'Home',         to: '/',             icon: Home },
-      { label: 'Portal',       to: '/portal',        icon: LogIn },
-      { label: 'My Appeals',   to: '/my-appeals',    icon: Scale },
-      { label: 'Applications', to: '/applications',  icon: FileText },
-      { label: 'Navigate',     to: '/destination',   icon: Compass },
+      { label: 'Home',          to: '/',                    icon: Home },
+      { label: 'Member Portal', to: '/portal',              icon: LogIn },
+      { label: 'My Appeals',    to: '/my-appeals',          icon: Scale },
+      { label: 'Applications',  to: '/applications',        icon: FileText },
+      { label: 'Manage Apps',   to: '/manage-applications', icon: Shield },
+      { label: 'Notifications', to: '/notifications',       icon: Bell },
+      { label: 'Navigate',      to: '/destination',         icon: Compass },
     ],
     mobileLinks: [
-      { label: 'Home',          to: '/',             icon: Home },
-      { label: 'Member Portal', to: '/portal',        icon: LogIn },
-      { label: 'My Appeals',    to: '/my-appeals',    icon: Scale },
-      { label: 'Applications',  to: '/applications',  icon: FileText },
-      { label: 'Navigate',      to: '/destination',   icon: Compass },
+      { label: 'Home',          to: '/',                    icon: Home },
+      { label: 'Member Portal', to: '/portal',              icon: LogIn },
+      { label: 'My Appeals',    to: '/my-appeals',          icon: Scale },
+      { label: 'Applications',  to: '/applications',        icon: FileText },
+      { label: 'Manage Apps',   to: '/manage-applications', icon: Shield },
+      { label: 'Notifications', to: '/notifications',       icon: Bell },
+      { label: 'Navigate',      to: '/destination',         icon: Compass },
     ],
   },
 

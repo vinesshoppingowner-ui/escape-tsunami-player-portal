@@ -253,17 +253,15 @@ export default function ApplicationFormPage() {
   }
   if (loadError) return <ApplyStatusScreen icon={AlertCircle} tone="slate" title="Couldn't load">Something went wrong loading this application. <button onClick={() => { setLoadError(false); loadApp(); }} className="mt-2 text-cyan-300 hover:underline">Retry</button></ApplyStatusScreen>;
   if (!app) return <ApplyStatusScreen icon={FileQuestion} tone="slate" title="Application not found">This link may be broken or the application was removed.</ApplyStatusScreen>;
-  if (!user) return <ApplyLogin app={app} />;
   if (blacklisted) return <ApplyStatusScreen icon={Ban} tone="rose" title="You are restricted">You are not permitted to submit applications. If you believe this is an error, contact a staff member.</ApplyStatusScreen>;
   const allowed = (settings.allowedUsers || []).map((u) => u.toLowerCase());
-  const me = [user.email, user.roblox_username, user.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
-  if (settings.restrictToUsers && allowed.length && !me.some((v) => allowed.includes(v))) return <ApplyStatusScreen icon={Lock} tone="rose" title="Invite only">"{app.title}" is only open to selected users.</ApplyStatusScreen>;
+  const me = [user?.email, user?.roblox_username, user?.data?.roblox_username].filter(Boolean).map((v) => v.toLowerCase());
+  if (user && settings.restrictToUsers && allowed.length && !me.some((v) => allowed.includes(v))) return <ApplyStatusScreen icon={Lock} tone="rose" title="Invite only">"{app.title}" is only open to selected users.</ApplyStatusScreen>;
   const pastClose = app.auto_close_at && new Date(app.auto_close_at) < new Date();
   const limitHit = settings.responseLimit > 0 && (app.response_count || 0) >= settings.responseLimit;
   if (!submitted && (pastClose || limitHit)) return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is no longer accepting responses.</ApplyStatusScreen>;
-  if (settings.requireRobloxVerification && !(user?.roblox_username || user?.data?.roblox_username)) return <ApplyStatusScreen icon={Lock} tone="cyan" title="Verification required">Link and verify your Roblox account in the portal before applying to "{app.title}".</ApplyStatusScreen>;
   const ageDays = user?.created_date ? (Date.now() - new Date(user.created_date)) / 86400000 : 0;
-  if (settings.minAccountAgeDays > 0 && ageDays < settings.minAccountAgeDays) return <ApplyStatusScreen icon={Clock} tone="cyan" title="Account too new">Your account must be at least {settings.minAccountAgeDays} days old to apply to "{app.title}".</ApplyStatusScreen>;
+  if (user && settings.minAccountAgeDays > 0 && ageDays < settings.minAccountAgeDays) return <ApplyStatusScreen icon={Clock} tone="cyan" title="Account too new">Your account must be at least {settings.minAccountAgeDays} days old to apply to "{app.title}".</ApplyStatusScreen>;
   if (app.status !== 'open') return <ApplyStatusScreen icon={Lock} tone="rose" title="Applications closed">"{app.title}" is not currently accepting responses.</ApplyStatusScreen>;
   if (submitted) return <ApplyStatusScreen icon={CheckCircle2} tone="emerald" title="Application submitted!">{app.success_message || 'Your response has been recorded.'}
     {settings.showResultsSummary && <p className="mt-3 text-sm text-slate-500">{(app.response_count || 0) + (editingId ? 0 : 1)} responses submitted so far.</p>}
